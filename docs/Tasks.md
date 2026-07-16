@@ -11,44 +11,74 @@
 - [x] Project idea finalized
 - [x] Feature planning completed
 - [x] Technology stack finalized
-- [x] Documentation created
+- [x] Documentation created (ORD, PRD, ARCHITECTURE, DATABASE, API, AGENT, TECH_STACK)
 - [x] GitHub repository created
 - [x] Initial project structure planned
 
 ---
 
+## Sprint 1 – Project Setup & Landing Page
+
+- [x] Initialize Next.js 15 (App Router) project in `client/`
+- [x] Configure TypeScript (strict mode)
+- [x] Configure Tailwind CSS v4
+- [x] Configure ESLint with recommended Next.js settings
+- [x] Install dependencies: framer-motion, axios, react-icons
+- [x] Create scalable folder structure (app/, components/, hooks/, context/, lib/, services/, utils/, types/)
+- [x] Configure global styles (globals.css) with custom CSS properties, dark mode, animations
+- [x] Configure Inter font via next/font/google
+- [x] Create TypeScript types (types/index.ts)
+- [x] Create placeholder directories for future sprints (hooks/, context/, lib/, services/, utils/)
+
+### UI Components
+
+- [x] Button.tsx – 4 variants, 3 sizes, loading state, icon support, href/Link rendering
+- [x] Input.tsx – label, error, hint, icon slots, accessible IDs
+- [x] Card.tsx – glass, hover, padding variants
+- [x] Loader.tsx – sm/md/lg sizes, fullscreen overlay option
+
+### Layout Components
+
+- [x] Navbar.tsx – sticky, scroll-aware, mobile drawer (Framer Motion), animated logo
+- [x] Footer.tsx – brand, contact, quick links, social icons, copyright
+
+### Landing Page Sections
+
+- [x] HeroSection.tsx – headline, CTA, animated blood drop, floating blood group tags, trust stats
+- [x] AboutSection.tsx – mission/audience/commitment cards, gradient story banner
+- [x] FeaturesSection.tsx – 6 features in responsive grid with colored icon badges
+- [x] HowItWorksSection.tsx – 3-step process with pulsing circles and connector line
+- [x] WhyChooseSection.tsx – gradient banner + 8 USP points checklist
+- [x] StatsSection.tsx – 4 stat cards on gradient background with scroll-triggered animation
+- [x] CTASection.tsx – gradient CTA with heartbeat icon and dual action buttons
+
+### Assembly
+
+- [x] app/layout.tsx – root layout with SEO metadata, viewport config, Inter font
+- [x] app/page.tsx – landing page assembling all 7 sections
+
+### Verification
+
+- [x] `npm run build` passes with 0 TypeScript errors
+- [x] 0 ESLint errors
+- [x] All sections render correctly
+
+---
+
 # 🚧 In Progress
 
-## Project Setup
+## Sprint 2 – Authentication UI (Planned)
 
-- [ ] Initialize Next.js 15 project
-- [ ] Configure TypeScript
-- [ ] Configure Tailwind CSS
-- [ ] Configure ESLint & Prettier
-- [ ] Create folder structure
-- [ ] Configure environment variables
+- [ ] Login Page
+- [ ] Signup Page
+- [ ] Forgot Password Page
+- [ ] Role Selection
 
 ---
 
 # 📋 Pending
 
 ## Frontend
-
-### Authentication
-
-- [ ] Login Page
-- [ ] Signup Page
-- [ ] Forgot Password
-- [ ] Role Selection
-
-### Landing Page
-
-- [ ] Hero Section
-- [ ] Features Section
-- [ ] How It Works
-- [ ] Statistics
-- [ ] FAQ
-- [ ] Footer
 
 ### User Dashboard
 
@@ -77,8 +107,7 @@
 
 ### UI
 
-- [ ] Responsive Design
-- [ ] Dark Mode (Optional)
+- [ ] Dark Mode Toggle
 - [ ] Loading Screens
 - [ ] Error Pages
 - [ ] 404 Page
@@ -178,16 +207,15 @@
 
 # Current Sprint
 
-Sprint 1
+Sprint 2
 
 Goal:
 
-- Set up Next.js project
-- Configure Tailwind CSS
-- Create folder structure
-- Build Landing Page
-- Build Login & Signup UI
+- Build Login Page UI
+- Build Signup Page UI
+- Build Role Selection UI
+- AuthContext setup (client-side only, no backend calls yet)
 
 Status:
 
-🟡 Not Started
+⚪ Not Started – Awaiting Sprint 2 instruction
