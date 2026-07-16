@@ -1,6 +1,16 @@
 # 🩸 BloodLink – Smart Blood Donor Finder
 
-BloodLink is a secure, responsive, and real-time blood donation platform that connects patients, blood donors, blood banks, and hospitals during medical emergencies.
+## 🚧 Project Status
+
+**Status:** 🚀 Under Active Development
+
+Current Phase: Documentation & Project Setup
+
+---
+
+## 📖 About
+
+BloodLink is a secure, responsive, and real-time blood donation platform designed to connect patients, blood donors, blood banks, and hospitals during medical emergencies.
 
 The platform aims to reduce the time required to locate blood by providing instant emergency notifications, nearby blood bank discovery using Google Maps, and real-time blood inventory management.
 
@@ -8,19 +18,19 @@ The platform aims to reduce the time required to locate blood by providing insta
 
 # 🚀 Features
 
-## Authentication
+## 🔐 Authentication
 
-- Secure User Registration
+- User Registration
+- Secure Login
 - JWT Authentication
-- Login & Logout
 - Role-Based Access Control
-- Admin & User Accounts
+- User & Admin Accounts
 
 ---
 
-## User Features
+## 👤 User Features
 
-- User Dashboard
+- Dashboard
 - Update Profile
 - Register Blood Group
 - Emergency Blood Request
@@ -31,31 +41,54 @@ The platform aims to reduce the time required to locate blood by providing insta
 
 ---
 
-## Admin Features
+## 🏥 Admin Features
 
 - Admin Dashboard
 - Blood Inventory Management
 - Upload Blood Inventory
 - Update Blood Stock
+- Delete Blood Stock
 - Hospital Management
 - Approve Emergency Requests
 - Reject Emergency Requests
-- Real-Time Emergency Notifications
+- Receive Live Emergency Alerts
 
 ---
 
-## Real-Time Features
+## ⚡ Real-Time Features
 
 - Emergency Blood Alerts
-- Live Inventory Updates
-- Socket.IO Notifications
-- Google Maps Integration
+- Live Notifications
+- Inventory Updates
+- Socket.IO Integration
+
+---
+
+# 🏗️ System Architecture
+
+```
+                    Users
+                      │
+                      ▼
+            Next.js Frontend
+                      │
+               Axios REST API
+                      │
+                      ▼
+           Node.js + Express.js
+              │             │
+              ▼             ▼
+      MongoDB Atlas     Socket.IO
+              │
+              ▼
+     Google Maps API
+```
 
 ---
 
 # 📚 Documentation
 
-Project documentation is available inside the **docs** folder.
+Complete project documentation is available in the **docs** folder.
 
 - [ORD – Overall Requirements](docs/ORD.md)
 - [PRD – Product Requirements](docs/PRD.md)
@@ -126,24 +159,8 @@ Project documentation is available inside the **docs** folder.
 BloodLink/
 
 ├── client/
-│   ├── app/
-│   ├── components/
-│   ├── hooks/
-│   ├── context/
-│   ├── services/
-│   ├── utils/
-│   ├── types/
-│   └── public/
 │
 ├── server/
-│   ├── controllers/
-│   ├── routes/
-│   ├── middleware/
-│   ├── models/
-│   ├── services/
-│   ├── socket/
-│   ├── config/
-│   └── utils/
 │
 ├── docs/
 │   ├── ORD.md
@@ -161,13 +178,26 @@ BloodLink/
 
 ---
 
+# 🔒 Security
+
+- JWT Authentication
+- bcrypt Password Hashing
+- Protected Routes
+- Environment Variables
+- Request Validation
+- Secure REST APIs
+
+---
+
 # ⚙️ Getting Started
 
-## Clone the Repository
+## Clone Repository
 
 ```bash
 git clone https://github.com/Kartik01032005/Major-Project.git
 ```
+
+---
 
 ## Install Frontend
 
@@ -175,6 +205,8 @@ git clone https://github.com/Kartik01032005/Major-Project.git
 cd client
 npm install
 ```
+
+---
 
 ## Install Backend
 
@@ -187,14 +219,14 @@ npm install
 
 # 🔐 Environment Variables
 
-Create the following files:
+Create:
 
 ```
 client/.env.local
 server/.env
 ```
 
-Example server environment variables:
+Example:
 
 ```
 MONGODB_URI=
@@ -205,7 +237,7 @@ PORT=5000
 
 ---
 
-# ▶️ Running the Project
+# ▶️ Run the Project
 
 Frontend
 
@@ -234,6 +266,39 @@ Backend
 Database
 
 - MongoDB Atlas
+
+---
+
+# 🔄 Development Workflow
+
+1. Read all files inside the `docs` folder.
+2. Follow `AGENT.md` instructions.
+3. Implement one feature at a time.
+4. Update `TASKS.md`.
+5. Commit changes.
+6. Push to GitHub.
+
+---
+
+# 🤖 AI Agent Instructions
+
+Before generating code, always read:
+
+- README.md
+- docs/ORD.md
+- docs/PRD.md
+- docs/ARCHITECTURE.md
+- docs/DATABASE.md
+- docs/API.md
+- docs/AGENT.md
+- docs/TASKS.md
+- docs/TECH_STACK.md
+
+Implement only one feature at a time.
+
+Never skip documentation.
+
+Always keep the project production-ready.
 
 ---
 
