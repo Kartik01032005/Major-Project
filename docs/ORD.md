@@ -1,80 +1,138 @@
-# BloodLink – Blood Donor Finder
+# BloodLink – Smart Blood Donor Finder
 
 ## Vision
 
-Create a secure, responsive, real-time blood donation platform that connects patients, blood donors, blood banks, and hospitals during emergencies.
+Build a secure, scalable, responsive, and real-time Blood Donor Finder platform that connects blood donors, blood banks, hospitals, and patients during emergencies.
 
-The application should reduce the time required to locate blood by providing instant notifications, nearby blood bank locations, and real-time blood inventory.
-
----
-
-## Objectives
-
-- Make requesting blood simple.
-- Notify nearby donors instantly.
-- Notify blood banks immediately.
-- Allow blood banks to manage inventory.
-- Protect user privacy using encryption.
-- Integrate Google Maps.
-- Build an industry-level MERN application.
+The application should significantly reduce the time required to locate blood by providing instant emergency notifications, real-time blood inventory management, nearby blood bank discovery, and seamless Google Maps navigation.
 
 ---
 
-## Target Users
+# Objectives
+
+- Make requesting blood quick and simple.
+- Notify nearby donors instantly during emergencies.
+- Notify blood banks in real time.
+- Allow blood banks to manage blood inventory efficiently.
+- Protect sensitive user information using secure authentication and encryption.
+- Integrate Google Maps for nearby blood bank discovery and navigation.
+- Build a production-ready full-stack web application using modern technologies.
+- Provide an intuitive experience for both donors and administrators.
+
+---
+
+# Target Users
 
 - General Public
 - Blood Donors
 - Blood Banks
 - Hospitals
+- Administrators
 
 ---
 
-## Core Features
+# Project Scope
 
-### Authentication
+The platform enables users to:
 
-- Signup
-- Login
+- Register and log in securely.
+- Create emergency blood requests.
+- Receive live notifications.
+- Locate nearby blood banks.
+- Navigate directly to approved blood banks.
+- View active emergency requests.
+- Manage blood inventory.
+- Approve or reject blood requests.
+- Maintain hospital information.
+
+---
+
+# Core Features
+
+## Authentication
+
+- User Registration
+- Secure Login
 - JWT Authentication
-- Role Based Access
+- Role-Based Access Control
 
 Roles
 
 - User
-- Admin
+- Admin (Blood Bank)
 
 ---
 
-### User
+## User Features
 
-- View dashboard
-- Edit profile
-- Register blood group
-- Emergency request
-- Receive notifications
-- View nearby blood banks
-- Google Maps navigation
-
----
-
-### Admin
-
-- Blood inventory
-- Upload datasets
-- Edit inventory
-- Hospital management
-- Approve requests
-- Reject requests
-- Receive emergency alerts
+- Dashboard
+- Edit Profile
+- Register Blood Group
+- Update Location
+- Emergency Blood Request
+- Receive Real-Time Notifications
+- View Nearby Blood Banks
+- Google Maps Navigation
+- Notification History
+- Blood Request History
 
 ---
 
-## Non Functional Requirements
+## Admin Features
 
-- Mobile responsive
-- Secure
-- Fast
-- Real-time
-- REST API
-- Clean UI
-- Dark mode support
+- Dashboard
+- Blood Inventory Management
+- Upload Inventory Data
+- Update Blood Stock
+- Hospital Management
+- Approve Emergency Requests
+- Reject Emergency Requests
+- Receive Live Emergency Alerts
+- View Request Analytics
+
+---
+
+# Non-Functional Requirements
+
+- Fully Responsive Design
+- Mobile-First UI
+- Secure Authentication
+- High Performance
+- Real-Time Communication
+- RESTful API Architecture
+- Clean and Modern User Interface
+- Scalable Architecture
+- Accessible Design
+- Maintainable Codebase
+
+---
+
+# Technology Overview
+
+Frontend
+
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS
+
+Backend
+
+- Node.js
+- Express.js
+
+Database
+
+- MongoDB Atlas
+
+Real-Time Communication
+
+- Socket.IO
+
+Maps
+
+- Google Maps JavaScript API
+
+Deployment
+
+- Vercel
+- Render

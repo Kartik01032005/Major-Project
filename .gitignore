@@ -1,20 +1,85 @@
-# Environment variables
-.env
-.env.*
+# ==========================
+# Dependencies
+# ==========================
 
-# Node modules
 node_modules/
 
-# Build output
+# ==========================
+# Environment Variables
+# ==========================
+
+.env
+.env.*
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+
+# ==========================
+# Next.js
+# ==========================
+
+.next/
+out/
+
+# ==========================
+# Build Output
+# ==========================
+
 dist/
 build/
 
+# ==========================
 # Logs
+# ==========================
+
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# VS Code settings (optional)
+# ==========================
+# Runtime Files
+# ==========================
+
+*.pid
+*.seed
+*.pid.lock
+
+# ==========================
+# Coverage
+# ==========================
+
+coverage/
+
+# ==========================
+# Cache
+# ==========================
+
+.cache/
+.parcel-cache/
+
+# ==========================
+# IDE
+# ==========================
+
 .vscode/
+.idea/
 
-# OS files
+# ==========================
+# Operating System Files
+# ==========================
+
 .DS_Store
 Thumbs.db
+
+# ==========================
+# Uploads (Optional)
+# ==========================
+
+uploads/
+
+# Ignore uploaded files if you store them locally.
+# Remove this rule if uploads should be tracked.

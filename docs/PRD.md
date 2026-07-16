@@ -1,87 +1,212 @@
-# Product Requirements Document
+# Product Requirements Document (PRD)
 
-## Authentication
+# Project Name
 
-User can
+BloodLink – Smart Blood Donor Finder
+
+---
+
+# Product Goal
+
+Develop a secure, responsive, real-time web application that helps patients quickly find blood donors and nearby blood banks during emergencies while allowing blood banks to efficiently manage their blood inventory.
+
+---
+
+# User Roles
+
+## User
+
+A normal user can:
 
 - Register
 - Login
+- Manage Profile
+- Request Blood
+- Receive Notifications
+- View Nearby Blood Banks
+- Navigate using Google Maps
+
+---
+
+## Admin (Blood Bank)
+
+An administrator can:
+
+- Login
+- Manage Blood Inventory
+- Upload Blood Data
+- Update Blood Stock
+- Manage Hospitals
+- Receive Emergency Requests
+- Approve Requests
+- Reject Requests
+
+---
+
+# Authentication
+
+## Features
+
+- User Registration
+- Secure Login
 - Logout
+- JWT Authentication
+- Role-Based Access
 
-Acceptance Criteria
+### Acceptance Criteria
 
-- Password hashed
-- JWT generated
-- Role stored
-
----
-
-## User Dashboard
-
-Displays
-
-- Notifications
-- Blood banks nearby
-- Emergency requests
-- Profile
+- Passwords must be encrypted using bcrypt.
+- JWT token generated after login.
+- Roles stored securely.
+- Protected routes cannot be accessed without authentication.
 
 ---
 
-## Emergency Request
+# User Dashboard
 
-Fields
+The dashboard should display:
+
+- Welcome Section
+- User Profile
+- Blood Group
+- Notification Panel
+- Active Emergency Requests
+- Nearby Blood Banks
+- Google Maps
+- Emergency Request Button
+
+### Acceptance Criteria
+
+- Fully responsive.
+- Real-time notification updates.
+- Fast page loading.
+
+---
+
+# Emergency Blood Request
+
+Users should be able to create an emergency request.
+
+Required Fields
 
 - Blood Group
 - State
 - District
-- Hospital
+- Hospital Name
 - Exact Address
 - Contact Number
 
-Expected
+### Expected Behaviour
 
-- Save request
-- Notify all users
-- Notify admins
-
----
-
-## Blood Inventory
-
-Admin can
-
-- Add stock
-- Update stock
-- Delete stock
-
-Blood Groups
-
-A+
-A-
-B+
-B-
-AB+
-AB-
-O+
-O-
+- Store request in MongoDB.
+- Notify all nearby users.
+- Notify all blood banks.
+- Display request in Admin Dashboard.
+- Save request history.
 
 ---
 
-## Google Maps
+# Blood Inventory
 
-Show
+Admins should be able to:
 
-- User location
-- Nearby blood banks
-- Navigation
+- Add Blood Stock
+- Update Blood Stock
+- Delete Blood Stock
+- View Current Inventory
+
+Supported Blood Groups
+
+- A+
+- A-
+- B+
+- B-
+- AB+
+- AB-
+- O+
+- O-
+
+### Acceptance Criteria
+
+- Inventory updates instantly.
+- Changes reflected for all users.
+- Prevent negative stock values.
 
 ---
 
-## Notifications
+# Hospital Management
 
-Trigger when
+Admin can:
 
-- Emergency created
-- Admin approved
-- Admin rejected
-- Inventory updated
+- Add Hospital
+- Edit Hospital
+- Delete Hospital
+- View Hospital Details
+
+---
+
+# Google Maps
+
+Features
+
+- Detect Current User Location
+- Display Nearby Blood Banks
+- Display Nearby Hospitals
+- Navigate using Google Maps
+- Show Approved Blood Bank Location
+
+### Acceptance Criteria
+
+- Accurate location detection.
+- Interactive map.
+- Mobile friendly.
+
+---
+
+# Notifications
+
+Notifications should trigger when:
+
+- Emergency Request Created
+- Emergency Request Approved
+- Emergency Request Rejected
+- Blood Inventory Updated
+
+Delivery
+
+- Real-Time using Socket.IO
+- Future support for Push Notifications
+
+---
+
+# Security Requirements
+
+- JWT Authentication
+- bcrypt Password Hashing
+- Input Validation
+- Environment Variables
+- Secure API Access
+
+---
+
+# Performance Requirements
+
+- Mobile-first responsive UI
+- Fast page loading
+- Optimized API calls
+- Scalable architecture
+- Production-ready code
+
+---
+
+# Success Criteria
+
+The project is considered complete when:
+
+- User authentication works securely.
+- Blood inventory is managed successfully.
+- Emergency requests notify users and blood banks.
+- Google Maps displays nearby blood banks.
+- Notifications are delivered in real time.
+- Admin approvals are reflected immediately.
+- Application is responsive on desktop, tablet, and mobile.
