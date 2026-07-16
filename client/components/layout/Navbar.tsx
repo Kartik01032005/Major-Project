@@ -8,6 +8,8 @@ import { FiMenu, FiX, FiArrowRight } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import Button from "@/components/ui/Button";
 import { NavLink } from "@/types";
+import { useAuth } from "@/context";
+import { useRouter } from "next/navigation";
 
 const NAV_LINKS: NavLink[] = [
   { label: "Home", href: "/" },
@@ -17,6 +19,8 @@ const NAV_LINKS: NavLink[] = [
 ];
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
@@ -105,18 +109,34 @@ export default function Navbar() {
 
             {/* ── Desktop CTA ───────────────────────────────────── */}
             <div className="hidden md:flex items-center gap-3">
-              <Button variant="ghost" size="sm" href="/login">
-                Sign in
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                href="/register"
-                icon={<FiArrowRight size={13} />}
-                iconPosition="right"
-              >
-                Get started
-              </Button>
+              {user ? (
+                <>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    Hello, <span className="font-semibold text-slate-900 dark:text-white">{user.name.split(" ")[0]}</span>
+                  </span>
+                  <Button variant="outline" size="sm" href="/dashboard">
+                    Dashboard
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => { logout(); router.push("/"); }}>
+                    Sign out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" href="/login">
+                    Sign in
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    href="/register"
+                    icon={<FiArrowRight size={13} />}
+                    iconPosition="right"
+                  >
+                    Get started
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* ── Hamburger ─────────────────────────────────────── */}
@@ -237,12 +257,28 @@ export default function Navbar() {
 
               {/* Drawer Footer CTA */}
               <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                <Button variant="outline" size="md" href="/login" fullWidth>
-                  Sign in
-                </Button>
-                <Button variant="primary" size="md" href="/register" fullWidth>
-                  Get started free
-                </Button>
+                {user ? (
+                  <>
+                    <div className="px-4 py-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                      Logged in as <span className="font-semibold text-slate-900 dark:text-white">{user.name}</span>
+                    </div>
+                    <Button variant="primary" size="md" href="/dashboard" fullWidth onClick={() => setMobileOpen(false)}>
+                      Dashboard
+                    </Button>
+                    <Button variant="outline" size="md" onClick={() => { logout(); setMobileOpen(false); router.push("/"); }} fullWidth>
+                      Sign out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" size="md" href="/login" fullWidth onClick={() => setMobileOpen(false)}>
+                      Sign in
+                    </Button>
+                    <Button variant="primary" size="md" href="/register" fullWidth onClick={() => setMobileOpen(false)}>
+                      Get started free
+                    </Button>
+                  </>
+                )}
               </div>
             </motion.div>
           </>

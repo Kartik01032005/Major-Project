@@ -58,6 +58,8 @@ export const viewport: Viewport = {
   ],
 };
 
+import { AuthProvider } from "@/context";
+
 interface RootLayoutProps {
   children: React.ReactNode;
 }
@@ -66,11 +68,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col antialiased">
-        <Navbar />
-        <main className="flex-1 pt-16" id="main-content" role="main">
-          {children}
-        </main>
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          <main className="flex-1 pt-16" id="main-content" role="main">
+            {children}
+          </main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

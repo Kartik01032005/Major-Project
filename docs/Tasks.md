@@ -65,14 +65,26 @@
 
 ---
 
+## Sprint 2 – Authentication UI & Context
+
+- [x] AuthContext setup (client-side only, localStorage mock database + session persistence)
+- [x] Login Page UI (with validation, toggle password visibility, error alerts, loading state)
+- [x] Signup Page UI (with multi-field validation, Organization/Individual check boxes)
+- [x] Role Selection UI (tab-based picker inside registration page with dynamic inputs)
+- [x] Forgot Password Page UI (with request confirmation screen)
+- [x] Navbar integration (greetings, conditional button state updates, active session routing)
+
+---
+
 # 🚧 In Progress
 
-## Sprint 2 – Authentication UI (Planned)
+## Sprint 3 – Dashboard UI & Layout (Planned)
 
-- [ ] Login Page
-- [ ] Signup Page
-- [ ] Forgot Password Page
-- [ ] Role Selection
+- [ ] Dashboard Layout (Sidebar, Topbar)
+- [ ] User Profile Card
+- [ ] Emergency Request Flow Form
+- [ ] Recent Requests Table
+- [ ] Admin Inventory Table
 
 ---
 
@@ -207,15 +219,14 @@
 
 # Current Sprint
 
-Sprint 2
+Sprint 3
 
 Goal:
 
-- Build Login Page UI
-- Build Signup Page UI
-- Build Role Selection UI
-- AuthContext setup (client-side only, no backend calls yet)
+- Build User Dashboard UI
+- Build Admin Inventory UI
+- Setup client-side dashboard layouts
 
 Status:
 
-⚪ Not Started – Awaiting Sprint 2 instruction
+⚪ Not Started – Awaiting Sprint 3 instruction
