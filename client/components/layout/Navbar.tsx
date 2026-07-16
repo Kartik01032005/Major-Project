@@ -10,6 +10,7 @@ import Button from "@/components/ui/Button";
 import { NavLink } from "@/types";
 import { useAuth } from "@/context";
 import { useRouter } from "next/navigation";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const NAV_LINKS: NavLink[] = [
   { label: "Home", href: "/" },
@@ -109,6 +110,7 @@ export default function Navbar() {
 
             {/* ── Desktop CTA ───────────────────────────────────── */}
             <div className="hidden md:flex items-center gap-3">
+              <ThemeToggle />
               {user ? (
                 <>
                   <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -140,43 +142,46 @@ export default function Navbar() {
             </div>
 
             {/* ── Hamburger ─────────────────────────────────────── */}
-            <button
-              id="mobile-menu-toggle"
-              className={[
-                "md:hidden w-9 h-9 flex items-center justify-center rounded-lg transition-colors",
-                "text-slate-600 hover:text-slate-900 hover:bg-slate-100",
-                "dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
-              ].join(" ")}
-              onClick={() => setMobileOpen((p) => !p)}
-              aria-expanded={mobileOpen}
-              aria-controls="mobile-menu"
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            >
-              <AnimatePresence mode="wait">
-                {mobileOpen ? (
-                  <motion.span
-                    key="close"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <FiX size={20} />
-                  </motion.span>
-                ) : (
-                  <motion.span
-                    key="open"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    <FiMenu size={20} />
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </button>
+            <div className="md:hidden flex items-center gap-2">
+              <ThemeToggle />
+              <button
+                id="mobile-menu-toggle"
+                className={[
+                  "w-9 h-9 flex items-center justify-center rounded-lg transition-colors",
+                  "text-slate-600 hover:text-slate-900 hover:bg-slate-100",
+                  "dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
+                ].join(" ")}
+                onClick={() => setMobileOpen((p) => !p)}
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              >
+                <AnimatePresence mode="wait">
+                  {mobileOpen ? (
+                    <motion.span
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <FiX size={20} />
+                    </motion.span>
+                  ) : (
+                    <motion.span
+                      key="open"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <FiMenu size={20} />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </button>
+            </div>
           </nav>
         </div>
       </header>

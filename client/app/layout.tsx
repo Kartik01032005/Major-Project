@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { ThemeProvider } from "@/components/ui/ThemeProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -66,15 +67,17 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="min-h-screen flex flex-col antialiased">
-        <AuthProvider>
-          <Navbar />
-          <main className="flex-1 pt-16" id="main-content" role="main">
-            {children}
-          </main>
-          <Footer />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <Navbar />
+            <main className="flex-1 pt-16" id="main-content" role="main">
+              {children}
+            </main>
+            <Footer />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
