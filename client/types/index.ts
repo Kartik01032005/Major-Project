@@ -96,3 +96,66 @@ export interface ApiResponse<T = unknown> {
   message: string;
   data?: T;
 }
+
+// ─── Emergency Request ────────────────────────────────────────────────────────
+
+export type RequestStatus = "pending" | "approved" | "rejected";
+
+export interface EmergencyRequest {
+  _id: string;
+  userId: string;
+  userName: string;
+  bloodGroup: BloodGroup;
+  state: string;
+  district: string;
+  hospitalName: string;
+  address: string;
+  contactNumber: string;
+  status: RequestStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Blood Inventory ──────────────────────────────────────────────────────────
+
+export interface BloodInventoryItem {
+  _id: string;
+  bloodGroup: BloodGroup;
+  units: number;
+  lastUpdated: string;
+}
+
+// ─── Hospital ─────────────────────────────────────────────────────────────────
+
+export interface Hospital {
+  _id: string;
+  name: string;
+  address: string;
+  state: string;
+  district: string;
+  phone: string;
+  createdAt: string;
+}
+
+// ─── Notification ─────────────────────────────────────────────────────────────
+
+export type NotificationType = "request_created" | "request_approved" | "request_rejected" | "inventory_updated" | "general";
+
+export interface Notification {
+  _id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+
+// ─── Dashboard Nav ────────────────────────────────────────────────────────────
+
+export interface DashboardNavItem {
+  label: string;
+  href: string;
+  icon: string;
+  roles: UserRole[];
+}

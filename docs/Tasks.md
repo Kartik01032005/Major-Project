@@ -119,7 +119,7 @@
 
 ### UI
 
-- [ ] Dark Mode Toggle
+- [x] Dark Mode Toggle
 - [ ] Loading Screens
 - [ ] Error Pages
 - [ ] 404 Page
