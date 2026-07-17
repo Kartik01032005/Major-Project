@@ -159,3 +159,33 @@ export interface DashboardNavItem {
   icon: string;
   roles: UserRole[];
 }
+
+// ─── Maps (Sprint 4) ──────────────────────────────────────────────────────────
+
+export interface LatLng {
+  lat: number;
+  lng: number;
+}
+
+export interface MapBloodBank {
+  id: string;
+  name: string;
+  address: string;
+  district: string;
+  state: string;
+  phone: string;
+  distance: string;
+  available: BloodGroup[];
+  open: boolean;
+  position: LatLng;
+}
+
+export interface MapHospital {
+  id: string;
+  name: string;
+  address: string;
+  district: string;
+  state: string;
+  phone: string;
+  position: LatLng;
+}

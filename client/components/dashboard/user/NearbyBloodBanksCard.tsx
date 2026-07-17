@@ -1,23 +1,14 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { FiMap, FiPhone, FiNavigation, FiMapPin } from "react-icons/fi";
+import { FiMap, FiPhone, FiNavigation, FiMapPin, FiExternalLink } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
+import MapContainer from "@/components/map/MapContainer";
+import { MapBloodBank, BloodGroup } from "@/types";
 
-interface BloodBank {
-  id: string;
-  name: string;
-  address: string;
-  district: string;
-  state: string;
-  phone: string;
-  distance: string;
-  available: string[];
-  open: boolean;
-}
-
-const MOCK_BLOOD_BANKS: BloodBank[] = [
+const MOCK_BLOOD_BANKS: MapBloodBank[] = [
   {
     id: "bb-1",
     name: "Apollo Blood Bank",
@@ -28,6 +19,7 @@ const MOCK_BLOOD_BANKS: BloodBank[] = [
     distance: "2.4 km",
     available: ["A+", "O+", "B+", "AB+"],
     open: true,
+    position: { lat: 12.9016, lng: 77.5945 },
   },
   {
     id: "bb-2",
@@ -39,6 +31,7 @@ const MOCK_BLOOD_BANKS: BloodBank[] = [
     distance: "4.1 km",
     available: ["O+", "O-", "B-"],
     open: true,
+    position: { lat: 12.9592, lng: 77.6493 },
   },
   {
     id: "bb-3",
@@ -50,6 +43,7 @@ const MOCK_BLOOD_BANKS: BloodBank[] = [
     distance: "6.8 km",
     available: ["A-", "AB-", "B+"],
     open: false,
+    position: { lat: 12.2958, lng: 76.6394 },
   },
 ];
 
@@ -65,10 +59,13 @@ const BLOOD_GROUP_COLORS: Record<string, string> = {
 };
 
 export default function NearbyBloodBanksCard() {
-  const openMaps = (bank: BloodBank) => {
+  const openMaps = (bank: MapBloodBank) => {
     const query = encodeURIComponent(`${bank.name}, ${bank.address}, ${bank.district}`);
     window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, "_blank");
   };
+
+  // Center on Bangalore Apollo for default card view
+  const defaultCenter = { lat: 12.9016, lng: 77.5945 };
 
   return (
     <motion.div
@@ -85,30 +82,22 @@ export default function NearbyBloodBanksCard() {
           </span>
           <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Nearby Blood Banks</h3>
         </div>
-        <span className="text-[11px] text-slate-400">Mock data · Maps coming soon</span>
+        <Link
+          href="/dashboard/nearby"
+          className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline flex items-center gap-1"
+        >
+          View Full Map <FiExternalLink size={12} />
+        </Link>
       </div>
 
-      {/* Map placeholder */}
-      <div className="relative h-32 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center overflow-hidden">
-        {/* Grid pattern */}
-        <div className="absolute inset-0 bg-grid opacity-50" />
-        <div className="relative z-10 flex flex-col items-center text-slate-400 dark:text-slate-500">
-          <FiMap size={28} className="mb-1.5" />
-          <p className="text-xs font-medium">Google Maps Integration</p>
-          <p className="text-[10px]">Coming in Maps Sprint</p>
-        </div>
-        {/* Decorative pins */}
-        {[
-          { top: "30%", left: "25%", bg: "bg-red-600" },
-          { top: "50%", left: "55%", bg: "bg-blue-600" },
-          { top: "20%", left: "70%", bg: "bg-emerald-600" },
-        ].map((pin, i) => (
-          <div
-            key={i}
-            className={`absolute w-4 h-4 rounded-full ${pin.bg} border-2 border-white dark:border-slate-900 shadow-md`}
-            style={{ top: pin.top, left: pin.left }}
-          />
-        ))}
+      {/* Mini Interactive Map container */}
+      <div className="relative h-44 border-b border-slate-100 dark:border-slate-800">
+        <MapContainer
+          center={defaultCenter}
+          zoom={12}
+          height="h-full"
+          bloodBanks={MOCK_BLOOD_BANKS}
+        />
       </div>
 
       {/* Bank List */}

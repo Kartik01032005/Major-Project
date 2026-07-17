@@ -78,44 +78,65 @@
 
 # 🚧 In Progress
 
-## Sprint 3 – Dashboard UI & Layout (Planned)
+## Sprint 3 – Dashboard UI & Layout
 
-- [ ] Dashboard Layout (Sidebar, Topbar)
-- [ ] User Profile Card
-- [ ] Emergency Request Flow Form
-- [ ] Recent Requests Table
-- [ ] Admin Inventory Table
+- [x] Dashboard Layout (Sidebar, Topbar, layout.tsx shell with ProtectedRoute)
+- [x] DashboardContext (localStorage mock: requests, inventory, hospitals, notifications)
+- [x] ProtectedRoute component (auth guard + role redirect)
+- [x] DashboardSidebar (collapsible desktop + mobile slide-over drawer)
+- [x] DashboardTopbar (page title, notification bell dropdown, theme toggle, avatar)
+- [x] WelcomeBanner (greeting, blood group badge, donor toggle, emergency CTA)
+- [x] ProfileCard (avatar header strip, info grid, inline phone edit)
+- [x] EmergencyRequestModal (blood group grid, full validation, success state)
+- [x] ActiveRequestsCard (user's requests with status badges)
+- [x] NotificationsPanel (typed notifications, mark-read, relative timestamps)
+- [x] NearbyBloodBanksCard (mock banks, navigate/call buttons, map placeholder)
+- [x] User Dashboard page (/dashboard) — assembled all user components
+- [x] AdminStatsCards (4 animated stat cards from live context data)
+- [x] BloodInventoryTable (CRUD: +/- buttons, inline edit, stock level bar)
+- [x] EmergencyRequestsTable (filter tabs, expandable rows, approve/reject)
+- [x] HospitalManagement (add/edit modal, delete confirmation)
+- [x] Admin Dashboard page (/dashboard/admin) — assembled all admin components
+- [x] New TypeScript types: EmergencyRequest, BloodInventoryItem, Hospital, Notification, DashboardNavItem
+
+## Sprint 4 – Maps Integration
+
+- [x] Google Maps JavaScript API setup (useGoogleMaps script loader)
+- [x] Custom SVG Marker Pins (Droplet and Crosshair styles)
+- [x] Interactive Info Windows with Navigation/Call buttons
+- [x] Geolocation tracking (useGeolocation hook with user position dot)
+- [x] Full-page Split Panel Nearby Map Route (`/dashboard/nearby`)
+- [x] Synchronized card/marker interactions
+- [x] Admin Hospital Map View (`/dashboard/admin/hospitals`)
+- [x] Small inline interactive map card in dashboard
+- [x] Graceful fallback UI for missing/invalid API key
+
+---
+
+## Sprint 5 – Backend Setup & JWT Auth
+
+- [x] Initialize Express server in `server/`
+- [x] Connect Mongoose with MongoDB
+- [x] Implement JWT registration & login APIs
+- [x] Setup Authorization middleware
+- [x] TypeScript compiler configurations
+
+---
+
+# 🚧 In Progress
+
+## Sprint 6 – Backend User & Emergency APIs (Planned)
+
+- [ ] Create Emergency Request API
+- [ ] Implement Get Emergency Requests API
+- [ ] Implement Approve/Reject Request APIs
+- [ ] Add User Profile update API
 
 ---
 
 # 📋 Pending
 
 ## Frontend
-
-### User Dashboard
-
-- [ ] Dashboard Layout
-- [ ] Profile Card
-- [ ] Emergency Button
-- [ ] Nearby Blood Banks
-- [ ] Notification Panel
-- [ ] Request History
-
-### Admin Dashboard
-
-- [ ] Dashboard Layout
-- [ ] Blood Inventory
-- [ ] Inventory Table
-- [ ] Hospital Management
-- [ ] Emergency Requests
-- [ ] Analytics Cards
-
-### Maps
-
-- [ ] Google Maps Integration
-- [ ] Blood Bank Locations
-- [ ] Hospital Locations
-- [ ] Navigation
 
 ### UI
 
@@ -130,10 +151,11 @@
 
 ## Authentication
 
-- [ ] Register API
-- [ ] Login API
-- [ ] JWT Authentication
-- [ ] Authorization Middleware
+- [x] Register API
+- [x] Login API
+- [x] JWT Authentication
+- [x] Authorization Middleware
+
 
 ## User APIs
 
@@ -219,14 +241,14 @@
 
 # Current Sprint
 
-Sprint 3
+Sprint 6
 
 Goal:
 
-- Build User Dashboard UI
-- Build Admin Inventory UI
-- Setup client-side dashboard layouts
+- Implement Emergency Request Creation, Retrieval, and Approval APIs
+- Add Profile updates endpoint
+- Establish live notifications with Socket.io foundation
 
 Status:
 
-⚪ Not Started – Awaiting Sprint 3 instruction
+⚪ Not Started – Awaiting Sprint 6 instruction

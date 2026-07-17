@@ -69,12 +69,14 @@ const DEFAULT_USERS = [
   },
 ];
 
+import { authService } from "@/services";
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Initialize DB if not present
+  // Initialize DB if not present and verify existing session with backend
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUsers = localStorage.getItem(LOCAL_STORAGE_USERS_KEY);
@@ -82,51 +84,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(DEFAULT_USERS));
       }
 
-      const savedToken = localStorage.getItem(LOCAL_STORAGE_TOKEN_KEY);
-      const savedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
+      const verifySession = async () => {
+        const savedToken = localStorage.getItem(LOCAL_STORAGE_TOKEN_KEY);
+        const savedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
 
-      if (savedToken && savedUser) {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-      }
-      setLoading(false);
+        if (savedToken) {
+          try {
+            // Set token state early for interceptor to pick up
+            setToken(savedToken);
+            const res = await authService.getMe();
+            if (res.success && res.data) {
+              setUser(res.data);
+              localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(res.data));
+            } else {
+              logout();
+            }
+          } catch (err: any) {
+            // Expired or bad token: log out
+            if (err.response?.status === 401) {
+              logout();
+            } else if (savedUser) {
+              // Server is offline, fallback to cached user details for seamless offline client test
+              setUser(JSON.parse(savedUser));
+            }
+          }
+        }
+        setLoading(false);
+      };
+
+      verifySession();
     }
   }, []);
 
   const login = async (email: string, password: string): Promise<ApiResponse<{ token: string; user: User }>> => {
-    // Simulate server latency
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      const res = await authService.login(email, password);
+      
+      if (res.success && res.data) {
+        const { token: apiToken, user: apiUser } = res.data;
 
-    const storedUsersJson = localStorage.getItem(LOCAL_STORAGE_USERS_KEY) || "[]";
-    const storedUsers = JSON.parse(storedUsersJson);
+        setUser(apiUser);
+        setToken(apiToken);
+        localStorage.setItem(LOCAL_STORAGE_TOKEN_KEY, apiToken);
+        localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(apiUser));
 
-    const foundUser = storedUsers.find((u: any) => u.email.toLowerCase() === email.toLowerCase());
-
-    if (!foundUser) {
-      return { success: false, message: "User account not found." };
+        return {
+          success: true,
+          message: res.message || "Login successful.",
+          data: { token: apiToken, user: apiUser },
+        };
+      }
+      return { success: false, message: res.message || "Invalid credentials." };
+    } catch (err: any) {
+      const errMsg = err.response?.data?.message || err.message || "Login failed. Please try again.";
+      return { success: false, message: errMsg };
     }
-
-    if (foundUser.password !== password) {
-      return { success: false, message: "Invalid credentials. Please try again." };
-    }
-
-    // Exclude password from the public user object
-    const { password: _, ...userWithoutPassword } = foundUser;
-    const mockToken = `mock-jwt-token-${foundUser._id}-${Date.now()}`;
-
-    // Update context state
-    setUser(userWithoutPassword as User);
-    setToken(mockToken);
-
-    // Save to localStorage
-    localStorage.setItem(LOCAL_STORAGE_TOKEN_KEY, mockToken);
-    localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(userWithoutPassword));
-
-    return {
-      success: true,
-      message: "Login successful.",
-      data: { token: mockToken, user: userWithoutPassword as User },
-    };
   };
 
   const register = async (userData: {
@@ -143,53 +155,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       longitude: number;
     };
   }): Promise<ApiResponse<null>> => {
-    // Simulate server latency
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const storedUsersJson = localStorage.getItem(LOCAL_STORAGE_USERS_KEY) || "[]";
-    const storedUsers = JSON.parse(storedUsersJson);
-
-    const emailExists = storedUsers.some((u: any) => u.email.toLowerCase() === userData.email.toLowerCase());
-    if (emailExists) {
-      return { success: false, message: "Email is already registered." };
+    try {
+      const regRes = await authService.register(userData);
+      
+      if (regRes.success) {
+        // Automatically login user after registration
+        const logRes = await login(userData.email, userData.password || "password123");
+        if (logRes.success) {
+          return {
+            success: true,
+            message: "Account created successfully and logged in.",
+          };
+        }
+      }
+      return { success: false, message: regRes.message || "Registration failed." };
+    } catch (err: any) {
+      const errMsg = err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || err.message || "Registration failed.";
+      return { success: false, message: errMsg };
     }
-
-    // Format new user
-    const newUser = {
-      _id: `user-${Date.now()}`,
-      name: userData.name,
-      email: userData.email,
-      phone: userData.phone,
-      password: userData.password || "password123",
-      bloodGroup: userData.bloodGroup || ("O+" as BloodGroup),
-      role: userData.role,
-      isAvailableDonor: userData.role === "user", // Available by default if individual
-      location: userData.location || {
-        state: "Karnataka",
-        district: "Mysore",
-        latitude: 12.2958,
-        longitude: 76.6394,
-      },
-      createdAt: new Date().toISOString(),
-    };
-
-    // Save back to db array
-    storedUsers.push(newUser);
-    localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(storedUsers));
-
-    // Automatically log user in after registration
-    const { password: _, ...userWithoutPassword } = newUser;
-    const mockToken = `mock-jwt-token-${newUser._id}-${Date.now()}`;
-
-    setUser(userWithoutPassword as User);
-    setToken(mockToken);
-    localStorage.setItem(LOCAL_STORAGE_TOKEN_KEY, mockToken);
-    localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(userWithoutPassword));
-
-    return {
-      success: true,
-      message: "Account created successfully.",
-    };
   };
 
   const logout = () => {
@@ -205,6 +188,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
