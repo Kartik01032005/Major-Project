@@ -76,8 +76,6 @@
 
 ---
 
-# 🚧 In Progress
-
 ## Sprint 3 – Dashboard UI & Layout
 
 - [x] Dashboard Layout (Sidebar, Topbar, layout.tsx shell with ProtectedRoute)
@@ -123,14 +121,13 @@
 
 ---
 
-# 🚧 In Progress
+## Sprint 6 – Backend User & Emergency APIs
 
-## Sprint 6 – Backend User & Emergency APIs (Planned)
-
-- [ ] Create Emergency Request API
-- [ ] Implement Get Emergency Requests API
-- [ ] Implement Approve/Reject Request APIs
-- [ ] Add User Profile update API
+- [x] Create Emergency Request API
+- [x] Implement Get Emergency Requests API
+- [x] Implement Approve/Reject Request APIs
+- [x] Add User Profile update API
+- [x] Establish live notifications with Socket.io foundation
 
 ---
 
@@ -159,16 +156,16 @@
 
 ## User APIs
 
-- [ ] Get Profile
-- [ ] Update Profile
-- [ ] Notifications API
+- [x] Get Profile
+- [x] Update Profile
+- [x] Notifications API
 
 ## Emergency APIs
 
-- [ ] Create Request
-- [ ] Get Requests
-- [ ] Approve Request
-- [ ] Reject Request
+- [x] Create Request
+- [x] Get Requests
+- [x] Approve Request
+- [x] Reject Request
 
 ## Inventory APIs
 
@@ -183,27 +180,27 @@
 
 ## Notification APIs
 
-- [ ] Socket.IO
-- [ ] Live Notifications
+- [x] Socket.IO
+- [x] Live Notifications
 
 ---
 
 # Database
 
-- [ ] User Schema
+- [x] User Schema
 - [ ] Inventory Schema
 - [ ] Hospital Schema
-- [ ] Notification Schema
-- [ ] Emergency Request Schema
+- [x] Notification Schema
+- [x] Emergency Request Schema
 
 ---
 
 # Security
 
-- [ ] Password Hashing
-- [ ] JWT
-- [ ] Input Validation
-- [ ] Environment Variables
+- [x] Password Hashing
+- [x] JWT
+- [x] Input Validation
+- [x] Environment Variables
 - [ ] Rate Limiting
 - [ ] CORS Configuration
 
@@ -241,14 +238,12 @@
 
 # Current Sprint
 
-Sprint 6
+None
 
 Goal:
 
-- Implement Emergency Request Creation, Retrieval, and Approval APIs
-- Add Profile updates endpoint
-- Establish live notifications with Socket.io foundation
+All planned backend sprints are completed.
 
 Status:
 
-⚪ Not Started – Awaiting Sprint 6 instruction
+🟢 Completed

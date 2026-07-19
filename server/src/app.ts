@@ -2,6 +2,9 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import emergencyRoutes from "./routes/emergencyRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -19,6 +22,10 @@ app.get("/api/health", (req: Request, res: Response) => {
 
 // API Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/emergency", emergencyRoutes);
+app.use("/api/notifications", notificationRoutes);
+
 
 // Page Not Found route
 app.use((req: Request, res: Response) => {

@@ -34,3 +34,12 @@ export const authGuard = async (req: Request, res: Response, next: NextFunction)
     res.status(401).json({ success: false, message: "Not authorized, invalid token" });
   }
 };
+
+export const adminGuard = (req: Request, res: Response, next: NextFunction): void => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ success: false, message: "Access denied: Admins only" });
+  }
+};
+
