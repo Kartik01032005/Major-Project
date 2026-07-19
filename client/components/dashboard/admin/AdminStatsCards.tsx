@@ -10,8 +10,8 @@ export default function AdminStatsCards() {
   const { inventory, requests, hospitals } = useDashboard();
 
   const totalUnits = inventory.reduce((sum, item) => sum + item.units, 0);
-  const activeRequests = requests.filter((r) => r.status === "pending").length;
-  const pendingApprovals = requests.filter((r) => r.status === "pending").length;
+  const activeRequests = requests.filter((r) => r.status === "Pending").length;
+  const pendingApprovals = requests.filter((r) => r.status === "Pending").length;
 
   const stats = [
     {

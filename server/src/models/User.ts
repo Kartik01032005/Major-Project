@@ -16,7 +16,9 @@ const UserSchema = new Schema<IUser>({
   phone: { type: String, required: true, unique: true, trim: true },
   bloodGroup: {
     type: String,
-    required: true,
+    required: function(this: any) {
+      return this.role === "user";
+    },
     enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
   },
   role: { type: String, required: true, enum: ["user", "admin"], default: "user" },

@@ -2,15 +2,16 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiAlertCircle, FiFilter, FiCheckCircle, FiXCircle, FiClock, FiMapPin, FiPhone, FiUser } from "react-icons/fi";
+import { FiAlertCircle, FiCheckCircle, FiXCircle, FiClock, FiMapPin, FiPhone, FiUser, FiLoader } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useDashboard } from "@/context";
 import { RequestStatus, EmergencyRequest } from "@/types";
 
 const STATUS_CONFIG: Record<RequestStatus, { label: string; badge: string; icon: React.ReactNode }> = {
-  pending:  { label: "Pending",  badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",  icon: <FiClock size={12} /> },
-  approved: { label: "Approved", badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", icon: <FiCheckCircle size={12} /> },
-  rejected: { label: "Rejected", badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", icon: <FiXCircle size={12} /> },
+  Pending:   { label: "Pending",   badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",   icon: <FiClock size={12} /> },
+  Approved:  { label: "Approved",  badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", icon: <FiCheckCircle size={12} /> },
+  Rejected:  { label: "Rejected",  badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", icon: <FiXCircle size={12} /> },
+  Completed: { label: "Completed", badge: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400", icon: <FiCheckCircle size={12} /> },
 };
 
 const BLOOD_GROUP_COLORS: Record<string, string> = {
@@ -26,25 +27,48 @@ const BLOOD_GROUP_COLORS: Record<string, string> = {
 
 type FilterType = "all" | RequestStatus;
 
+function getRequesterName(req: EmergencyRequest): string {
+  if (typeof req.requestBy === "object" && req.requestBy !== null) {
+    return req.requestBy.name;
+  }
+  return "Unknown";
+}
+
+function getLocation(req: EmergencyRequest): string {
+  return `${req.district}, ${req.state}`;
+}
+
 export default function EmergencyRequestsTable() {
-  const { requests, updateRequestStatus } = useDashboard();
+  const { requests, updateRequestStatus, loadingRequests } = useDashboard();
   const [filter, setFilter] = useState<FilterType>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const filtered = filter === "all" ? requests : requests.filter((r) => r.status === filter);
   const counts = {
     all: requests.length,
-    pending: requests.filter((r) => r.status === "pending").length,
-    approved: requests.filter((r) => r.status === "approved").length,
-    rejected: requests.filter((r) => r.status === "rejected").length,
+    Pending:   requests.filter((r) => r.status === "Pending").length,
+    Approved:  requests.filter((r) => r.status === "Approved").length,
+    Rejected:  requests.filter((r) => r.status === "Rejected").length,
+    Completed: requests.filter((r) => r.status === "Completed").length,
   };
 
   const FILTERS: { key: FilterType; label: string }[] = [
-    { key: "all", label: `All (${counts.all})` },
-    { key: "pending", label: `Pending (${counts.pending})` },
-    { key: "approved", label: `Approved (${counts.approved})` },
-    { key: "rejected", label: `Rejected (${counts.rejected})` },
+    { key: "all",      label: `All (${counts.all})` },
+    { key: "Pending",  label: `Pending (${counts.Pending})` },
+    { key: "Approved", label: `Approved (${counts.Approved})` },
+    { key: "Rejected", label: `Rejected (${counts.Rejected})` },
   ];
+
+  const handleAction = async (id: string, action: "approved" | "rejected") => {
+    setActionLoading(id + action);
+    try {
+      await updateRequestStatus(id, action);
+      setExpandedId(null);
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   return (
     <motion.div
@@ -60,10 +84,13 @@ export default function EmergencyRequestsTable() {
             <FiAlertCircle size={15} />
           </span>
           <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Emergency Requests</h3>
-          {counts.pending > 0 && (
+          {counts.Pending > 0 && (
             <span className="ml-1 text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-red-600 text-white">
-              {counts.pending}
+              {counts.Pending}
             </span>
+          )}
+          {loadingRequests && (
+            <FiLoader size={14} className="ml-auto text-slate-400 animate-spin" />
           )}
         </div>
 
@@ -92,14 +119,22 @@ export default function EmergencyRequestsTable() {
           <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mb-3">
             <FiAlertCircle size={22} />
           </div>
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No {filter !== "all" ? filter : ""} requests</p>
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+            No {filter !== "all" ? filter.toLowerCase() : ""} requests
+          </p>
+          {loadingRequests && (
+            <p className="text-xs text-slate-400 mt-1">Loading requests...</p>
+          )}
         </div>
       ) : (
         <ul className="divide-y divide-slate-100 dark:divide-slate-800">
           {filtered.map((req, i) => {
-            const status = STATUS_CONFIG[req.status];
+            const statusCfg = STATUS_CONFIG[req.status] ?? STATUS_CONFIG.Pending;
             const bgColor = BLOOD_GROUP_COLORS[req.bloodGroup] ?? "";
             const isExpanded = expandedId === req._id;
+            const requesterName = getRequesterName(req);
+            const location = getLocation(req);
+
             return (
               <motion.li
                 key={req._id}
@@ -121,17 +156,17 @@ export default function EmergencyRequestsTable() {
                       </div>
                       {/* Info */}
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{req.hospitalName}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{req.hospital}</p>
                         <div className="flex items-center gap-1 text-xs text-slate-400">
-                          <FiUser size={11} /> {req.userName} ·
-                          <FiMapPin size={11} /> {req.district}, {req.state}
+                          <FiUser size={11} /> {requesterName} ·
+                          <FiMapPin size={11} /> {location}
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${status.badge}`}>
-                        {status.icon} {status.label}
+                      <span className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${statusCfg.badge}`}>
+                        {statusCfg.icon} {statusCfg.label}
                       </span>
                       <span className="text-[10px] text-slate-400 hidden sm:inline">
                         {new Date(req.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}
@@ -162,28 +197,44 @@ export default function EmergencyRequestsTable() {
                           </div>
                           <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                             <FaDroplet size={11} className="text-red-400" />
-                            <span><strong>Blood Group:</strong> {req.bloodGroup}</span>
+                            <span><strong>Blood Group:</strong> {req.bloodGroup} {req.unitsRequired ? `(${req.unitsRequired} units)` : ""}</span>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                             <FiClock size={13} className="text-slate-400" />
                             <span><strong>Submitted:</strong> {new Date(req.createdAt).toLocaleString("en-IN")}</span>
                           </div>
+                          {typeof req.requestBy === "object" && req.requestBy?.location && (
+                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                              <FiUser size={13} className="text-slate-400" />
+                              <span><strong>Requester Location:</strong> {req.requestBy.location.district}, {req.requestBy.location.state}</span>
+                            </div>
+                          )}
                         </div>
 
-                        {/* Action buttons (only for pending) */}
-                        {req.status === "pending" && (
+                        {/* Action buttons (only for Pending) */}
+                        {req.status === "Pending" && (
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => { updateRequestStatus(req._id, "approved"); setExpandedId(null); }}
-                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                              onClick={() => handleAction(req._id, "approved")}
+                              disabled={actionLoading === req._id + "approved"}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60 transition-colors"
                             >
-                              <FiCheckCircle size={13} /> Approve Request
+                              {actionLoading === req._id + "approved"
+                                ? <FiLoader size={13} className="animate-spin" />
+                                : <FiCheckCircle size={13} />
+                              }
+                              Approve Request
                             </button>
                             <button
-                              onClick={() => { updateRequestStatus(req._id, "rejected"); setExpandedId(null); }}
-                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-950/60 transition-colors"
+                              onClick={() => handleAction(req._id, "rejected")}
+                              disabled={actionLoading === req._id + "rejected"}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-950/60 disabled:opacity-60 transition-colors"
                             >
-                              <FiXCircle size={13} /> Reject
+                              {actionLoading === req._id + "rejected"
+                                ? <FiLoader size={13} className="animate-spin" />
+                                : <FiXCircle size={13} />
+                              }
+                              Reject
                             </button>
                           </div>
                         )}

@@ -89,15 +89,13 @@ function RegisterFormContent() {
       isValid = false;
     }
 
-    if (role === "admin") {
-      if (!state) {
-        tempErrors.state = "State is required.";
-        isValid = false;
-      }
-      if (!district) {
-        tempErrors.district = "District is required.";
-        isValid = false;
-      }
+    if (!state) {
+      tempErrors.state = "State is required.";
+      isValid = false;
+    }
+    if (!district) {
+      tempErrors.district = "District is required.";
+      isValid = false;
     }
 
     setErrors(tempErrors);
@@ -112,20 +110,19 @@ function RegisterFormContent() {
     setLoading(true);
     try {
       const payload = {
-        name: role === "admin" ? `${name} (${organizationName})` : name,
+        name,
+        ...(role === "admin" && { organizationName }),
         email,
         phone,
         password,
         role,
         ...(role === "user" && { bloodGroup }),
-        ...(role === "admin" && {
-          location: {
-            state,
-            district,
-            latitude: 12.305, // Default mock locations
-            longitude: 76.645,
-          }
-        })
+        location: {
+          state,
+          district,
+          latitude: 12.305, // Default mock locations
+          longitude: 76.645,
+        }
       };
 
       const response = await register(payload);
@@ -289,7 +286,7 @@ function RegisterFormContent() {
               required
             />
 
-            {role === "user" ? (
+            {role === "user" && (
               // User blood group fields
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -323,31 +320,31 @@ function RegisterFormContent() {
                   </select>
                 </div>
               </div>
-            ) : (
-              // Admin organization address fields
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="State"
-                  type="text"
-                  value={state}
-                  onChange={(e) => setState(e.target.value)}
-                  error={errors.state}
-                  placeholder="Karnataka"
-                  leftIcon={<FiMapPin size={16} />}
-                  required
-                />
-                <Input
-                  label="District"
-                  type="text"
-                  value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  error={errors.district}
-                  placeholder="Mysore"
-                  leftIcon={<FiMapPin size={16} />}
-                  required
-                />
-              </div>
             )}
+
+            {/* Address fields for both */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="State"
+                type="text"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                error={errors.state}
+                placeholder="Karnataka"
+                leftIcon={<FiMapPin size={16} />}
+                required
+              />
+              <Input
+                label="District"
+                type="text"
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                error={errors.district}
+                placeholder="Mysore"
+                leftIcon={<FiMapPin size={16} />}
+                required
+              />
+            </div>
           </motion.div>
         </AnimatePresence>
 

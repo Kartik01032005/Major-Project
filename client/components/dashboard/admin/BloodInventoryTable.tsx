@@ -47,16 +47,16 @@ export default function BloodInventoryTable() {
     setEditing({ id: item._id, value: item.units });
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editing) return;
-    updateInventory(editing.id, editing.value);
+    await updateInventory(editing.id, editing.value);
     setEditing(null);
   };
 
   const cancelEdit = () => setEditing(null);
 
-  const adjust = (item: BloodInventoryItem, delta: number) => {
-    updateInventory(item._id, Math.max(0, item.units + delta));
+  const adjust = async (item: BloodInventoryItem, delta: number) => {
+    await updateInventory(item._id, Math.max(0, item.units + delta));
   };
 
   return (
@@ -135,7 +135,7 @@ export default function BloodInventoryTable() {
                   {/* Last Updated */}
                   <td className="px-4 py-3.5 hidden md:table-cell">
                     <span className="text-xs text-slate-400">
-                      {new Date(item.lastUpdated).toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      {new Date(item.updatedAt).toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </td>
 

@@ -12,7 +12,7 @@ export interface IUser extends Document {
   email: string;
   password?: string; // Optional so we can exclude it when reading data from database
   phone: string;
-  bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+  bloodGroup?: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
   role: "user" | "admin";
   isAvailableDonor: boolean;
   location: ILocation;

@@ -7,11 +7,11 @@ import { useDashboard } from "@/context";
 import { NotificationType } from "@/types";
 
 const TYPE_CONFIG: Record<NotificationType, { icon: React.ReactNode; color: string }> = {
-  request_created:  { icon: <FiAlertCircle size={15} />,  color: "text-amber-500 bg-amber-50 dark:bg-amber-900/30" },
-  request_approved: { icon: <FiCheckCircle size={15} />,  color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30" },
-  request_rejected: { icon: <FiXCircle size={15} />,      color: "text-red-600 bg-red-50 dark:bg-red-950/30" },
-  inventory_updated:{ icon: <FiPackage size={15} />,      color: "text-blue-600 bg-blue-50 dark:bg-blue-900/30" },
-  general:          { icon: <FiInfo size={15} />,          color: "text-slate-500 bg-slate-100 dark:bg-slate-800" },
+  Emergency:  { icon: <FiAlertCircle size={15} />,  color: "text-amber-500 bg-amber-50 dark:bg-amber-900/30" },
+  Approval:   { icon: <FiCheckCircle size={15} />,  color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30" },
+  Rejection:  { icon: <FiXCircle size={15} />,      color: "text-red-600 bg-red-50 dark:bg-red-950/30" },
+  Inventory:  { icon: <FiPackage size={15} />,      color: "text-blue-600 bg-blue-50 dark:bg-blue-900/30" },
+  System:     { icon: <FiInfo size={15} />,          color: "text-slate-500 bg-slate-100 dark:bg-slate-800" },
 };
 
 function timeAgo(date: string): string {
@@ -69,7 +69,7 @@ export default function NotificationsPanel() {
       ) : (
         <ul className="divide-y divide-slate-100 dark:divide-slate-800 max-h-80 overflow-y-auto">
           {notifications.map((n, i) => {
-            const cfg = TYPE_CONFIG[n.type] ?? TYPE_CONFIG.general;
+            const cfg = TYPE_CONFIG[n.type] ?? TYPE_CONFIG.System;
             return (
               <motion.li
                 key={n._id}
@@ -78,7 +78,7 @@ export default function NotificationsPanel() {
                 transition={{ delay: i * 0.05 }}
                 className={[
                   "flex items-start gap-3 px-5 py-3.5 cursor-pointer transition-colors",
-                  n.read
+                  n.isRead
                     ? "hover:bg-slate-50 dark:hover:bg-slate-800/50"
                     : "bg-red-50/40 dark:bg-red-950/10 hover:bg-red-50 dark:hover:bg-red-950/20",
                 ].join(" ")}
@@ -93,7 +93,7 @@ export default function NotificationsPanel() {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <p className={`text-xs font-semibold ${n.read ? "text-slate-700 dark:text-slate-300" : "text-slate-900 dark:text-white"}`}>
+                    <p className={`text-xs font-semibold ${n.isRead ? "text-slate-700 dark:text-slate-300" : "text-slate-900 dark:text-white"}`}>
                       {n.title}
                     </p>
                     <span className="text-[10px] text-slate-400 flex-shrink-0">{timeAgo(n.createdAt)}</span>
@@ -102,7 +102,7 @@ export default function NotificationsPanel() {
                 </div>
 
                 {/* Unread dot */}
-                {!n.read && (
+                {!n.isRead && (
                   <span className="mt-1.5 w-2 h-2 rounded-full bg-red-500 flex-shrink-0" aria-label="Unread" />
                 )}
               </motion.li>

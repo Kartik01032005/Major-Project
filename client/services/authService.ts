@@ -56,5 +56,10 @@ export const authService = {
     const response = await api.get<MeResponse>("/auth/me");
     return response.data;
   },
+
+  deleteAccount: async (): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete<{ success: boolean; message: string }>("/auth/delete-account");
+    return response.data;
+  },
 };
 export default authService;

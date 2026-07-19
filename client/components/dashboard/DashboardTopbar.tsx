@@ -146,17 +146,17 @@ export default function DashboardTopbar({ onMenuClick }: DashboardTopbarProps) {
                         key={n._id}
                         className={[
                           "w-full text-left px-4 py-3 transition-colors",
-                          n.read
+                          n.isRead
                             ? "bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60"
                             : "bg-red-50/50 dark:bg-red-950/20 hover:bg-red-50 dark:hover:bg-red-950/30",
                         ].join(" ")}
                         onClick={() => { markRead(n._id); }}
                       >
                         <div className="flex items-start gap-2">
-                          {!n.read && (
+                          {!n.isRead && (
                             <span className="mt-1.5 w-2 h-2 rounded-full bg-red-500 flex-shrink-0" aria-hidden="true" />
                           )}
-                          <div className={!n.read ? "" : "pl-4"}>
+                          <div className={!n.isRead ? "" : "pl-4"}>
                             <p className="text-xs font-semibold text-slate-900 dark:text-white">{n.title}</p>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{n.message}</p>
                             <p className="text-[10px] text-slate-400 mt-1">

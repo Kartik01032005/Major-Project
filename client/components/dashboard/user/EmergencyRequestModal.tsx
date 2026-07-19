@@ -45,10 +45,15 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
     ev.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    await new Promise((res) => setTimeout(res, 800)); // simulate latency
-    createRequest({ bloodGroup, state, district, hospitalName, address, contactNumber });
-    setLoading(false);
-    setSubmitted(true);
+    try {
+      await createRequest({ bloodGroup, state, district, hospitalName, address, contactNumber });
+      setSubmitted(true);
+    } catch (err: any) {
+      console.error("Failed to create emergency request:", err);
+      setErrors({ form: err?.response?.data?.message || "Failed to submit request. Please try again." });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClose = () => {

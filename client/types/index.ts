@@ -99,19 +99,29 @@ export interface ApiResponse<T = unknown> {
 
 // ─── Emergency Request ────────────────────────────────────────────────────────
 
-export type RequestStatus = "pending" | "approved" | "rejected";
+export type RequestStatus = "Pending" | "Approved" | "Rejected" | "Completed";
 
 export interface EmergencyRequest {
   _id: string;
-  userId: string;
-  userName: string;
+  requestBy: {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string;
+    location?: {
+      state: string;
+      district: string;
+    };
+  } | string;
   bloodGroup: BloodGroup;
+  unitsRequired?: number;
+  hospital: string;
   state: string;
   district: string;
-  hospitalName: string;
   address: string;
   contactNumber: string;
   status: RequestStatus;
+  approvedBy?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -120,9 +130,11 @@ export interface EmergencyRequest {
 
 export interface BloodInventoryItem {
   _id: string;
+  bloodBankId: string;
   bloodGroup: BloodGroup;
   units: number;
-  lastUpdated: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ─── Hospital ─────────────────────────────────────────────────────────────────
@@ -139,16 +151,17 @@ export interface Hospital {
 
 // ─── Notification ─────────────────────────────────────────────────────────────
 
-export type NotificationType = "request_created" | "request_approved" | "request_rejected" | "inventory_updated" | "general";
+export type NotificationType = "Emergency" | "Approval" | "Rejection" | "Inventory" | "System";
 
 export interface Notification {
   _id: string;
-  userId: string;
+  receiverId: string;
   type: NotificationType;
   title: string;
   message: string;
-  read: boolean;
+  isRead: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 // ─── Dashboard Nav ────────────────────────────────────────────────────────────

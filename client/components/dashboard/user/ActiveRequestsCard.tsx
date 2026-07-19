@@ -9,9 +9,10 @@ import { useDashboard } from "@/context";
 import { RequestStatus } from "@/types";
 
 const STATUS_CONFIG: Record<RequestStatus, { label: string; color: string; icon: React.ReactNode }> = {
-  pending:  { label: "Pending",  color: "bg-amber-100  text-amber-700  dark:bg-amber-900/30  dark:text-amber-400",  icon: <FiClock size={12} /> },
-  approved: { label: "Approved", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", icon: <FiCheckCircle size={12} /> },
-  rejected: { label: "Rejected", color: "bg-red-100    text-red-700    dark:bg-red-900/30    dark:text-red-400",    icon: <FiXCircle size={12} /> },
+  Pending:   { label: "Pending",   color: "bg-amber-100  text-amber-700  dark:bg-amber-900/30  dark:text-amber-400",  icon: <FiClock size={12} /> },
+  Approved:  { label: "Approved",  color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", icon: <FiCheckCircle size={12} /> },
+  Rejected:  { label: "Rejected",  color: "bg-red-100    text-red-700    dark:bg-red-900/30    dark:text-red-400",    icon: <FiXCircle size={12} /> },
+  Completed: { label: "Completed", color: "bg-slate-100  text-slate-700  dark:bg-slate-800     dark:text-slate-400",  icon: <FiCheckCircle size={12} /> },
 };
 
 const BLOOD_GROUP_COLORS: Record<string, string> = {
@@ -34,7 +35,12 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   const { requests } = useDashboard();
 
   // Show only this user's requests
-  const myRequests = requests.filter((r) => r.userId === user?._id);
+  const myRequests = requests.filter((r) => {
+    if (typeof r.requestBy === "object" && r.requestBy !== null) {
+      return r.requestBy._id === user?._id;
+    }
+    return r.requestBy === user?._id;
+  });
 
   return (
     <motion.div
@@ -101,7 +107,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                       {req.bloodGroup}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{req.hospitalName}</p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{req.hospital}</p>
                       <div className="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
                         <FiMapPin size={11} />
                         <span className="truncate">{req.district}, {req.state}</span>

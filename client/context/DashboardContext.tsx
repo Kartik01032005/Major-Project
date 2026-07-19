@@ -6,28 +6,13 @@ import {
   BloodInventoryItem,
   Hospital,
   Notification,
-  BloodGroup,
   RequestStatus,
 } from "@/types";
 import { useAuth } from "@/context/AuthContext";
+import { dashboardService } from "@/services/dashboardService";
 
-// ─── Storage Keys ─────────────────────────────────────────────────────────────
-const KEYS = {
-  requests: "bloodlink_emergency_requests",
-  inventory: "bloodlink_blood_inventory",
-  hospitals: "bloodlink_hospitals",
-  notifications: "bloodlink_notifications",
-} as const;
-
-// ─── Default Seed Data ────────────────────────────────────────────────────────
-const DEFAULT_INVENTORY: BloodInventoryItem[] = (
-  ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as BloodGroup[]
-).map((bg, i) => ({
-  _id: `inv-${bg.replace("+", "pos").replace("-", "neg")}`,
-  bloodGroup: bg,
-  units: [12, 5, 20, 3, 8, 2, 25, 10][i],
-  lastUpdated: new Date().toISOString(),
-}));
+// ─── Hospitals still use localStorage (no backend endpoint yet) ───────────────
+const HOSPITALS_KEY = "bloodlink_hospitals";
 
 const DEFAULT_HOSPITALS: Hospital[] = [
   {
@@ -59,54 +44,40 @@ const DEFAULT_HOSPITALS: Hospital[] = [
   },
 ];
 
-const DEFAULT_REQUESTS: EmergencyRequest[] = [
-  {
-    _id: "req-1",
-    userId: "demo-donor-id",
-    userName: "Rahul Kumar",
-    bloodGroup: "O+",
-    state: "Karnataka",
-    district: "Mysore",
-    hospitalName: "KMC Hospital",
-    address: "Dr. B. R. Ambedkar Circle, Mysore",
-    contactNumber: "9876543210",
-    status: "pending",
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  },
-];
+function loadHospitals(): Hospital[] {
+  if (typeof window === "undefined") return DEFAULT_HOSPITALS;
+  const stored = localStorage.getItem(HOSPITALS_KEY);
+  if (stored) return JSON.parse(stored) as Hospital[];
+  localStorage.setItem(HOSPITALS_KEY, JSON.stringify(DEFAULT_HOSPITALS));
+  return DEFAULT_HOSPITALS;
+}
 
-const DEFAULT_NOTIFICATIONS: Notification[] = [
-  {
-    _id: "notif-1",
-    userId: "demo-donor-id",
-    type: "general",
-    title: "Welcome to BloodLink!",
-    message: "Your account is active. You can now create emergency blood requests.",
-    read: false,
-    createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-  },
-  {
-    _id: "notif-2",
-    userId: "demo-donor-id",
-    type: "request_created",
-    title: "Emergency Request Submitted",
-    message: "Your request for O+ blood at KMC Hospital is pending review.",
-    read: true,
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  },
-];
+function saveHospitals(data: Hospital[]): void {
+  localStorage.setItem(HOSPITALS_KEY, JSON.stringify(data));
+}
 
 // ─── Context Types ────────────────────────────────────────────────────────────
 interface DashboardContextType {
   // Emergency Requests
   requests: EmergencyRequest[];
-  createRequest: (data: Omit<EmergencyRequest, "_id" | "userId" | "userName" | "status" | "createdAt" | "updatedAt">) => void;
-  updateRequestStatus: (id: string, status: RequestStatus) => void;
+  loadingRequests: boolean;
+  createRequest: (data: {
+    bloodGroup: string;
+    state: string;
+    district: string;
+    hospitalName: string;
+    address: string;
+    contactNumber: string;
+    unitsRequired?: number;
+  }) => Promise<void>;
+  updateRequestStatus: (id: string, status: "approved" | "rejected") => Promise<void>;
+  refreshRequests: () => Promise<void>;
 
   // Blood Inventory
   inventory: BloodInventoryItem[];
-  updateInventory: (id: string, units: number) => void;
+  loadingInventory: boolean;
+  updateInventory: (id: string, units: number) => Promise<void>;
+  refreshInventory: () => Promise<void>;
 
   // Hospitals
   hospitals: Hospital[];
@@ -116,128 +87,135 @@ interface DashboardContextType {
 
   // Notifications
   notifications: Notification[];
+  loadingNotifications: boolean;
   unreadCount: number;
-  markAllRead: () => void;
-  markRead: (id: string) => void;
+  markAllRead: () => Promise<void>;
+  markRead: (id: string) => Promise<void>;
+  refreshNotifications: () => Promise<void>;
 }
 
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
-
-// ─── Helper ───────────────────────────────────────────────────────────────────
-function loadOrSeed<T>(key: string, defaultData: T[]): T[] {
-  if (typeof window === "undefined") return defaultData;
-  const stored = localStorage.getItem(key);
-  if (stored) return JSON.parse(stored) as T[];
-  localStorage.setItem(key, JSON.stringify(defaultData));
-  return defaultData;
-}
-
-function save<T>(key: string, data: T[]): void {
-  localStorage.setItem(key, JSON.stringify(data));
-}
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
 
   const [requests, setRequests] = useState<EmergencyRequest[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+
   const [inventory, setInventory] = useState<BloodInventoryItem[]>([]);
+  const [loadingInventory, setLoadingInventory] = useState(false);
+
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
 
-  // Seed on mount
-  useEffect(() => {
-    setRequests(loadOrSeed(KEYS.requests, DEFAULT_REQUESTS));
-    setInventory(loadOrSeed(KEYS.inventory, DEFAULT_INVENTORY));
-    setHospitals(loadOrSeed(KEYS.hospitals, DEFAULT_HOSPITALS));
-    setNotifications(loadOrSeed(KEYS.notifications, DEFAULT_NOTIFICATIONS));
+  // ── Fetch Helpers ──────────────────────────────────────────────────────────
+
+  const refreshRequests = useCallback(async () => {
+    setLoadingRequests(true);
+    try {
+      const data = await dashboardService.getRequests();
+      setRequests(data);
+    } catch (err) {
+      console.error("Failed to load emergency requests:", err);
+    } finally {
+      setLoadingRequests(false);
+    }
   }, []);
 
-  // ── Emergency Requests ────────────────────────────────────────────────────
+  const refreshInventory = useCallback(async () => {
+    if (!user || user.role !== "admin") return;
+    setLoadingInventory(true);
+    try {
+      const data = await dashboardService.getInventory();
+      setInventory(data);
+    } catch (err) {
+      console.error("Failed to load inventory:", err);
+    } finally {
+      setLoadingInventory(false);
+    }
+  }, [user]);
+
+  const refreshNotifications = useCallback(async () => {
+    if (!user) return;
+    setLoadingNotifications(true);
+    try {
+      const data = await dashboardService.getNotifications();
+      setNotifications(data);
+    } catch (err) {
+      console.error("Failed to load notifications:", err);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  }, [user]);
+
+  // ── Seed on Login ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (user) {
+      setHospitals(loadHospitals());
+      refreshRequests();
+      refreshNotifications();
+      if (user.role === "admin") {
+        refreshInventory();
+      }
+    } else {
+      // Clear state on logout
+      setRequests([]);
+      setInventory([]);
+      setNotifications([]);
+      setHospitals([]);
+    }
+  }, [user, refreshRequests, refreshInventory, refreshNotifications]);
+
+  // ── Emergency Requests ─────────────────────────────────────────────────────
 
   const createRequest = useCallback(
-    (data: Omit<EmergencyRequest, "_id" | "userId" | "userName" | "status" | "createdAt" | "updatedAt">) => {
-      const newReq: EmergencyRequest = {
-        _id: `req-${Date.now()}`,
-        userId: user?._id ?? "unknown",
-        userName: user?.name ?? "Unknown User",
-        status: "pending",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+    async (data: {
+      bloodGroup: string;
+      state: string;
+      district: string;
+      hospitalName: string;
+      address: string;
+      contactNumber: string;
+      unitsRequired?: number;
+    }) => {
+      // Map frontend field `hospitalName` to backend field `hospitalName` (both supported)
+      await dashboardService.createRequest({
         ...data,
-      };
-      const newNotif: Notification = {
-        _id: `notif-${Date.now()}`,
-        userId: user?._id ?? "unknown",
-        type: "request_created",
-        title: "Emergency Request Submitted",
-        message: `Your request for ${data.bloodGroup} blood at ${data.hospitalName} is pending review.`,
-        read: false,
-        createdAt: new Date().toISOString(),
-      };
-
-      setRequests((prev) => {
-        const updated = [newReq, ...prev];
-        save(KEYS.requests, updated);
-        return updated;
+        hospital: data.hospitalName,
       });
-      setNotifications((prev) => {
-        const updated = [newNotif, ...prev];
-        save(KEYS.notifications, updated);
-        return updated;
-      });
+      await refreshRequests();
+      await refreshNotifications();
     },
-    [user]
+    [refreshRequests, refreshNotifications]
   );
 
-  const updateRequestStatus = useCallback((id: string, status: RequestStatus) => {
-    setRequests((prev) => {
-      const updated = prev.map((r) =>
-        r._id === id ? { ...r, status, updatedAt: new Date().toISOString() } : r
-      );
-      save(KEYS.requests, updated);
-
-      // Add approval/rejection notification
-      const req = updated.find((r) => r._id === id);
-      if (req) {
-        const notif: Notification = {
-          _id: `notif-${Date.now()}`,
-          userId: req.userId,
-          type: status === "approved" ? "request_approved" : "request_rejected",
-          title: status === "approved" ? "Request Approved ✅" : "Request Rejected ❌",
-          message:
-            status === "approved"
-              ? `Your blood request at ${req.hospitalName} has been approved.`
-              : `Your blood request at ${req.hospitalName} has been rejected.`,
-          read: false,
-          createdAt: new Date().toISOString(),
-        };
-        setNotifications((prev2) => {
-          const n = [notif, ...prev2];
-          save(KEYS.notifications, n);
-          return n;
-        });
+  const updateRequestStatus = useCallback(
+    async (id: string, action: "approved" | "rejected") => {
+      if (action === "approved") {
+        await dashboardService.approveRequest(id);
+      } else {
+        await dashboardService.rejectRequest(id);
       }
+      await refreshRequests();
+    },
+    [refreshRequests]
+  );
 
-      return updated;
-    });
-  }, []);
+  // ── Blood Inventory ────────────────────────────────────────────────────────
 
-  // ── Blood Inventory ───────────────────────────────────────────────────────
-
-  const updateInventory = useCallback((id: string, units: number) => {
-    setInventory((prev) => {
-      const updated = prev.map((item) =>
-        item._id === id
-          ? { ...item, units: Math.max(0, units), lastUpdated: new Date().toISOString() }
-          : item
+  const updateInventory = useCallback(
+    async (id: string, units: number) => {
+      const updated = await dashboardService.updateInventory(id, units);
+      setInventory((prev) =>
+        prev.map((item) => (item._id === id ? updated : item))
       );
-      save(KEYS.inventory, updated);
-      return updated;
-    });
-  }, []);
+    },
+    []
+  );
 
-  // ── Hospitals ────────────────────────────────────────────────────────────
+  // ── Hospitals (localStorage only) ─────────────────────────────────────────
 
   const addHospital = useCallback((data: Omit<Hospital, "_id" | "createdAt">) => {
     const newHosp: Hospital = {
@@ -247,7 +225,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
     setHospitals((prev) => {
       const updated = [newHosp, ...prev];
-      save(KEYS.hospitals, updated);
+      saveHospitals(updated);
       return updated;
     });
   }, []);
@@ -255,7 +233,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const updateHospital = useCallback((id: string, data: Partial<Omit<Hospital, "_id" | "createdAt">>) => {
     setHospitals((prev) => {
       const updated = prev.map((h) => (h._id === id ? { ...h, ...data } : h));
-      save(KEYS.hospitals, updated);
+      saveHospitals(updated);
       return updated;
     });
   }, []);
@@ -263,47 +241,54 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const deleteHospital = useCallback((id: string) => {
     setHospitals((prev) => {
       const updated = prev.filter((h) => h._id !== id);
-      save(KEYS.hospitals, updated);
+      saveHospitals(updated);
       return updated;
     });
   }, []);
 
-  // ── Notifications ─────────────────────────────────────────────────────────
+  // ── Notifications ──────────────────────────────────────────────────────────
 
-  const markAllRead = useCallback(() => {
-    setNotifications((prev) => {
-      const updated = prev.map((n) => ({ ...n, read: true }));
-      save(KEYS.notifications, updated);
-      return updated;
-    });
+  const markRead = useCallback(async (id: string) => {
+    try {
+      await dashboardService.markRead(id);
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+      );
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+    }
   }, []);
 
-  const markRead = useCallback((id: string) => {
-    setNotifications((prev) => {
-      const updated = prev.map((n) => (n._id === id ? { ...n, read: true } : n));
-      save(KEYS.notifications, updated);
-      return updated;
-    });
-  }, []);
+  const markAllRead = useCallback(async () => {
+    const unread = notifications.filter((n) => !n.isRead);
+    await Promise.all(unread.map((n) => dashboardService.markRead(n._id)));
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  }, [notifications]);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <DashboardContext.Provider
       value={{
         requests,
+        loadingRequests,
         createRequest,
         updateRequestStatus,
+        refreshRequests,
         inventory,
+        loadingInventory,
         updateInventory,
+        refreshInventory,
         hospitals,
         addHospital,
         updateHospital,
         deleteHospital,
         notifications,
+        loadingNotifications,
         unreadCount,
         markAllRead,
         markRead,
+        refreshNotifications,
       }}
     >
       {children}

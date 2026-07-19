@@ -131,6 +131,20 @@
 
 ---
 
+## Sprint 7 – Full-Stack Integration: Inventory, Emergency Requests & Notifications
+
+- [x] Blood Inventory backend: type, Mongoose model, controller, routes
+- [x] Register `/api/inventory` in Express app
+- [x] Align frontend TypeScript types with backend field names (`requestBy`, `hospital`, `isRead`, `receiverId`, status casing)
+- [x] Replace localStorage mock state in `DashboardContext` with real backend API calls
+- [x] Wire `createRequest`, `approveRequest`, `rejectRequest`, `updateInventory`, `markRead`, `markAllRead` to backend
+- [x] Fix `EmergencyRequestsTable` field names and add async approve/reject with loading states
+- [x] Fix `ActiveRequestsCard`, `NotificationsPanel`, `DashboardTopbar`, `BloodInventoryTable`, `AdminStatsCards`
+- [x] Create missing `/dashboard/admin/inventory` page (was returning 404)
+- [x] `npm run build` passes for both client and server with 0 TypeScript errors
+
+---
+
 # 📋 Pending
 
 ## Frontend
@@ -169,10 +183,10 @@
 
 ## Inventory APIs
 
-- [ ] Add Inventory
-- [ ] Update Inventory
-- [ ] Delete Inventory
-- [ ] Get Inventory
+- [x] Add Inventory
+- [x] Update Inventory
+- [x] Delete Inventory
+- [x] Get Inventory
 
 ## Hospital APIs
 
@@ -188,7 +202,7 @@
 # Database
 
 - [x] User Schema
-- [ ] Inventory Schema
+- [x] Inventory Schema
 - [ ] Hospital Schema
 - [x] Notification Schema
 - [x] Emergency Request Schema
@@ -238,11 +252,11 @@
 
 # Current Sprint
 
-None
+**Sprint 7** – Full-Stack Integration
 
 Goal:
 
-All planned backend sprints are completed.
+Connect frontend dashboard to MongoDB via REST API. Replace all localStorage mock data with live backend calls for inventory, emergency requests, and notifications.
 
 Status:
 
