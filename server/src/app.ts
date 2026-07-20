@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes.js";
 import emergencyRoutes from "./routes/emergencyRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import inventoryRoutes from "./routes/inventoryRoutes.js";
+import hospitalRoutes from "./routes/hospitalRoutes.js";
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/emergency", emergencyRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/inventory", inventoryRoutes);
+app.use("/api/hospitals", hospitalRoutes);
 
 
 // Page Not Found route

@@ -11,50 +11,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { dashboardService } from "@/services/dashboardService";
 
-// ─── Hospitals still use localStorage (no backend endpoint yet) ───────────────
-const HOSPITALS_KEY = "bloodlink_hospitals";
 
-const DEFAULT_HOSPITALS: Hospital[] = [
-  {
-    _id: "hosp-1",
-    name: "Apollo Hospital",
-    address: "Bannerghatta Road, JP Nagar",
-    state: "Karnataka",
-    district: "Bangalore",
-    phone: "9876500001",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    _id: "hosp-2",
-    name: "Manipal Hospital",
-    address: "Old Airport Road, Kodihalli",
-    state: "Karnataka",
-    district: "Bangalore",
-    phone: "9876500002",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    _id: "hosp-3",
-    name: "KMC Hospital",
-    address: "Dr. B. R. Ambedkar Circle",
-    state: "Karnataka",
-    district: "Mysore",
-    phone: "9876500003",
-    createdAt: new Date().toISOString(),
-  },
-];
-
-function loadHospitals(): Hospital[] {
-  if (typeof window === "undefined") return DEFAULT_HOSPITALS;
-  const stored = localStorage.getItem(HOSPITALS_KEY);
-  if (stored) return JSON.parse(stored) as Hospital[];
-  localStorage.setItem(HOSPITALS_KEY, JSON.stringify(DEFAULT_HOSPITALS));
-  return DEFAULT_HOSPITALS;
-}
-
-function saveHospitals(data: Hospital[]): void {
-  localStorage.setItem(HOSPITALS_KEY, JSON.stringify(data));
-}
 
 // ─── Context Types ────────────────────────────────────────────────────────────
 interface DashboardContextType {
@@ -81,9 +38,11 @@ interface DashboardContextType {
 
   // Hospitals
   hospitals: Hospital[];
-  addHospital: (data: Omit<Hospital, "_id" | "createdAt">) => void;
-  updateHospital: (id: string, data: Partial<Omit<Hospital, "_id" | "createdAt">>) => void;
-  deleteHospital: (id: string) => void;
+  loadingHospitals: boolean;
+  addHospital: (data: Omit<Hospital, "_id" | "createdAt">) => Promise<void>;
+  updateHospital: (id: string, data: Partial<Omit<Hospital, "_id" | "createdAt">>) => Promise<void>;
+  deleteHospital: (id: string) => Promise<void>;
+  refreshHospitals: () => Promise<void>;
 
   // Notifications
   notifications: Notification[];
@@ -107,10 +66,24 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [loadingInventory, setLoadingInventory] = useState(false);
 
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
+  const [loadingHospitals, setLoadingHospitals] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
 
   // ── Fetch Helpers ──────────────────────────────────────────────────────────
+
+  const refreshHospitals = useCallback(async () => {
+    if (!user) return;
+    setLoadingHospitals(true);
+    try {
+      const data = await dashboardService.getHospitals();
+      setHospitals(data);
+    } catch (err) {
+      console.error("Failed to load hospitals:", err);
+    } finally {
+      setLoadingHospitals(false);
+    }
+  }, [user]);
 
   const refreshRequests = useCallback(async () => {
     setLoadingRequests(true);
@@ -153,7 +126,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ── Seed on Login ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (user) {
-      setHospitals(loadHospitals());
+      refreshHospitals();
       refreshRequests();
       refreshNotifications();
       if (user.role === "admin") {
@@ -166,7 +139,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setNotifications([]);
       setHospitals([]);
     }
-  }, [user, refreshRequests, refreshInventory, refreshNotifications]);
+  }, [user, refreshHospitals, refreshRequests, refreshInventory, refreshNotifications]);
 
   // ── Emergency Requests ─────────────────────────────────────────────────────
 
@@ -217,33 +190,31 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // ── Hospitals (localStorage only) ─────────────────────────────────────────
 
-  const addHospital = useCallback((data: Omit<Hospital, "_id" | "createdAt">) => {
-    const newHosp: Hospital = {
-      _id: `hosp-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      ...data,
-    };
-    setHospitals((prev) => {
-      const updated = [newHosp, ...prev];
-      saveHospitals(updated);
-      return updated;
-    });
+  const addHospital = useCallback(async (data: Omit<Hospital, "_id" | "createdAt">) => {
+    try {
+      const newHosp = await dashboardService.addHospital(data);
+      setHospitals((prev) => [newHosp, ...prev]);
+    } catch (err) {
+      console.error("Failed to add hospital:", err);
+    }
   }, []);
 
-  const updateHospital = useCallback((id: string, data: Partial<Omit<Hospital, "_id" | "createdAt">>) => {
-    setHospitals((prev) => {
-      const updated = prev.map((h) => (h._id === id ? { ...h, ...data } : h));
-      saveHospitals(updated);
-      return updated;
-    });
+  const updateHospital = useCallback(async (id: string, data: Partial<Omit<Hospital, "_id" | "createdAt">>) => {
+    try {
+      const updated = await dashboardService.updateHospital(id, data);
+      setHospitals((prev) => prev.map((h) => (h._id === id ? updated : h)));
+    } catch (err) {
+      console.error("Failed to update hospital:", err);
+    }
   }, []);
 
-  const deleteHospital = useCallback((id: string) => {
-    setHospitals((prev) => {
-      const updated = prev.filter((h) => h._id !== id);
-      saveHospitals(updated);
-      return updated;
-    });
+  const deleteHospital = useCallback(async (id: string) => {
+    try {
+      await dashboardService.deleteHospital(id);
+      setHospitals((prev) => prev.filter((h) => h._id !== id));
+    } catch (err) {
+      console.error("Failed to delete hospital:", err);
+    }
   }, []);
 
   // ── Notifications ──────────────────────────────────────────────────────────
@@ -280,9 +251,11 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         updateInventory,
         refreshInventory,
         hospitals,
+        loadingHospitals,
         addHospital,
         updateHospital,
         deleteHospital,
+        refreshHospitals,
         notifications,
         loadingNotifications,
         unreadCount,

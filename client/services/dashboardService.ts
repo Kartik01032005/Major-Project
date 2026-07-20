@@ -3,6 +3,7 @@ import {
   EmergencyRequest,
   BloodInventoryItem,
   Notification,
+  Hospital,
 } from "@/types";
 
 
@@ -52,6 +53,26 @@ export const dashboardService = {
   markRead: async (id: string): Promise<Notification> => {
     const response = await api.put<{ success: boolean; data: Notification }>(`/notifications/read/${id}`);
     return response.data.data;
+  },
+
+  // Hospitals
+  getHospitals: async (): Promise<Hospital[]> => {
+    const response = await api.get<{ success: boolean; data: Hospital[] }>("/hospitals");
+    return response.data.data;
+  },
+
+  addHospital: async (data: Omit<Hospital, "_id" | "createdAt">): Promise<Hospital> => {
+    const response = await api.post<{ success: boolean; data: Hospital }>("/hospitals", data);
+    return response.data.data;
+  },
+
+  updateHospital: async (id: string, data: Partial<Omit<Hospital, "_id" | "createdAt">>): Promise<Hospital> => {
+    const response = await api.put<{ success: boolean; data: Hospital }>(`/hospitals/${id}`, data);
+    return response.data.data;
+  },
+
+  deleteHospital: async (id: string): Promise<void> => {
+    await api.delete(`/hospitals/${id}`);
   },
 };
 export default dashboardService;

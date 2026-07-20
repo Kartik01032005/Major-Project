@@ -145,6 +145,18 @@
 
 ---
 
+## Sprint 8 – Hospital APIs & Full-Stack Integration
+
+- [x] Create Hospital TypeScript type definition
+- [x] Create Mongoose Hospital model/schema
+- [x] Implement Hospital CRUD controller handlers
+- [x] Define Hospital endpoints with validation in router
+- [x] Wire dashboardService to backend `/api/hospitals` endpoints
+- [x] Integrate DashboardContext state and CRUD actions with real API calls
+- [x] Verify successful build compiles for server and client
+
+---
+
 # 📋 Pending
 
 ## Frontend
@@ -190,7 +202,7 @@
 
 ## Hospital APIs
 
-- [ ] CRUD Operations
+- [x] CRUD Operations
 
 ## Notification APIs
 
@@ -203,7 +215,7 @@
 
 - [x] User Schema
 - [x] Inventory Schema
-- [ ] Hospital Schema
+- [x] Hospital Schema
 - [x] Notification Schema
 - [x] Emergency Request Schema
 
@@ -252,11 +264,11 @@
 
 # Current Sprint
 
-**Sprint 7** – Full-Stack Integration
+**Sprint 8** – Hospital APIs & Full-Stack Integration
 
 Goal:
 
-Connect frontend dashboard to MongoDB via REST API. Replace all localStorage mock data with live backend calls for inventory, emergency requests, and notifications.
+Implement backend database APIs for Hospital CRUD operations and wire them to the frontend dashboards and Google Maps view, replacing the localStorage mock data logic.
 
 Status:
 
