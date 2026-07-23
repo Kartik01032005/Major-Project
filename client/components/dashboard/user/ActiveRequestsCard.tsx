@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth } from "@/context";
 import { useDashboard } from "@/context";
@@ -32,14 +32,24 @@ interface ActiveRequestsCardProps {
 
 export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardProps) {
   const { user } = useAuth();
-  const { requests } = useDashboard();
+  const { requests, refreshRequests, loadingRequests } = useDashboard();
+
+  useEffect(() => {
+    refreshRequests();
+  }, [refreshRequests]);
+
+  const currentUserId = user?._id || (user as any)?.id;
 
   // Show only this user's requests
   const myRequests = requests.filter((r) => {
+    if (!currentUserId) return false;
+    let reqUserId = "";
     if (typeof r.requestBy === "object" && r.requestBy !== null) {
-      return r.requestBy._id === user?._id;
+      reqUserId = r.requestBy._id || (r.requestBy as any).id || "";
+    } else if (typeof r.requestBy === "string") {
+      reqUserId = r.requestBy;
     }
-    return r.requestBy === user?._id;
+    return String(reqUserId) === String(currentUserId);
   });
 
   return (
@@ -60,6 +70,9 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
             <span className="ml-1 text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400">
               {myRequests.length}
             </span>
+          )}
+          {loadingRequests && (
+            <FiLoader size={14} className="ml-2 text-slate-400 animate-spin" />
           )}
         </div>
         <button

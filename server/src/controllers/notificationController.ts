@@ -42,7 +42,14 @@ export const markRead = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Ensure notification belongs to the logged-in user
-    if (notification.receiverId.toString() !== req.user._id.toString()) {
+    const recId = notification.receiverId as any;
+    const receiverIdStr = (typeof recId === "object" && recId !== null)
+      ? (recId._id || recId.id || recId).toString()
+      : String(recId);
+
+    const userIdStr = (req.user._id || (req.user as any).id).toString();
+
+    if (receiverIdStr !== userIdStr) {
       res.status(403).json({ success: false, message: "Not authorized to modify this notification" });
       return;
     }

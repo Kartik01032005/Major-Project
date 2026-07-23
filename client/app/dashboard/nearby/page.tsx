@@ -280,14 +280,21 @@ export default function NearbyPage() {
               </div>
             ) : (
               filtered.map((bank, i) => (
-                <motion.button
+                <motion.div
                   key={bank.id}
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
                   onClick={() => setSelectedId(bank.id === selectedId ? null : bank.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      setSelectedId(bank.id === selectedId ? null : bank.id);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                   className={[
-                    "w-full text-left rounded-2xl border p-4 transition-all",
+                    "w-full text-left rounded-2xl border p-4 transition-all cursor-pointer",
                     selectedId === bank.id
                       ? "border-red-500 bg-red-50/60 dark:bg-red-950/20 shadow-md"
                       : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-red-300 dark:hover:border-red-700 hover:shadow-sm",
@@ -344,7 +351,7 @@ export default function NearbyPage() {
                       <FiPhone size={11} /> Call
                     </a>
                   </div>
-                </motion.button>
+                </motion.div>
               ))
             )}
           </div>

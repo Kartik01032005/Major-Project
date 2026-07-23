@@ -62,10 +62,15 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       success: true,
       message: "Registration successful",
       data: {
+        _id: newUser._id,
         id: newUser._id,
         name: newUser.name,
         email: newUser.email,
+        phone: newUser.phone,
+        bloodGroup: newUser.bloodGroup,
         role: newUser.role,
+        isAvailableDonor: newUser.isAvailableDonor,
+        location: newUser.location,
       },
     });
   } catch (error: any) {

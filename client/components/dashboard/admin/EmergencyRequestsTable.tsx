@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiAlertCircle, FiCheckCircle, FiXCircle, FiClock, FiMapPin, FiPhone, FiUser, FiLoader } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
@@ -31,7 +31,7 @@ function getRequesterName(req: EmergencyRequest): string {
   if (typeof req.requestBy === "object" && req.requestBy !== null) {
     return req.requestBy.name;
   }
-  return "Unknown";
+  return "Unknown User";
 }
 
 function getLocation(req: EmergencyRequest): string {
@@ -39,18 +39,27 @@ function getLocation(req: EmergencyRequest): string {
 }
 
 export default function EmergencyRequestsTable() {
-  const { requests, updateRequestStatus, loadingRequests } = useDashboard();
+  const { requests, updateRequestStatus, refreshRequests, loadingRequests } = useDashboard();
   const [filter, setFilter] = useState<FilterType>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const filtered = filter === "all" ? requests : requests.filter((r) => r.status === filter);
+  useEffect(() => {
+    refreshRequests();
+  }, [refreshRequests]);
+
+  const matchesFilter = (reqStatus: string, targetFilter: FilterType) => {
+    if (targetFilter === "all") return true;
+    return String(reqStatus).toLowerCase() === String(targetFilter).toLowerCase();
+  };
+
+  const filtered = requests.filter((r) => matchesFilter(r.status, filter));
   const counts = {
     all: requests.length,
-    Pending:   requests.filter((r) => r.status === "Pending").length,
-    Approved:  requests.filter((r) => r.status === "Approved").length,
-    Rejected:  requests.filter((r) => r.status === "Rejected").length,
-    Completed: requests.filter((r) => r.status === "Completed").length,
+    Pending:   requests.filter((r) => matchesFilter(r.status, "Pending")).length,
+    Approved:  requests.filter((r) => matchesFilter(r.status, "Approved")).length,
+    Rejected:  requests.filter((r) => matchesFilter(r.status, "Rejected")).length,
+    Completed: requests.filter((r) => matchesFilter(r.status, "Completed")).length,
   };
 
   const FILTERS: { key: FilterType; label: string }[] = [
@@ -129,7 +138,8 @@ export default function EmergencyRequestsTable() {
       ) : (
         <ul className="divide-y divide-slate-100 dark:divide-slate-800">
           {filtered.map((req, i) => {
-            const statusCfg = STATUS_CONFIG[req.status] ?? STATUS_CONFIG.Pending;
+            const formattedStatus = (req.status ? req.status.charAt(0).toUpperCase() + req.status.slice(1).toLowerCase() : "Pending") as RequestStatus;
+            const statusCfg = STATUS_CONFIG[formattedStatus] ?? STATUS_CONFIG[req.status] ?? STATUS_CONFIG.Pending;
             const bgColor = BLOOD_GROUP_COLORS[req.bloodGroup] ?? "";
             const isExpanded = expandedId === req._id;
             const requesterName = getRequesterName(req);

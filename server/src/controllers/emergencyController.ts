@@ -34,7 +34,7 @@ export const createRequest = async (req: Request, res: Response): Promise<void> 
       contactNumber
     } = req.body;
 
-    const hosp = hospitalName ?? hospital;
+    const hosp = (hospitalName && hospitalName.trim()) || (hospital && hospital.trim()) || "General Hospital";
 
     const newRequest = await EmergencyRequest.create({
       requestBy: req.user._id,
