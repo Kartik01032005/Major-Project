@@ -8,24 +8,36 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import inventoryRoutes from "./routes/inventoryRoutes.js";
 import hospitalRoutes from "./routes/hospitalRoutes.js";
 
+import { generalLimiter, strictLimiter } from "./middleware/rateLimiter.js";
+
 dotenv.config();
 
 const app = express();
 
-// Middlewares
-app.use(cors());
+// Security & Middlewares
+const corsOptions = {
+  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Apply Rate Limiters
+app.use("/api", generalLimiter);
 
 // Health Check route
 app.get("/api/health", (req: Request, res: Response) => {
   res.status(200).json({ success: true, message: "BloodLink API service is running" });
 });
 
-// API Routes
-app.use("/api/auth", authRoutes);
+// API Routes (Strict limiting on sensitive Auth & Emergency routes)
+app.use("/api/auth", strictLimiter, authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/emergency", emergencyRoutes);
+app.use("/api/emergency", strictLimiter, emergencyRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/hospitals", hospitalRoutes);

@@ -157,6 +157,21 @@
 
 ---
 
+## Sprint 9 – UI Polish, Security Hardening & Error Handling
+
+- [x] Create App Router 404 page (`client/app/not-found.tsx`)
+- [x] Create App Router global error boundary (`client/app/error.tsx`)
+- [x] Create App Router global loading indicator (`client/app/loading.tsx`)
+- [x] Create Dashboard route skeleton loading (`client/app/dashboard/loading.tsx`)
+- [x] Create Dashboard route error boundary (`client/app/dashboard/error.tsx`)
+- [x] Add `express-rate-limit` middleware to backend
+- [x] Apply general API rate limiter (100 reqs / 15 mins)
+- [x] Apply strict API rate limiter on auth and emergency routes (15 reqs / 15 mins)
+- [x] Configure explicit CORS origins and headers in Express server
+- [x] Verify client and server compile with 0 errors
+
+---
+
 # 📋 Pending
 
 ## Frontend
@@ -164,9 +179,9 @@
 ### UI
 
 - [x] Dark Mode Toggle
-- [ ] Loading Screens
-- [ ] Error Pages
-- [ ] 404 Page
+- [x] Loading Screens
+- [x] Error Pages
+- [x] 404 Page
 
 ---
 
@@ -227,8 +242,8 @@
 - [x] JWT
 - [x] Input Validation
 - [x] Environment Variables
-- [ ] Rate Limiting
-- [ ] CORS Configuration
+- [x] Rate Limiting
+- [x] CORS Configuration
 
 ---
 
@@ -264,11 +279,11 @@
 
 # Current Sprint
 
-**Sprint 8** – Hospital APIs & Full-Stack Integration
+**Sprint 9** – UI Polish, Security Hardening & Error Handling
 
 Goal:
 
-Implement backend database APIs for Hospital CRUD operations and wire them to the frontend dashboards and Google Maps view, replacing the localStorage mock data logic.
+Enhance user experience with App Router 404, loading, and error boundary pages, and harden backend security with rate limiting and CORS configuration.
 
 Status:
 
