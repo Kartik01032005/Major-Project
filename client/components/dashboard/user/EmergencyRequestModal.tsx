@@ -48,9 +48,10 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
     try {
       await createRequest({ bloodGroup, state, district, hospitalName, address, contactNumber });
       setSubmitted(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
       console.error("Failed to create emergency request:", err);
-      setErrors({ form: err?.response?.data?.message || "Failed to submit request. Please try again." });
+      setErrors({ form: errorObj?.response?.data?.message || "Failed to submit request. Please try again." });
     } finally {
       setLoading(false);
     }

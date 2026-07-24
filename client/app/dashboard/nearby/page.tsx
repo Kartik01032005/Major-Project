@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiMap, FiNavigation, FiPhone, FiMapPin, FiSearch,
-  FiFilter, FiAlertCircle, FiLoader,
+  FiFilter, FiAlertCircle,
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useGeolocation } from "@/hooks";

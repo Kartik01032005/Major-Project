@@ -6,13 +6,10 @@ import {
   BloodInventoryItem,
   Hospital,
   Notification,
-  RequestStatus,
 } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { dashboardService } from "@/services/dashboardService";
 import { socketService } from "@/services/socketService";
-
-
 
 // ─── Context Types ────────────────────────────────────────────────────────────
 interface DashboardContextType {
@@ -126,53 +123,60 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
 // ── Seed on Login & Real-time Socket Sync ────────────────────────────────────
   useEffect(() => {
-    if (user) {
-      const userId = user._id || (user as any).id;
-      refreshHospitals();
-      refreshRequests();
-      refreshNotifications();
-      if (user.role === "admin") {
-        refreshInventory();
-      }
-
-      // Connect Socket.IO for real-time alerts & request updates
-      const socket = socketService.connect(userId);
-
-      const handleRequestCreated = () => {
-        refreshRequests();
-      };
-
-      const handleRequestUpdated = () => {
-        refreshRequests();
-      };
-
-      const handleRequestDeleted = () => {
-        refreshRequests();
-      };
-
-      const handleNotification = () => {
-        refreshNotifications();
-      };
-
-      socket.on("request_created", handleRequestCreated);
-      socket.on("request_updated", handleRequestUpdated);
-      socket.on("request_deleted", handleRequestDeleted);
-      socket.on("notification", handleNotification);
-
-      return () => {
-        socket.off("request_created", handleRequestCreated);
-        socket.off("request_updated", handleRequestUpdated);
-        socket.off("request_deleted", handleRequestDeleted);
-        socket.off("notification", handleNotification);
-      };
-    } else {
-      // Clear state on logout
-      setRequests([]);
-      setInventory([]);
-      setNotifications([]);
-      setHospitals([]);
+    if (!user) {
       socketService.disconnect();
+      const timer = setTimeout(() => {
+        setRequests([]);
+        setInventory([]);
+        setNotifications([]);
+        setHospitals([]);
+      }, 0);
+      return () => clearTimeout(timer);
     }
+
+    const userId = user._id;
+
+    const initDashboardData = async () => {
+      await refreshHospitals();
+      await refreshRequests();
+      await refreshNotifications();
+      if (user.role === "admin") {
+        await refreshInventory();
+      }
+    };
+
+    initDashboardData();
+
+    // Connect Socket.IO for real-time alerts & request updates
+    const socket = socketService.connect(userId);
+
+    const handleRequestCreated = () => {
+      refreshRequests();
+    };
+
+    const handleRequestUpdated = () => {
+      refreshRequests();
+    };
+
+    const handleRequestDeleted = () => {
+      refreshRequests();
+    };
+
+    const handleNotification = () => {
+      refreshNotifications();
+    };
+
+    socket.on("request_created", handleRequestCreated);
+    socket.on("request_updated", handleRequestUpdated);
+    socket.on("request_deleted", handleRequestDeleted);
+    socket.on("notification", handleNotification);
+
+    return () => {
+      socket.off("request_created", handleRequestCreated);
+      socket.off("request_updated", handleRequestUpdated);
+      socket.off("request_deleted", handleRequestDeleted);
+      socket.off("notification", handleNotification);
+    };
   }, [user, refreshHospitals, refreshRequests, refreshInventory, refreshNotifications]);
 
   // ── Emergency Requests ─────────────────────────────────────────────────────

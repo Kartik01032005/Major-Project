@@ -14,7 +14,16 @@ export const dashboardService = {
     return response.data.data;
   },
 
-  createRequest: async (data: any): Promise<EmergencyRequest> => {
+  createRequest: async (data: {
+    bloodGroup: string;
+    state: string;
+    district: string;
+    hospitalName: string;
+    address: string;
+    contactNumber: string;
+    unitsRequired?: number;
+    hospital?: string;
+  }): Promise<EmergencyRequest> => {
     const response = await api.post<{ success: boolean; data: EmergencyRequest }>("/emergency", data);
     return response.data.data;
   },

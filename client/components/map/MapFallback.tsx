@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { FiMap, FiAlertTriangle, FiKey } from "react-icons/fi";
+import { FiAlertTriangle, FiKey } from "react-icons/fi";
 
 interface MapFallbackProps {
   reason?: "no-key" | "load-error";

@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 import { useGoogleMaps } from "@/hooks/useGoogleMaps";
 import MapFallback from "./MapFallback";
 import { MapBloodBank, MapHospital, LatLng } from "@/types";
-import Loader from "@/components/ui/Loader";
 
 // ─── Custom SVG Marker Icons ──────────────────────────────────────────────────
 

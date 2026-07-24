@@ -3,7 +3,6 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader } from "react-icons/fi";
-import { FaDroplet } from "react-icons/fa6";
 import { useAuth } from "@/context";
 import { useDashboard } from "@/context";
 import { RequestStatus } from "@/types";
@@ -38,14 +37,14 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
     refreshRequests();
   }, [refreshRequests]);
 
-  const currentUserId = user?._id || (user as any)?.id;
+  const currentUserId = user?._id;
 
   // Show only this user's requests
   const myRequests = requests.filter((r) => {
     if (!currentUserId) return false;
     let reqUserId = "";
     if (typeof r.requestBy === "object" && r.requestBy !== null) {
-      reqUserId = r.requestBy._id || (r.requestBy as any).id || "";
+      reqUserId = r.requestBy._id || "";
     } else if (typeof r.requestBy === "string") {
       reqUserId = r.requestBy;
     }

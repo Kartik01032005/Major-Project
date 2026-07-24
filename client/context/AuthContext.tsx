@@ -77,6 +77,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   // Initialize DB if not present and verify existing session with backend
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem(LOCAL_STORAGE_TOKEN_KEY);
+    localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedUsers = localStorage.getItem(LOCAL_STORAGE_USERS_KEY);
@@ -99,9 +106,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else {
               logout();
             }
-          } catch (err: any) {
+          } catch (err: unknown) {
+            const errorObj = err as { response?: { status?: number } };
             // Expired or bad token: log out
-            if (err.response?.status === 401) {
+            if (errorObj.response?.status === 401) {
               logout();
             } else if (savedUser) {
               // Server is offline, fallback to cached user details for seamless offline client test
@@ -135,8 +143,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
       }
       return { success: false, message: res.message || "Invalid credentials." };
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || err.message || "Login failed. Please try again.";
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+      const errMsg = errorObj.response?.data?.message || errorObj.message || "Login failed. Please try again.";
       return { success: false, message: errMsg };
     }
   };
@@ -169,17 +178,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       return { success: false, message: regRes.message || "Registration failed." };
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || err.message || "Registration failed.";
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string; errors?: Array<{ msg?: string }> } }; message?: string };
+      const errMsg = errorObj.response?.data?.message || errorObj.response?.data?.errors?.[0]?.msg || errorObj.message || "Registration failed.";
       return { success: false, message: errMsg };
     }
-  };
-
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem(LOCAL_STORAGE_TOKEN_KEY);
-    localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
   };
 
   return (

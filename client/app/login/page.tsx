@@ -63,7 +63,7 @@ export default function LoginPage() {
       } else {
         setGeneralError(response.message);
       }
-    } catch (err) {
+    } catch {
       setGeneralError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);

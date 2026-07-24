@@ -56,13 +56,7 @@ export function useGoogleMaps(): UseGoogleMapsReturn {
   useEffect(() => {
     if (!hasApiKey) return;
 
-    if (scriptState === "loaded") {
-      setIsLoaded(true);
-      return;
-    }
-
-    if (scriptState === "error") {
-      setLoadError(true);
+    if (scriptState === "loaded" || scriptState === "error") {
       return;
     }
 

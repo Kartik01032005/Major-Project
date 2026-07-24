@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiHome, FiUser, FiAlertCircle, FiBell, FiMap,
-  FiPackage, FiCrosshair, FiList, FiLogOut, FiMenu, FiX,
+  FiPackage, FiCrosshair, FiList, FiLogOut, FiX,
   FiChevronLeft, FiChevronRight,
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
@@ -72,7 +72,7 @@ export default function DashboardSidebar({
     router.push("/");
   };
 
-  const SidebarContent = ({ mobile = false }: { mobile?: boolean }) => (
+  const renderSidebarContent = (mobile = false) => (
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className={[
@@ -172,7 +172,7 @@ export default function DashboardSidebar({
           collapsed ? "w-[68px]" : "w-64",
         ].join(" ")}
       >
-        <SidebarContent />
+        {renderSidebarContent(false)}
 
         {/* Collapse toggle */}
         <button
@@ -229,7 +229,7 @@ export default function DashboardSidebar({
               >
                 <FiX size={18} />
               </button>
-              <SidebarContent mobile />
+              {renderSidebarContent(true)}
             </motion.aside>
           </>
         )}

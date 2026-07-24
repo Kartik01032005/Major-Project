@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
-  FiMapPin, FiPhone, FiSearch, FiNavigation, FiPlus,
+  FiMapPin, FiPhone, FiSearch, FiNavigation,
 } from "react-icons/fi";
 import { useDashboard } from "@/context";
 import MapContainer from "@/components/map/MapContainer";

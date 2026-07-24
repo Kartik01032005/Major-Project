@@ -37,14 +37,14 @@ export const socketService = {
     }
   },
 
-  on: (event: string, callback: (...args: any[]) => void) => {
+  on: (event: string, callback: (...args: unknown[]) => void) => {
     if (!socket) {
       socketService.connect();
     }
     socket?.on(event, callback);
   },
 
-  off: (event: string, callback?: (...args: any[]) => void) => {
+  off: (event: string, callback?: (...args: unknown[]) => void) => {
     if (socket) {
       if (callback) {
         socket.off(event, callback);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,17 +21,12 @@ function RegisterFormContent() {
   const { register } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const initialRole = searchParams.get("role");
 
   // Active role tab ("user" = Individual Donor, "admin" = Blood Bank / Admin)
-  const [role, setRole] = useState<UserRole>("user");
-
-  // Read initial role from search query
-  useEffect(() => {
-    const r = searchParams.get("role");
-    if (r === "admin" || r === "user") {
-      setRole(r as UserRole);
-    }
-  }, [searchParams]);
+  const [role, setRole] = useState<UserRole>(
+    initialRole === "admin" || initialRole === "user" ? initialRole : "user"
+  );
 
   // Form Field States
   const [name, setName] = useState("");
@@ -132,7 +127,7 @@ function RegisterFormContent() {
       } else {
         setGeneralError(response.message);
       }
-    } catch (err) {
+    } catch {
       setGeneralError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);

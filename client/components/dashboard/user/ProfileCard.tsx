@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiUser, FiMail, FiPhone, FiMapPin, FiCalendar, FiEdit3, FiCheck, FiX } from "react-icons/fi";
+import { FiMail, FiPhone, FiMapPin, FiCalendar, FiEdit3, FiCheck, FiX } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth } from "@/context";
 import { authService } from "@/services";
@@ -52,8 +52,9 @@ export default function ProfileCard() {
       } else {
         setDeleteError(res.message || "Failed to delete account.");
       }
-    } catch (err: any) {
-      const errMsg = err.response?.data?.message || err.message || "An error occurred during account deletion.";
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+      const errMsg = errorObj.response?.data?.message || errorObj.message || "An error occurred during account deletion.";
       setDeleteError(errMsg);
     } finally {
       setDeleting(false);

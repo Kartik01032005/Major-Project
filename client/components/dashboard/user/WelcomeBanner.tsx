@@ -5,18 +5,8 @@ import { motion } from "framer-motion";
 import { FiAlertCircle, FiActivity, FiToggleLeft, FiToggleRight } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth } from "@/context";
-import Button from "@/components/ui/Button";
 
-const BLOOD_GROUP_COLORS: Record<string, string> = {
-  "A+": "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-  "A-": "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-  "B+": "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  "B-": "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  "AB+": "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
-  "AB-": "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
-  "O+": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  "O-": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-};
+
 
 interface WelcomeBannerProps {
   onEmergencyClick: () => void;
@@ -31,7 +21,6 @@ export default function WelcomeBanner({ onEmergencyClick }: WelcomeBannerProps) 
     greetHour < 12 ? "Good morning" : greetHour < 17 ? "Good afternoon" : "Good evening";
 
   const firstName = user?.name?.split(" ")[0] ?? "there";
-  const bgColor = BLOOD_GROUP_COLORS[user?.bloodGroup ?? "O+"];
 
   return (
     <motion.div

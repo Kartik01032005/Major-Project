@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { FiMap, FiPhone, FiNavigation, FiMapPin, FiExternalLink } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import MapContainer from "@/components/map/MapContainer";
-import { MapBloodBank, BloodGroup } from "@/types";
+import { MapBloodBank } from "@/types";
 
 const MOCK_BLOOD_BANKS: MapBloodBank[] = [
   {

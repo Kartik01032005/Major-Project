@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { LatLng } from "@/types";
 
 // Default fallback: Bengaluru, Karnataka

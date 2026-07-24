@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { FiPackage, FiAlertCircle, FiCrosshair, FiClock } from "react-icons/fi";
+import { FiAlertCircle, FiCrosshair, FiClock } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useDashboard } from "@/context";
 

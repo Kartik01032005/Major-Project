@@ -64,7 +64,7 @@ export default function NotificationsPanel() {
             <FiBell size={22} />
           </div>
           <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No notifications yet</p>
-          <p className="text-xs text-slate-400 mt-1">You'll be notified about request updates here.</p>
+          <p className="text-xs text-slate-400 mt-1">You&apos;ll be notified about request updates here.</p>
         </div>
       ) : (
         <ul className="divide-y divide-slate-100 dark:divide-slate-800 max-h-80 overflow-y-auto">
