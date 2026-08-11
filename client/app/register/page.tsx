@@ -8,14 +8,11 @@ import {
   FiUser, FiMail, FiPhone, FiLock, FiEye, FiEyeOff,
   FiMapPin, FiActivity, FiUserCheck, FiHeart
 } from "react-icons/fi";
-import { FaDroplet } from "react-icons/fa6";
 import { useAuth } from "@/context";
-import { BloodGroup, UserRole } from "@/types";
+import { UserRole } from "@/types";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-
-const BLOOD_GROUPS: BloodGroup[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 function RegisterFormContent() {
   const { register } = useAuth();
@@ -34,7 +31,6 @@ function RegisterFormContent() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [bloodGroup, setBloodGroup] = useState<BloodGroup>("O+");
   
   // Admin-specific fields
   const [organizationName, setOrganizationName] = useState("");
@@ -111,7 +107,6 @@ function RegisterFormContent() {
         phone,
         password,
         role,
-        ...(role === "user" && { bloodGroup }),
         location: {
           state,
           district,
@@ -280,42 +275,6 @@ function RegisterFormContent() {
               }
               required
             />
-
-            {role === "user" && (
-              // User blood group fields
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Blood Group
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-red-500 pointer-events-none" aria-hidden="true">
-                    <FaDroplet size={14} />
-                  </span>
-                  <select
-                    value={bloodGroup}
-                    onChange={(e) => setBloodGroup(e.target.value as BloodGroup)}
-                    className={[
-                      "w-full h-10 pl-10 pr-3.5 rounded-xl border text-sm font-medium",
-                      "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700",
-                      "text-slate-900 dark:text-slate-100",
-                      "focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500",
-                      "appearance-none bg-no-repeat cursor-pointer"
-                    ].join(" ")}
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-                      backgroundPosition: "calc(100% - 12px) 50%",
-                      backgroundSize: "16px"
-                    }}
-                  >
-                    {BLOOD_GROUPS.map((group) => (
-                      <option key={group} value={group} className="dark:bg-slate-900">
-                        {group}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
 
             {/* Address fields for both */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

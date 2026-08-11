@@ -4,6 +4,9 @@ import {
   BloodInventoryItem,
   Notification,
   Hospital,
+  UploadSummary,
+  InventoryUploadLogItem,
+  AvailabilityThresholds,
 } from "@/types";
 
 
@@ -50,6 +53,50 @@ export const dashboardService = {
 
   updateInventory: async (id: string, units: number): Promise<BloodInventoryItem> => {
     const response = await api.put<{ success: boolean; data: BloodInventoryItem }>(`/inventory/${id}`, { units });
+    return response.data.data;
+  },
+
+  adjustInventory: async (id: string, delta: number): Promise<BloodInventoryItem> => {
+    const response = await api.post<{ success: boolean; data: BloodInventoryItem }>(`/inventory/${id}/adjust`, { delta });
+    return response.data.data;
+  },
+
+  syncInventoryFromUpload: async (id: string): Promise<BloodInventoryItem> => {
+    const response = await api.post<{ success: boolean; data: BloodInventoryItem }>(`/inventory/${id}/sync`);
+    return response.data.data;
+  },
+
+  uploadInventoryFile: async (
+    file: File,
+    mode: "merge" | "replace"
+  ): Promise<{
+    success: boolean;
+    message: string;
+    summary: UploadSummary;
+    log: InventoryUploadLogItem;
+    inventory: BloodInventoryItem[];
+  }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("mode", mode);
+    const response = await api.post("/inventory/upload", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+
+  getUploadHistory: async (): Promise<InventoryUploadLogItem[]> => {
+    const response = await api.get<{ success: boolean; data: InventoryUploadLogItem[] }>("/inventory/upload-history");
+    return response.data.data;
+  },
+
+  getThresholds: async (): Promise<AvailabilityThresholds> => {
+    const response = await api.get<{ success: boolean; data: AvailabilityThresholds }>("/inventory/thresholds");
+    return response.data.data;
+  },
+
+  updateThresholds: async (thresholds: Partial<AvailabilityThresholds>): Promise<AvailabilityThresholds> => {
+    const response = await api.put<{ success: boolean; data: AvailabilityThresholds }>("/inventory/thresholds", thresholds);
     return response.data.data;
   },
 

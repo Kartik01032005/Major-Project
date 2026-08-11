@@ -202,3 +202,55 @@ export interface MapHospital {
   phone: string;
   position: LatLng;
 }
+
+// ─── Bulk Inventory & Stock Levels ────────────────────────────────────────────
+
+export interface UploadError {
+  row?: number;
+  donorId?: string;
+  reason: string;
+}
+
+export interface UploadSummary {
+  totalParsed: number;
+  validRecords: number;
+  invalidRecords: number;
+  unitsAdded: number;
+  unitsByGroup: Record<string, number>;
+  errors: UploadError[];
+}
+
+export interface InventoryUploadLogItem {
+  _id: string;
+  fileName: string;
+  fileType: "xlsx" | "xls" | "csv" | "pdf";
+  mode: "merge" | "replace";
+  summary: UploadSummary;
+  createdAt: string;
+}
+
+export interface AvailabilityThresholds {
+  highlyAvailable: number; // Level 1
+  veryHigh: number;        // Level 2
+  high: number;            // Level 3
+  good: number;            // Level 4
+  available: number;       // Level 5
+  moderate: number;        // Level 6
+  low: number;             // Level 7
+  veryLow: number;         // Level 8
+  critical: number;        // Level 9
+  almostEmpty: number;     // Level 10
+}
+
+export type AvailabilityLevel =
+  | "Highly Available"
+  | "Very High"
+  | "High"
+  | "Good"
+  | "Available"
+  | "Moderate"
+  | "Low"
+  | "Very Low"
+  | "Critical"
+  | "Almost Empty";
+

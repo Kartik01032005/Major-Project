@@ -16,10 +16,6 @@ const registerValidation = [
   body("email").isEmail().withMessage("Please include a valid email."),
   body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long."),
   body("phone").notEmpty().withMessage("Phone number is required."),
-  body("bloodGroup")
-    .if((value, { req }) => !req.body.role || req.body.role === "user")
-    .isIn(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"])
-    .withMessage("Blood group is required for Individual Donors."),
   body("role")
     .optional()
     .isIn(["user", "admin"])

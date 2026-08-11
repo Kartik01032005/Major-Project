@@ -288,3 +288,109 @@ Enhance user experience with App Router 404, loading, and error boundary pages, 
 Status:
 
 🟢 Completed
+
+## Feature – Bulk Blood Inventory Upload & Smart Stock Analysis
+
+Status:
+
+🟢 Completed
+
+Add a new feature to the Admin/Blood Bank dashboard so admins do not have to manually update blood inventory every time.
+
+### Upload
+
+Allow the admin to upload blood inventory/donor data using:
+- Excel (.xlsx, .xls)
+- CSV
+- PDF
+
+The uploaded file may contain donor/blood-unit records such as:
+- Donor ID
+- Blood Group
+- Donation Date
+- Units
+- Status
+
+### Processing
+
+After upload:
+- Read and parse the uploaded file.
+- Identify the blood group from each valid record.
+- Calculate the total available units for each blood group.
+- Update the Blood Inventory automatically.
+- Avoid duplicate records when the same file/data is uploaded again.
+- Validate the file and show clear errors for invalid or missing data.
+
+### Inventory Dashboard
+
+Display each blood group like:
+
+A+   → 300 units → Highly Available
+A-   → 120 units → Available
+B+   → 75 units  → Moderate
+B-   → 35 units  → Low
+AB+  → 12 units  → Very Low
+AB-  → 5 units   → Critical
+O+   → 250 units → Highly Available
+O-   → 8 units   → Critical
+
+Use a clear 10-level availability indicator from:
+1. Highly Available
+2. Very High
+3. High
+4. Good
+5. Available
+6. Moderate
+7. Low
+8. Very Low
+9. Critical
+10. Almost Empty
+
+Make the thresholds configurable instead of hardcoding them.
+
+### Dashboard
+
+Add:
+- Upload File button
+- Drag-and-drop upload area
+- Upload progress
+- File validation status
+- Last updated timestamp
+- Total units by blood group
+- Availability level indicator
+- Upload history
+- Ability to replace/update inventory from a new file
+
+### AI/Data Processing
+
+Use intelligent data processing to handle different column names and formats where possible.
+
+For example:
+- "Blood Type", "Blood Group", "Group" → bloodGroup
+- "Quantity", "Units", "Stock" → units
+
+Do NOT blindly accept incorrect data. Validate everything before updating the database.
+
+### Security
+
+- Only Admin/Blood Bank users can upload inventory files.
+- Validate file type and file size.
+- Never execute uploaded files.
+- Sanitize parsed data.
+- Do not expose donor personal information on the public dashboard.
+
+### Integration
+
+Integrate this with the existing:
+- MongoDB inventory system
+- Admin dashboard
+- Emergency request system
+- Notification system
+
+If inventory becomes critically low, automatically notify the admin.
+
+Before implementation, inspect the existing database models, APIs, dashboard components, and documentation so the new feature fits the current architecture.
+
+Test Excel, CSV, and PDF uploads, inventory calculation, duplicate handling, validation, and dashboard updates.
+
+Update TASKS.md and relevant documentation after completion.

@@ -6,6 +6,9 @@ import {
   BloodInventoryItem,
   Hospital,
   Notification,
+  InventoryUploadLogItem,
+  AvailabilityThresholds,
+  UploadSummary,
 } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { dashboardService } from "@/services/dashboardService";
@@ -31,8 +34,15 @@ interface DashboardContextType {
   // Blood Inventory
   inventory: BloodInventoryItem[];
   loadingInventory: boolean;
+  uploadHistory: InventoryUploadLogItem[];
+  thresholds: AvailabilityThresholds | null;
   updateInventory: (id: string, units: number) => Promise<void>;
+  adjustInventory: (id: string, delta: number) => Promise<void>;
+  syncInventoryFromUpload: (id: string) => Promise<void>;
+  uploadInventoryFile: (file: File, mode: "merge" | "replace") => Promise<UploadSummary>;
   refreshInventory: () => Promise<void>;
+  refreshUploadHistory: () => Promise<void>;
+  updateThresholds: (thresholds: Partial<AvailabilityThresholds>) => Promise<void>;
 
   // Hospitals
   hospitals: Hospital[];
@@ -62,6 +72,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [inventory, setInventory] = useState<BloodInventoryItem[]>([]);
   const [loadingInventory, setLoadingInventory] = useState(false);
+  const [uploadHistory, setUploadHistory] = useState<InventoryUploadLogItem[]>([]);
+  const [thresholds, setThresholds] = useState<AvailabilityThresholds | null>(null);
 
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [loadingHospitals, setLoadingHospitals] = useState(false);
@@ -69,6 +81,26 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [loadingNotifications, setLoadingNotifications] = useState(false);
 
   // ── Fetch Helpers ──────────────────────────────────────────────────────────
+
+  const refreshUploadHistory = useCallback(async () => {
+    if (!user || user.role !== "admin") return;
+    try {
+      const logs = await dashboardService.getUploadHistory();
+      setUploadHistory(logs);
+    } catch (err) {
+      console.error("Failed to load upload history:", err);
+    }
+  }, [user]);
+
+  const refreshThresholds = useCallback(async () => {
+    if (!user || user.role !== "admin") return;
+    try {
+      const data = await dashboardService.getThresholds();
+      setThresholds(data);
+    } catch (err) {
+      console.error("Failed to load thresholds:", err);
+    }
+  }, [user]);
 
   const refreshHospitals = useCallback(async () => {
     if (!user) return;
@@ -101,12 +133,14 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       const data = await dashboardService.getInventory();
       setInventory(data);
+      refreshThresholds();
+      refreshUploadHistory();
     } catch (err) {
       console.error("Failed to load inventory:", err);
     } finally {
       setLoadingInventory(false);
     }
-  }, [user]);
+  }, [user, refreshThresholds, refreshUploadHistory]);
 
   const refreshNotifications = useCallback(async () => {
     if (!user) return;
@@ -226,6 +260,43 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     []
   );
 
+  const adjustInventory = useCallback(
+    async (id: string, delta: number) => {
+      const updated = await dashboardService.adjustInventory(id, delta);
+      setInventory((prev) => prev.map((item) => (item._id === id ? updated : item)));
+    },
+    []
+  );
+
+  const syncInventoryFromUpload = useCallback(
+    async (id: string) => {
+      const updated = await dashboardService.syncInventoryFromUpload(id);
+      setInventory((prev) => prev.map((item) => (item._id === id ? updated : item)));
+    },
+    []
+  );
+
+  const uploadInventoryFile = useCallback(
+    async (file: File, mode: "merge" | "replace") => {
+      const res = await dashboardService.uploadInventoryFile(file, mode);
+      if (res.inventory) {
+        setInventory(res.inventory);
+      }
+      refreshUploadHistory();
+      refreshNotifications();
+      return res.summary;
+    },
+    [refreshUploadHistory, refreshNotifications]
+  );
+
+  const updateThresholds = useCallback(
+    async (data: Partial<AvailabilityThresholds>) => {
+      const updated = await dashboardService.updateThresholds(data);
+      setThresholds(updated);
+    },
+    []
+  );
+
   // ── Hospitals (localStorage only) ─────────────────────────────────────────
 
   const addHospital = useCallback(async (data: Omit<Hospital, "_id" | "createdAt">) => {
@@ -286,8 +357,15 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         refreshRequests,
         inventory,
         loadingInventory,
+        uploadHistory,
+        thresholds,
         updateInventory,
+        adjustInventory,
+        syncInventoryFromUpload,
+        uploadInventoryFile,
         refreshInventory,
+        refreshUploadHistory,
+        updateThresholds,
         hospitals,
         loadingHospitals,
         addHospital,

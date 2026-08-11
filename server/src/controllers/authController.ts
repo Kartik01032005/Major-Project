@@ -21,7 +21,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { name, email, password, phone, bloodGroup, role, location, organizationName } = req.body;
+  const { name, email, password, phone, role, location, organizationName } = req.body;
 
   try {
     // Check if user already exists
@@ -53,7 +53,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       email,
       password,
       phone,
-      bloodGroup,
       role: role ?? "user",
       location: userLocation,
     });

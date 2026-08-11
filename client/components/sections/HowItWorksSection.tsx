@@ -12,7 +12,7 @@ const steps: Step[] = [
     step: "01",
     title: "Create your account",
     description:
-      "Register in seconds. Enter your blood group, location, and role. Your profile is ready to save lives immediately.",
+      "Register in seconds. Enter your location and role. Your profile is ready to save lives immediately.",
   },
   {
     id: 2,
