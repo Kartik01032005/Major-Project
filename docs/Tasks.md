@@ -397,11 +397,11 @@ Update TASKS.md and relevant documentation after completion.
 
 ## DevOps & Deployment
 
-- [ ] Create Dockerfile for frontend
-- [ ] Create Dockerfile for backend
-- [ ] Create docker-compose.yml for local development
+- [x] Create Dockerfile for frontend
+- [x] Create Dockerfile for backend
+- [x] Create docker-compose.yml for local development
 - [ ] Configure production environment variables
-- [ ] Set up CI/CD using GitHub Actions
+- [x] Set up CI/CD using GitHub Actions
 - [ ] Configure automatic deployment
 - [ ] Deploy frontend to Vercel
 - [ ] Deploy backend to Render
@@ -410,8 +410,8 @@ Update TASKS.md and relevant documentation after completion.
 
 ## Testing
 
-- [ ] Add unit tests
-- [ ] Add API/integration tests
+- [x] Add unit tests
+- [x] Add API/integration tests
 - [ ] Perform end-to-end testing
 - [ ] Security testing
 - [ ] Performance testing
