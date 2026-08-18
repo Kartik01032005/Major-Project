@@ -394,3 +394,24 @@ Before implementation, inspect the existing database models, APIs, dashboard com
 Test Excel, CSV, and PDF uploads, inventory calculation, duplicate handling, validation, and dashboard updates.
 
 Update TASKS.md and relevant documentation after completion.
+
+## DevOps & Deployment
+
+- [ ] Create Dockerfile for frontend
+- [ ] Create Dockerfile for backend
+- [ ] Create docker-compose.yml for local development
+- [ ] Configure production environment variables
+- [ ] Set up CI/CD using GitHub Actions
+- [ ] Configure automatic deployment
+- [ ] Deploy frontend to Vercel
+- [ ] Deploy backend to Render
+- [ ] Configure MongoDB Atlas for production
+- [ ] Perform production testing
+
+## Testing
+
+- [ ] Add unit tests
+- [ ] Add API/integration tests
+- [ ] Perform end-to-end testing
+- [ ] Security testing
+- [ ] Performance testing

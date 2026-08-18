@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  # ─── MongoDB ────────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: bloodlink-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - bloodlink-net
+
+  # ─── Express.js Backend ─────────────────────────────────────────────
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: bloodlink-server
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongo:27017/bloodlink
+      - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret_change_me}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - CLIENT_URL=http://localhost:3000
+    depends_on:
+      - mongo
+    networks:
+      - bloodlink-net
+    restart: unless-stopped
+
+  # ─── Next.js Frontend ──────────────────────────────────────────────
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:5000/api
+        - NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+    container_name: bloodlink-client
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+    networks:
+      - bloodlink-net
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
+
+networks:
+  bloodlink-net:
+    driver: bridge
