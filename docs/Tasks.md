@@ -426,18 +426,23 @@ This is where you track the actual work.
 Add:
 
 ```md
-# Mobile Application
 
-## Setup
+# 📱 BloodLink Mobile Application
 
-- [ ] Create React Native + Expo application
-- [ ] Create mobile folder
-- [ ] Configure TypeScript
-- [ ] Configure Expo Router
-- [ ] Configure environment variables
-- [ ] Configure API client
+## Sprint 1 – Mobile Setup
 
-## Authentication
+- [x] Create React Native + Expo application
+- [x] Create mobile folder
+- [x] Configure TypeScript
+- [x] Configure Expo Router
+- [x] Configure environment variables
+- [x] Configure API client
+- [x] Create mobile project structure
+- [x] Create basic theme/design system
+
+---
+
+## Sprint 2 – Authentication
 
 - [ ] Mobile signup
 - [ ] Mobile login
@@ -445,20 +450,52 @@ Add:
 - [ ] Logout
 - [ ] Secure token storage
 - [ ] Role-based navigation
+- [ ] Protected routes
 
-## User Features
+---
+
+## Sprint 3 – User Features
 
 - [ ] Mobile dashboard
 - [ ] Profile
 - [ ] Blood group management
 - [ ] Emergency request
 - [ ] Request history
-- [ ] Nearby blood banks
-- [ ] Google Maps
-- [ ] Notifications
 - [ ] Account management
 
-## Admin Features
+---
+
+## Sprint 4 – Emergency Requests
+
+- [ ] Create emergency request
+- [ ] Blood group and units
+- [ ] Location
+- [ ] Request status
+- [ ] Cancel request
+- [ ] API integration
+
+---
+
+## Sprint 5 – Nearby Blood Banks & Maps
+
+- [ ] Nearby blood banks
+- [ ] Google Maps
+- [ ] Location permissions
+- [ ] Blood availability
+- [ ] Navigation/directions
+
+---
+
+## Sprint 6 – Notifications
+
+- [ ] Push notifications
+- [ ] Emergency alerts
+- [ ] Notification history
+- [ ] Socket.IO integration
+
+---
+
+## Sprint 7 – Admin Features
 
 - [ ] Admin dashboard
 - [ ] Blood inventory
@@ -467,34 +504,36 @@ Add:
 - [ ] Emergency requests
 - [ ] Approve/reject requests
 - [ ] Hospital management
-- [ ] Notifications
+- [ ] Admin notifications
 
-## Mobile Performance
+---
+
+## Sprint 8 – Performance & Smart Features
 
 - [ ] Optimize API requests
 - [ ] Add caching
 - [ ] Optimize images
 - [ ] Optimize animations
 - [ ] Handle offline/network errors
-- [ ] Test low-end devices
+- [ ] Inventory insights
+- [ ] Planned AI features
 
-# Scalability
+---
+
+## Sprint 9 – Security & Scalability
 
 - [ ] Background job processing
 - [ ] Notification queue
-- [ ] Horizontal backend scaling
 - [ ] Nginx load balancing
-
-# Mobile Security
-
 - [ ] Secure token storage
 - [ ] API security
 - [ ] Rate limiting
 - [ ] Input validation
 - [ ] Secure file handling
-- [ ] Security testing
 
-# Mobile Testing
+---
+
+## Sprint 10 – Testing & Final Polish
 
 - [ ] Unit tests
 - [ ] API integration tests
@@ -502,3 +541,6 @@ Add:
 - [ ] Android testing
 - [ ] Performance testing
 - [ ] Security testing
+- [ ] Test low-end devices
+- [ ] Final UI/animation polish
+- [ ] Final documentation
