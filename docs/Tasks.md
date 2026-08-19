@@ -444,13 +444,13 @@ Add:
 
 ## Sprint 2 – Authentication
 
-- [ ] Mobile signup
-- [ ] Mobile login
-- [ ] JWT authentication
-- [ ] Logout
-- [ ] Secure token storage
-- [ ] Role-based navigation
-- [ ] Protected routes
+- [x] Mobile signup
+- [x] Mobile login
+- [x] JWT authentication
+- [x] Logout
+- [x] Secure token storage
+- [x] Role-based navigation
+- [x] Protected routes
 
 ---
 

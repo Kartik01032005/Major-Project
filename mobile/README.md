@@ -1,6 +1,6 @@
 # BloodLink Mobile
 
-The BloodLink mobile application is an Expo Router client for the existing BloodLink Express API. Sprint 1 contains the native project foundation and a health-check screen only; authentication, dashboards, maps, notifications, and admin workflows remain future work.
+The BloodLink mobile application is an Expo Router client for the existing BloodLink Express API. Sprint 1 provides the native project foundation, and Sprint 2 adds signup, login, server-verified sessions, secure JWT storage, logout, role-aware navigation, and protected routes. Dashboards, maps, notifications, and admin workflows remain future work.
 
 ## Development
 
