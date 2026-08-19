@@ -136,3 +136,32 @@ Deployment
 
 - Vercel
 - Render
+
+## Mobile Application
+
+BloodLink will provide a dedicated mobile application for Android and iOS using React Native and Expo.
+
+The mobile application will use the existing BloodLink backend APIs and database, ensuring that web and mobile users share the same authentication, emergency requests, blood inventory, notifications, and user data.
+
+## Scalability Requirements
+
+- Support multiple simultaneous users and emergency requests.
+- Use scalable backend architecture.
+- Support horizontal scaling of backend services.
+- Implement rate limiting and caching where required.
+- Use background processing for heavy emergency and notification workloads.
+- Use load balancing when deploying multiple backend instances.
+- Prevent a single request or service failure from affecting the entire application.
+
+## Security Requirements
+
+- Secure communication using HTTPS/TLS.
+- JWT-based authentication.
+- Role-based authorization.
+- Secure password hashing.
+- Input validation and sanitization.
+- API rate limiting.
+- Secure file uploads.
+- Protection of API keys and secrets.
+- Backend-enforced permissions.
+- Audit logging for sensitive operations.

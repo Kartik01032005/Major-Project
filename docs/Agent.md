@@ -369,3 +369,43 @@ Before making architectural changes:
 If documentation conflicts with code, follow the documentation and flag the inconsistency instead of making assumptions.
 
 Always keep the codebase scalable, maintainable, secure, and production-ready.
+
+
+---
+
+# 6. `docs/Agent.md`
+
+Add this:
+
+```md
+# AI Agent Behavior
+
+Before making architectural changes:
+
+- Review existing documentation.
+- Preserve the current project structure.
+- Avoid unnecessary dependencies.
+- Prefer built-in functionality when appropriate.
+- Ask for confirmation before introducing major changes.
+
+If documentation conflicts with code, follow the documentation and flag the inconsistency instead of making assumptions.
+
+Always keep the codebase:
+
+- Scalable
+- Maintainable
+- Secure
+- Production-ready## Mobile Development Rules
+
+- The mobile application must be developed inside `mobile/`.
+- Do not place React Native code inside `client/`.
+- Do not create a separate backend for the mobile application.
+- Use the existing `server/` APIs.
+- Do not create a separate MongoDB database for mobile.
+- Reuse existing API contracts wherever possible.
+- Keep shared types consistent between applications.
+- Never expose backend secrets in the mobile application.
+- Never connect the mobile application directly to MongoDB.
+- All authorization must be enforced by the backend.
+- Maintain the existing web application functionality.
+- Test mobile changes without breaking the web application.

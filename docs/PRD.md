@@ -210,3 +210,46 @@ The project is considered complete when:
 - Notifications are delivered in real time.
 - Admin approvals are reflected immediately.
 - Application is responsive on desktop, tablet, and mobile.
+
+## Mobile Application
+
+The BloodLink mobile application will provide the same core functionality as the web application through a mobile-first interface.
+
+### Mobile User Features
+
+- Register and login
+- User dashboard
+- Profile management
+- Blood group management
+- Emergency blood request
+- View emergency request history
+- Nearby blood bank search
+- Google Maps navigation
+- Real-time notifications
+- Notification history
+- Account management
+
+### Mobile Admin Features
+
+- Admin login
+- Admin dashboard
+- Blood inventory management
+- Inventory file upload
+- Manual inventory adjustment
+- Emergency request management
+- Approve/reject emergency requests
+- Hospital management
+- Notifications
+- Inventory insights
+
+## Scalability
+
+The system should support multiple simultaneous users and emergency requests without affecting normal application functionality.
+
+Heavy operations such as emergency matching and notification processing should be handled asynchronously where appropriate.
+
+## Security
+
+All important authorization decisions must be performed on the backend.
+
+The mobile application must never contain sensitive server credentials, database credentials, JWT secrets, or private API keys.

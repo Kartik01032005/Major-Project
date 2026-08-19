@@ -415,3 +415,90 @@ Update TASKS.md and relevant documentation after completion.
 - [ ] Perform end-to-end testing
 - [ ] Security testing
 - [ ] Performance testing
+
+
+---
+
+# 7. `docs/TASKS.md`
+
+This is where you track the actual work.
+
+Add:
+
+```md
+# Mobile Application
+
+## Setup
+
+- [ ] Create React Native + Expo application
+- [ ] Create mobile folder
+- [ ] Configure TypeScript
+- [ ] Configure Expo Router
+- [ ] Configure environment variables
+- [ ] Configure API client
+
+## Authentication
+
+- [ ] Mobile signup
+- [ ] Mobile login
+- [ ] JWT authentication
+- [ ] Logout
+- [ ] Secure token storage
+- [ ] Role-based navigation
+
+## User Features
+
+- [ ] Mobile dashboard
+- [ ] Profile
+- [ ] Blood group management
+- [ ] Emergency request
+- [ ] Request history
+- [ ] Nearby blood banks
+- [ ] Google Maps
+- [ ] Notifications
+- [ ] Account management
+
+## Admin Features
+
+- [ ] Admin dashboard
+- [ ] Blood inventory
+- [ ] Inventory upload
+- [ ] Manual inventory adjustment
+- [ ] Emergency requests
+- [ ] Approve/reject requests
+- [ ] Hospital management
+- [ ] Notifications
+
+## Mobile Performance
+
+- [ ] Optimize API requests
+- [ ] Add caching
+- [ ] Optimize images
+- [ ] Optimize animations
+- [ ] Handle offline/network errors
+- [ ] Test low-end devices
+
+# Scalability
+
+- [ ] Background job processing
+- [ ] Notification queue
+- [ ] Horizontal backend scaling
+- [ ] Nginx load balancing
+
+# Mobile Security
+
+- [ ] Secure token storage
+- [ ] API security
+- [ ] Rate limiting
+- [ ] Input validation
+- [ ] Secure file handling
+- [ ] Security testing
+
+# Mobile Testing
+
+- [ ] Unit tests
+- [ ] API integration tests
+- [ ] End-to-end testing
+- [ ] Android testing
+- [ ] Performance testing
+- [ ] Security testing

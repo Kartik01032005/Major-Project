@@ -405,3 +405,45 @@ Cloudinary (Optional)
 - Mobile Application
 - Docker Support
 - Kubernetes Support
+
+# Mobile Application Architecture
+
+BloodLink uses a shared backend architecture where the web application and mobile application communicate with the same backend services.
+
+```text
+                    ┌──────────────────────┐
+                    │      Next.js Web     │
+                    │       client/        │
+                    └──────────┬───────────┘
+                               │
+                               │ HTTPS / REST / Socket.IO
+                               │
+                    ┌──────────▼───────────┐
+                    │    Load Balancer     │
+                    │   / API Gateway      │
+                    └──────────┬───────────┘
+                               │
+              ┌────────────────┼────────────────┐
+              │                │                │
+              ▼                ▼                ▼
+        Backend Instance  Backend Instance  Backend Instance
+              │                │                │
+              └────────────────┼────────────────┘
+                               │
+                    ┌──────────▼───────────┐
+                    │      Redis / Queue   │
+                    │ Cache & Background   │
+                    │ Processing           │
+                    └──────────┬───────────┘
+                               │
+                    ┌──────────▼───────────┐
+                    │     MongoDB Atlas    │
+                    └──────────────────────┘
+                               ▲
+                               │
+                    HTTPS / REST / Socket.IO
+                               │
+                    ┌──────────┴───────────┐
+                    │ React Native + Expo  │
+                    │       mobile/        │
+                    └──────────────────────┘

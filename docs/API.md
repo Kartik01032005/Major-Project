@@ -340,3 +340,19 @@ Error
 409 Conflict
 
 500 Internal Server Error
+
+## Mobile API Support
+
+All existing REST APIs are designed to support both the web and mobile applications.
+
+```text
+Next.js Web ────────┐
+                    │
+                    ▼
+              Express API
+                    │
+                    ▼
+              MongoDB Atlas
+                    ▲
+                    │
+React Native Mobile ┘
