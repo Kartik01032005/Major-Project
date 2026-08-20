@@ -2,6 +2,8 @@ import { env } from "../config/env";
 import { secureStorage } from "./secureStorage";
 import { getResponseError, isApiObject, type HealthResponse } from "../types/api";
 import { isAuthUser, type AuthResponse, type AuthUser, type LoginInput, type RegisterInput, type RegisterResponse } from "../types/auth";
+import type { EmergencyRequest, EmergencyRequestInput, ProfileUpdate, } from "../types/userFeatures";
+import { isEmergencyRequest } from "../types/userFeatures";
 
 class ApiClient {
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -67,6 +69,36 @@ class ApiClient {
     const payload: unknown = await this.request<unknown>("/auth/me");
     if (!isApiObject(payload) || !isAuthUser(payload.data)) {
       throw new Error("The BloodLink API returned an invalid session response.");
+    }
+    return payload.data;
+  }
+
+  async getProfile(): Promise<AuthUser> {
+    const payload: unknown = await this.request<unknown>("/users/profile");
+    if (!isApiObject(payload) || !isAuthUser(payload.data)) throw new Error("The BloodLink API returned an invalid profile response.");
+    return payload.data;
+  }
+
+  async updateProfile(input: ProfileUpdate): Promise<AuthUser> {
+    const payload: unknown = await this.request<unknown>("/users/profile", { method: "PUT", body: JSON.stringify(input) });
+    if (!isApiObject(payload) || !isAuthUser(payload.data)) throw new Error("The BloodLink API returned an invalid profile response.");
+    return payload.data;
+  }
+
+  async deleteAccount(): Promise<void> {
+    await this.request<unknown>("/auth/delete-account", { method: "DELETE" });
+  }
+
+  async createEmergencyRequest(input: EmergencyRequestInput): Promise<EmergencyRequest> {
+    const payload: unknown = await this.request<unknown>("/emergency", { method: "POST", body: JSON.stringify(input) });
+    if (!isApiObject(payload) || !isEmergencyRequest(payload.data)) throw new Error("The BloodLink API returned an invalid emergency request.");
+    return payload.data;
+  }
+
+  async getEmergencyRequests(): Promise<EmergencyRequest[]> {
+    const payload: unknown = await this.request<unknown>("/emergency");
+    if (!isApiObject(payload) || !Array.isArray(payload.data) || !payload.data.every(isEmergencyRequest)) {
+      throw new Error("The BloodLink API returned invalid emergency requests.");
     }
     return payload.data;
   }
