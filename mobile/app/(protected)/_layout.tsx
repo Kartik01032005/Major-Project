@@ -20,6 +20,7 @@ export default function ProtectedLayout() {
 
   return <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: colors.accent, tabBarInactiveTintColor: colors.muted, tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border } }}>
     <Tabs.Screen name="index" options={{ title: "Home" }} />
+    <Tabs.Screen name="nearby" options={{ title: "Nearby" }} />
     <Tabs.Screen name="history" options={{ title: "Requests" }} />
     <Tabs.Screen name="emergency" options={{ title: "Emergency" }} />
     <Tabs.Screen name="profile" options={{ title: "Profile" }} />

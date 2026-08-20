@@ -7,6 +7,9 @@ export type LocationStatus = "idle" | "loading" | "granted" | "denied" | "unavai
 
 export type NearbyCategory = "hospital" | "bloodBank";
 
+/** Where a nearby place's data came from. Sample = bundled demo data (not live). */
+export type NearbySource = "live" | "sample";
+
 export type NearbyPlace = {
   _id: string;
   name: string;
@@ -15,6 +18,7 @@ export type NearbyPlace = {
   district: string;
   phone: string;
   category: NearbyCategory;
+  source: NearbySource;
   position: GeoPoint;
   /** Distance in kilometres from the user. Undefined when distance can't be computed. */
   distanceKm?: number;

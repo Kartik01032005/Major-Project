@@ -4,7 +4,7 @@ import { getResponseError, isApiObject, type HealthResponse } from "../types/api
 import { isAuthUser, type AuthResponse, type AuthUser, type LoginInput, type RegisterInput, type RegisterResponse } from "../types/auth";
 import type { EmergencyRequest, EmergencyRequestInput, ProfileUpdate, } from "../types/userFeatures";
 import { isEmergencyRequest } from "../types/userFeatures";
-import { hasValidCoordinates, isHospitalResponse, type HospitalResponse } from "../types/location";
+import { isHospitalResponse, type HospitalResponse } from "../types/location";
 
 class ApiClient {
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
