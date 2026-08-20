@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
 
 import type { Notification as BloodLinkNotification } from "../types/notification";
@@ -6,10 +7,16 @@ import type { Notification as BloodLinkNotification } from "../types/notificatio
 const CHANNEL_ID = "bloodlink-notifications";
 
 /**
- * expo-notifications is only available on native (Android/iOS). Web exposes no
- * notification surface, so every call here is a no-op there.
+ * expo-notifications is a native-only surface. Web has no OS notification layer
+ * at all, and Android running under Expo Go cannot use custom notification
+ * channels / remote push — calling those APIs crashes the app there. (iOS Expo
+ * Go supports local notifications, so it stays enabled.) A real Expo development
+ * build or standalone build sets `Constants.appOwnership = "standalone"`, which
+ * unlocks the full feature set.
  */
-const isSupported = Platform.OS === "android" || Platform.OS === "ios";
+const isWeb = Platform.OS === "web";
+const isExpoGoOnAndroid = Platform.OS === "android" && Constants.appOwnership === "expo";
+export const isPushSupported = !isWeb && !isExpoGoOnAndroid;
 
 /**
  * Configures how incoming notifications are presented while the app is in the
@@ -17,7 +24,7 @@ const isSupported = Platform.OS === "android" || Platform.OS === "ios";
  * looking at the app). Must be called once at app startup.
  */
 export function configureForegroundPresentation(): void {
-  if (!isSupported) return;
+  if (!isPushSupported) return;
   Notifications.setNotificationHandler({
     handleNotification: () =>
       Promise.resolve({
@@ -38,7 +45,7 @@ export function configureForegroundPresentation(): void {
 export type NotificationPermissionStatus = "granted" | "denied" | "unsupported";
 
 export async function ensureNotificationPermission(): Promise<NotificationPermissionStatus> {
-  if (!isSupported) return "unsupported";
+  if (!isPushSupported) return "unsupported";
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
       name: "BloodLink Alerts",
@@ -62,7 +69,7 @@ export async function ensureNotificationPermission(): Promise<NotificationPermis
 export async function presentLocalNotification(
   notification: BloodLinkNotification,
 ): Promise<void> {
-  if (!isSupported) return;
+  if (!isPushSupported) return;
   await Notifications.scheduleNotificationAsync({
     content: {
       title: notification.title,
@@ -81,7 +88,7 @@ export async function presentLocalNotification(
 export function addNotificationTapListener(
   onTap: (notificationId: string | undefined) => void,
 ): () => void {
-  if (!isSupported) return () => undefined;
+  if (!isPushSupported) return () => undefined;
   const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
     const data = response.notification.request.content.data;
     const notificationId =
