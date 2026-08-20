@@ -4,7 +4,7 @@ import { ActivityIndicator, StyleSheet, Text } from "react-native";
 import { AppScreen, Surface } from "../../src/components/AppScreen";
 import { useAuth } from "../../src/context/AuthContext";
 import { emergencyService } from "../../src/services/emergencyService";
-import type { EmergencyRequest } from "../../src/types/userFeatures";
+import { requestBelongsToUser, type EmergencyRequest } from "../../src/types/userFeatures";
 import { spacing } from "../../src/theme/spacing";
 import { useThemeColors } from "../../src/theme/useThemeColors";
 import { getApiErrorMessage } from "../../src/utils/apiError";
@@ -15,7 +15,7 @@ export default function HistoryScreen() {
   const [requests, setRequests] = useState<EmergencyRequest[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  useEffect(() => { void emergencyService.list().then((items) => setRequests(user ? items.filter((item) => typeof item.requestBy === "string" ? item.requestBy === user._id : item.requestBy._id === user._id) : [])).catch((requestError: unknown) => setError(getApiErrorMessage(requestError))).finally(() => setLoading(false)); }, [user]);
+  useEffect(() => { void emergencyService.list().then((items) => setRequests(user ? items.filter((item) => requestBelongsToUser(item, user)) : [])).catch((requestError: unknown) => setError(getApiErrorMessage(requestError))).finally(() => setLoading(false)); }, [user]);
   return <AppScreen title="Request history" subtitle="A record of the emergency requests submitted from your account.">
     {loading ? <ActivityIndicator color={colors.accent} size="large" style={styles.loader} /> : null}
     {error ? <Text style={[styles.message, { color: colors.warning }]}>{error}</Text> : null}

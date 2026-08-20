@@ -4,7 +4,7 @@ import { AppScreen, SectionTitle, Surface } from "../../src/components/AppScreen
 import { PrimaryButton } from "../../src/components/PrimaryButton";
 import { useAuth } from "../../src/context/AuthContext";
 import { emergencyService } from "../../src/services/emergencyService";
-import type { EmergencyRequest } from "../../src/types/userFeatures";
+import { requestBelongsToUser, type EmergencyRequest } from "../../src/types/userFeatures";
 import { spacing } from "../../src/theme/spacing";
 import { useThemeColors } from "../../src/theme/useThemeColors";
 import { getApiErrorMessage } from "../../src/utils/apiError";
@@ -25,7 +25,7 @@ export default function DashboardScreen() {
   if (!user) {
     return <ActivityIndicator color={colors.accent} size="large" />;
   }
-  const ownRequests = requests.filter((request) => typeof request.requestBy === "string" ? request.requestBy === user._id : request.requestBy._id === user._id);
+  const ownRequests = requests.filter((request) => requestBelongsToUser(request, user));
 
   return <AppScreen title={`Hello, ${user.name.split(" ")[0]}.`} subtitle="Your blood donation profile, requests, and account in one place.">
     <Surface style={styles.hero}><View style={[styles.bloodBadge, { backgroundColor: colors.accent }]}><Text style={[styles.bloodText, { color: colors.surface }]}>{user.bloodGroup ?? "--"}</Text></View><View style={styles.heroCopy}><Text style={[styles.heroTitle, { color: colors.ink }]}>{user.bloodGroup ? "Your blood group is ready" : "Add your blood group"}</Text><Text style={[styles.heroText, { color: colors.muted }]}>{user.isAvailableDonor ? "You are marked available to help nearby." : "You are currently unavailable to donate."}</Text></View></Surface>
