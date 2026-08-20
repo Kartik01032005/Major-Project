@@ -4,6 +4,7 @@ import { getResponseError, isApiObject, type HealthResponse } from "../types/api
 import { isAuthUser, type AuthResponse, type AuthUser, type LoginInput, type RegisterInput, type RegisterResponse } from "../types/auth";
 import type { EmergencyRequest, EmergencyRequestInput, ProfileUpdate, } from "../types/userFeatures";
 import { isEmergencyRequest } from "../types/userFeatures";
+import { hasValidCoordinates, isHospitalResponse, type HospitalResponse } from "../types/location";
 
 class ApiClient {
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -99,6 +100,14 @@ class ApiClient {
     const payload: unknown = await this.request<unknown>("/emergency");
     if (!isApiObject(payload) || !Array.isArray(payload.data) || !payload.data.every(isEmergencyRequest)) {
       throw new Error("The BloodLink API returned invalid emergency requests.");
+    }
+    return payload.data;
+  }
+
+  async getHospitals(): Promise<HospitalResponse[]> {
+    const payload: unknown = await this.request<unknown>("/hospitals");
+    if (!isApiObject(payload) || !Array.isArray(payload.data) || !payload.data.every(isHospitalResponse)) {
+      throw new Error("The BloodLink API returned an invalid hospital list.");
     }
     return payload.data;
   }
