@@ -28,6 +28,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "dev:setup": "node scripts/setup-dev-env.cjs",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
