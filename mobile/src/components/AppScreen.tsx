@@ -1,4 +1,4 @@
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 import type { PropsWithChildren } from "react";
 
 import { spacing } from "../theme/spacing";
@@ -10,7 +10,7 @@ export function AppScreen({ title, subtitle, children, scroll = true }: PropsWit
   return <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>{scroll ? <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">{content}</ScrollView> : content}</SafeAreaView>;
 }
 
-export function Surface({ children, style }: PropsWithChildren<{ style?: object }>) {
+export function Surface({ children, style }: PropsWithChildren<{ style?: StyleProp<ViewStyle> }>) {
   const colors = useThemeColors();
   return <View style={[styles.surface, { backgroundColor: colors.surface, borderColor: colors.border }, style]}>{children}</View>;
 }

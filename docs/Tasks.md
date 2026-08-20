@@ -456,42 +456,51 @@ Add:
 
 ## Sprint 3 – User Features
 
-- [ ] Mobile dashboard
-- [ ] Profile
-- [ ] Blood group management
-- [ ] Emergency request
-- [ ] Request history
-- [ ] Account management
+- [x] Mobile dashboard
+- [x] Profile
+- [x] Blood group management
+- [x] Emergency request
+- [x] Request history
+- [x] Account management
+- [x] Mobile navigation (tabbed bottom navigation across dashboard, requests, emergency, profile, account)
 
 ---
 
 ## Sprint 4 – Emergency Requests
 
-- [ ] Create emergency request
-- [ ] Blood group and units
-- [ ] Location
-- [ ] Request status
+- [x] Create emergency request
+- [x] Blood group and units
+- [x] Location
+- [x] Request status
 - [ ] Cancel request
-- [ ] API integration
+- [x] API integration
 
 ---
 
 ## Sprint 5 – Nearby Blood Banks & Maps
 
-- [ ] Nearby blood banks
-- [ ] Google Maps
-- [ ] Location permissions
-- [ ] Blood availability
-- [ ] Navigation/directions
+- [x] Nearby hospitals (live data via `GET /api/hospitals` with client-side distance)
+- [x] Nearby blood banks (clearly-separate demo data sourced from the website's mock list, flagged as sample)
+- [x] Google Maps (embedded `react-native-maps`; optional Android API key via env, graceful fallback on web/no key)
+- [x] Location permissions (expo-location foreground permission request + states)
+- [x] Mobile map with hospital/blood-bank markers
+- [x] Distance from user (haversine, sorted nearest-first)
+- [x] Search/filtering (category chips + text search)
+- [x] Call and directions (OS-native via Linking — no API key)
+- [x] Loading, empty, permission-denied, and network-error states
+- [x] Protected navigation integration (Nearby tab)
+- [ ] Blood availability (no backend source for per-bank inventory; deferred)
 
 ---
 
 ## Sprint 6 – Notifications
 
-- [ ] Push notifications
-- [ ] Emergency alerts
-- [ ] Notification history
-- [ ] Socket.IO integration
+- [x] Push notifications (expo-notifications local delivery surfaced from existing Socket.IO events; permission request + Android channel)
+- [x] Emergency alerts (real-time Socket.IO `"notification"` events approved/reject/threshold types delivered as OS notifications)
+- [x] Notification history (reuse existing `GET /api/notifications` + `PUT /read/:id`; list, mark-read, mark-all-read, loading/empty/error/permission states)
+- [x] Socket.IO integration (reuse existing backend socket, `register_user` by userId, foreground presentation + background local-notification + tap → notifications tab)
+- [x] Android development-build configuration (expo-dev-client plugin + `eas.json` development profile) enabling full expo-notifications support; Expo Go on Android + web gracefully skip unsupported push APIs via a capability guard instead of crashing
+- [ ] Remote push (FCM/APNs delivery while app is fully killed) — deferred: backend has no push-token registration endpoint and server changes are out of scope
 
 ---
 
