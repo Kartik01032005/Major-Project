@@ -5,6 +5,7 @@ import { isAuthUser, type AuthResponse, type AuthUser, type LoginInput, type Reg
 import type { EmergencyRequest, EmergencyRequestInput, ProfileUpdate, } from "../types/userFeatures";
 import { isEmergencyRequest } from "../types/userFeatures";
 import { isHospitalResponse, type HospitalResponse } from "../types/location";
+import { isNotification, type Notification } from "../types/notification";
 
 class ApiClient {
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -108,6 +109,22 @@ class ApiClient {
     const payload: unknown = await this.request<unknown>("/hospitals");
     if (!isApiObject(payload) || !Array.isArray(payload.data) || !payload.data.every(isHospitalResponse)) {
       throw new Error("The BloodLink API returned an invalid hospital list.");
+    }
+    return payload.data;
+  }
+
+  async getNotifications(): Promise<Notification[]> {
+    const payload: unknown = await this.request<unknown>("/notifications");
+    if (!isApiObject(payload) || !Array.isArray(payload.data) || !payload.data.every(isNotification)) {
+      throw new Error("The BloodLink API returned an invalid notification list.");
+    }
+    return payload.data;
+  }
+
+  async markNotificationRead(id: string): Promise<Notification> {
+    const payload: unknown = await this.request<unknown>(`/notifications/read/${id}`, { method: "PUT" });
+    if (!isApiObject(payload) || !isNotification(payload.data)) {
+      throw new Error("The BloodLink API returned an invalid notification update.");
     }
     return payload.data;
   }
