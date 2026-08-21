@@ -1,6 +1,4 @@
-import type { Config } from "jest";
-
-const config: Config = {
+const config = {
   preset: "ts-jest/presets/default-esm",
   testEnvironment: "node",
   roots: ["<rootDir>/src"],
@@ -26,4 +24,4 @@ const config: Config = {
   detectOpenHandles: true,
 };
 
-export default config;
+module.exports = config;
