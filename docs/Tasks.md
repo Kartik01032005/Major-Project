@@ -519,11 +519,11 @@ Add:
 
 ## Sprint 8 – Performance & Smart Features
 
-- [ ] Optimize API requests
-- [ ] Add caching
-- [ ] Optimize images
-- [ ] Optimize animations
-- [ ] Handle offline/network errors
+- [x] Optimize API requests
+- [x] Add caching
+- [x] Optimize images
+- [x] Optimize animations
+- [x] Handle offline/network errors
 - [ ] Inventory insights
 - [ ] Planned AI features
 
@@ -546,7 +546,7 @@ Add:
 
 - [x] Unit tests
 - [x] API integration tests
-- [N/A] End-to-end testing — Automated E2E testing is not required for this demo project; critical user flows are manually verified on Android.
+- [ ] End-to-end testing — Automated E2E testing is not required for this demo project; critical user flows are manually verified on Android.
 - [ ] Android testing
 - [ ] Performance testing
 - [x] Security testing
