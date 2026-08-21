@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 import BloodInventory from "../models/BloodInventory.js";
 import InventoryUploadLog from "../models/InventoryUploadLog.js";
 import InventoryThreshold from "../models/InventoryThreshold.js";
-import Notification from "../models/Notification.js";
 import { computeFileHash, parseUploadBuffer } from "../services/bulkUploadService.js";
 import { emitToUser } from "../socket/socket.js";
+import { enqueueNotification } from "../services/notificationQueue.js";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 
@@ -24,15 +24,13 @@ async function checkInventoryThresholdsAndNotify(bloodBankId: string) {
         .map((item) => `${item.bloodGroup}: ${item.units} units`)
         .join(", ");
 
-      const notif = await Notification.create({
+      enqueueNotification({
         receiverId: bloodBankId,
         title: "⚠️ Critical Stock Alert",
         message: `Inventory is critically low for: ${summaryText}. Consider updating stock or requesting donors.`,
         type: "Inventory",
-        isRead: false
       });
 
-      emitToUser(bloodBankId, "notification", notif);
       emitToUser(bloodBankId, "inventory_alert", {
         lowGroups: lowGroups.map(g => ({ group: g.bloodGroup, units: g.units }))
       });

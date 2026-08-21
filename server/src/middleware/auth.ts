@@ -19,7 +19,11 @@ export const authGuard = async (req: Request, res: Response, next: NextFunction)
   }
 
   try {
-    const secret = process.env.JWT_SECRET ?? "supersecretkey_bloodlink_12345";
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      res.status(500).json({ success: false, message: "Server authentication is not configured" });
+      return;
+    }
     const decoded = jwt.verify(token, secret) as DecodedToken;
 
     const user = await User.findById(decoded.id).select("-password");
@@ -42,4 +46,3 @@ export const adminGuard = (req: Request, res: Response, next: NextFunction): voi
     res.status(403).json({ success: false, message: "Access denied: Admins only" });
   }
 };
-

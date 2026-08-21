@@ -5,12 +5,16 @@ import User from "../models/User.js";
 import EmergencyRequest from "../models/EmergencyRequest.js";
 import Notification from "../models/Notification.js";
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "supersecretkey_bloodlink_12345";
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? "7d";
+
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET must be configured before starting the server.");
+}
 
 // ─── Token Generator ──────────────────────────────────────────────────────────
 const generateToken = (id: string): string => {
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as any });
+  return jwt.sign({ id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"] });
 };
 
 // ─── Register Controller ──────────────────────────────────────────────────────
@@ -183,4 +187,3 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({ success: false, message: "Server error during account deletion" });
   }
 };
-

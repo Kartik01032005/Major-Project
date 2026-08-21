@@ -5,9 +5,12 @@ let io: SocketIOServer | null = null;
 const userSockets = new Map<string, string>(); // userId -> socketId
 
 export const initSocket = (server: HttpServer): SocketIOServer => {
+  const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:3000")
+    .split(",")
+    .map((origin) => origin.trim());
   io = new SocketIOServer(server, {
     cors: {
-      origin: "*",
+      origin: allowedOrigins,
       methods: ["GET", "POST", "PUT", "DELETE"]
     }
   });

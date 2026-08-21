@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import EmergencyRequest from "../models/EmergencyRequest.js";
 import User from "../models/User.js";
-import Notification from "../models/Notification.js";
-import { emitToUser, broadcast } from "../socket/socket.js";
+import { broadcast } from "../socket/socket.js";
+import { enqueueNotification } from "../services/notificationQueue.js";
 
 // @desc    Create emergency blood request
 // @route   POST /api/emergency
@@ -63,28 +63,23 @@ export const createRequest = async (req: Request, res: Response): Promise<void> 
 
     // Create notifications for matching donors
     for (const donor of matchingDonors) {
-      const notif = await Notification.create({
-        receiverId: donor._id,
+      enqueueNotification({
+        receiverId: donor._id.toString(),
         title: "🚨 Emergency Blood Alert",
         message: notifMessage,
         type: "Emergency"
       });
-
-      // Emit real-time notification
-      emitToUser(donor._id.toString(), "notification", notif);
     }
 
     // Find all admin users/blood banks to notify them
     const admins = await User.find({ role: "admin" });
     for (const admin of admins) {
-      const notif = await Notification.create({
-        receiverId: admin._id,
+      enqueueNotification({
+        receiverId: admin._id.toString(),
         title: "📥 New Emergency Request Received",
         message: `${req.user.name} requested ${bloodGroup} blood at ${hosp}.`,
         type: "Emergency"
       });
-
-      emitToUser(admin._id.toString(), "notification", notif);
     }
 
     // Populate creator's details for dashboard updates
@@ -169,14 +164,12 @@ export const approveRequest = async (req: Request, res: Response): Promise<void>
     await request.save();
 
     // Notify requester
-    const notif = await Notification.create({
-      receiverId: request.requestBy,
+    enqueueNotification({
+      receiverId: request.requestBy.toString(),
       title: "✅ Emergency Request Approved",
       message: `Your emergency request for ${request.bloodGroup} at ${request.hospital} has been approved.`,
       type: "Approval"
     });
-
-    emitToUser(request.requestBy.toString(), "notification", notif);
 
     // Broadcast request update to all clients
     const populatedRequest = await request.populate("requestBy", "name email phone location");
@@ -213,14 +206,12 @@ export const rejectRequest = async (req: Request, res: Response): Promise<void> 
     await request.save();
 
     // Notify requester
-    const notif = await Notification.create({
-      receiverId: request.requestBy,
+    enqueueNotification({
+      receiverId: request.requestBy.toString(),
       title: "❌ Emergency Request Rejected",
       message: `Your emergency request for ${request.bloodGroup} at ${request.hospital} has been rejected.`,
       type: "Rejection"
     });
-
-    emitToUser(request.requestBy.toString(), "notification", notif);
 
     const populatedRequest = await request.populate("requestBy", "name email phone location");
     broadcast("request_updated", populatedRequest);
