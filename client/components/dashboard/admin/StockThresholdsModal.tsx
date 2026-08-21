@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSliders, FiCheck, FiX, FiInfo } from "react-icons/fi";
 import { useDashboard } from "@/context";
@@ -11,28 +11,24 @@ interface StockThresholdsModalProps {
   onClose: () => void;
 }
 
+const DEFAULT_THRESHOLDS: AvailabilityThresholds = {
+  highlyAvailable: 200,
+  veryHigh: 150,
+  high: 100,
+  good: 70,
+  available: 50,
+  moderate: 30,
+  low: 15,
+  veryLow: 10,
+  critical: 5,
+  almostEmpty: 0,
+};
+
 export default function StockThresholdsModal({ isOpen, onClose }: StockThresholdsModalProps) {
   const { thresholds, updateThresholds } = useDashboard();
   const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState<AvailabilityThresholds>({
-    highlyAvailable: 200,
-    veryHigh: 150,
-    high: 100,
-    good: 70,
-    available: 50,
-    moderate: 30,
-    low: 15,
-    veryLow: 10,
-    critical: 5,
-    almostEmpty: 0,
-  });
-
-  useEffect(() => {
-    if (thresholds) {
-      setForm(thresholds);
-    }
-  }, [thresholds]);
+  const [form, setForm] = useState<AvailabilityThresholds>(thresholds ?? DEFAULT_THRESHOLDS);
 
   if (!isOpen) return null;
 

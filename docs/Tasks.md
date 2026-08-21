@@ -544,12 +544,12 @@ Add:
 
 ## Sprint 10 – Testing & Final Polish
 
-- [ ] Unit tests
-- [ ] API integration tests
+- [x] Unit tests
+- [x] API integration tests
 - [ ] End-to-end testing
 - [ ] Android testing
 - [ ] Performance testing
-- [ ] Security testing
+- [x] Security testing
 - [ ] Test low-end devices
-- [ ] Final UI/animation polish
-- [ ] Final documentation
+- [x] Final UI/animation polish
+- [x] Final documentation

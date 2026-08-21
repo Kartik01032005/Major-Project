@@ -91,8 +91,9 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
       clearInterval(interval);
       setProgress(100);
       setSummary(resSummary);
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.message || "Failed to process inventory upload.";
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } }; message?: string };
+      const msg = error.response?.data?.message || error.message || "Failed to process inventory upload.";
       setErrorMsg(msg);
     } finally {
       setUploading(false);

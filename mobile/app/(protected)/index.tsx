@@ -31,7 +31,15 @@ export default function DashboardScreen() {
     <Surface style={styles.hero}><View style={[styles.bloodBadge, { backgroundColor: colors.accent }]}><Text style={[styles.bloodText, { color: colors.surface }]}>{user.bloodGroup ?? "--"}</Text></View><View style={styles.heroCopy}><Text style={[styles.heroTitle, { color: colors.ink }]}>{user.bloodGroup ? "Your blood group is ready" : "Add your blood group"}</Text><Text style={[styles.heroText, { color: colors.muted }]}>{user.isAvailableDonor ? "You are marked available to help nearby." : "You are currently unavailable to donate."}</Text></View></Surface>
     <Link href="/(protected)/emergency" asChild><View style={styles.cta}><PrimaryButton label="Create emergency request" onPress={() => undefined} /></View></Link>
     <SectionTitle>Request overview</SectionTitle>
-    <Surface><Text style={[styles.metric, { color: colors.ink }]}>{loading ? "..." : ownRequests.length}</Text><Text style={[styles.metricLabel, { color: colors.muted }]}>Your emergency requests</Text>{error ? <Text style={[styles.error, { color: colors.warning }]}>{error}</Text> : null}</Surface>
+    <Surface>
+      {loading ? (
+        <ActivityIndicator accessibilityLabel="Loading emergency requests" color={colors.accent} />
+      ) : (
+        <Text style={[styles.metric, { color: colors.ink }]}>{ownRequests.length}</Text>
+      )}
+      <Text style={[styles.metricLabel, { color: colors.muted }]}>Your emergency requests</Text>
+      {error ? <Text style={[styles.error, { color: colors.warning }]}>{error}</Text> : null}
+    </Surface>
     <SectionTitle>Quick actions</SectionTitle>
     <View style={styles.actions}><Link href="/(protected)/profile" asChild><PrimaryButton label="Update profile" onPress={() => undefined} /></Link><Link href="/(protected)/history" asChild><PrimaryButton label="View request history" onPress={() => undefined} /></Link></View>
   </AppScreen>;

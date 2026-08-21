@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiClock, FiFileText, FiX, FiLayers, FiRefreshCw, FiAlertTriangle, FiCheck } from "react-icons/fi";
+import { FiClock, FiFileText, FiX, FiLayers, FiRefreshCw, FiAlertTriangle } from "react-icons/fi";
 import { useDashboard } from "@/context";
 import { InventoryUploadLogItem } from "@/types";
 

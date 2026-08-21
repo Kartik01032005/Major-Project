@@ -124,8 +124,9 @@ export default function BloodInventoryTable() {
     setAdjustPanel(null);
     setSyncingId(item._id);
     try { await syncInventoryFromUpload(item._id); }
-    catch (err: any) {
-      alert(err?.response?.data?.message ?? "Sync failed. Please upload a file first.");
+    catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(error.response?.data?.message ?? "Sync failed. Please upload a file first.");
     }
     finally { setSyncingId(null); }
   };
@@ -399,7 +400,11 @@ export default function BloodInventoryTable() {
 
       {/* Modals */}
       <BulkUploadModal isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} />
-      <StockThresholdsModal isOpen={isThresholdsOpen} onClose={() => setIsThresholdsOpen(false)} />
+      <StockThresholdsModal
+        key={thresholds ? JSON.stringify(thresholds) : "default"}
+        isOpen={isThresholdsOpen}
+        onClose={() => setIsThresholdsOpen(false)}
+      />
       <UploadHistoryModal isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
     </>
   );

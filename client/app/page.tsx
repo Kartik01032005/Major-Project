@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <>
+    <main>
       <HeroSection />
       <AboutSection />
       <FeaturesSection />
@@ -23,6 +23,6 @@ export default function HomePage() {
       <WhyChooseSection />
       <StatsSection />
       <CTASection />
-    </>
+    </main>
   );
 }
