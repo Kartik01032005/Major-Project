@@ -546,7 +546,7 @@ Add:
 
 - [x] Unit tests
 - [x] API integration tests
-- [ ] End-to-end testing
+- [N/A] End-to-end testing — Automated E2E testing is not required for this demo project; critical user flows are manually verified on Android.
 - [ ] Android testing
 - [ ] Performance testing
 - [x] Security testing

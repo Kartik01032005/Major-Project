@@ -13,11 +13,10 @@
 ## Environment limitations
 
 - No Android SDK, emulator, or physical device is available in the verification environment, so live Android launch and low-end-device testing remain outstanding.
-- No browser E2E runner is configured in the repository; existing client tests and Supertest API integration coverage were used instead.
+- Automated E2E testing is not required for this demo project; critical user flows are manually verified on Android.
 - Notification processing is verified through the existing emergency/inventory API suites; the queue remains process-local and is not durable across multiple server replicas.
 
 ## Release follow-up
 
 - Run live Android and low-end-device checks with a provisioned device or emulator.
-- Add a browser E2E runner when the deployment environment provides one.
 - Revisit durable notification jobs and authenticated Socket.IO handshakes before multi-replica production rollout.
