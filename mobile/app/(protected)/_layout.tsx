@@ -6,7 +6,7 @@ import { useThemeColors } from "../../src/theme/useThemeColors";
 
 export default function ProtectedLayout() {
   const colors = useThemeColors();
-  const { isAuthenticated, status } = useAuth();
+  const { isAuthenticated, status, user } = useAuth();
 
   if (status === "loading") {
     return (
@@ -26,6 +26,10 @@ export default function ProtectedLayout() {
     <Tabs.Screen name="emergency" options={{ title: "Emergency" }} />
     <Tabs.Screen name="profile" options={{ title: "Profile" }} />
     <Tabs.Screen name="account" options={{ title: "Account" }} />
+    <Tabs.Screen name="admin" options={{ title: "Admin", href: user?.role === "admin" ? undefined : null }} />
+    <Tabs.Screen name="inventory" options={{ title: "Inventory", href: null }} />
+    <Tabs.Screen name="admin-requests" options={{ title: "Review", href: null }} />
+    <Tabs.Screen name="admin-hospitals" options={{ title: "Hospitals", href: null }} />
   </Tabs>;
 }
 

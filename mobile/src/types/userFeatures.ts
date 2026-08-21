@@ -23,7 +23,7 @@ export type EmergencyRequestInput = {
 
 export type EmergencyRequest = {
   _id: string;
-  requestBy: string | { _id: string; name: string; email: string; phone: string };
+  requestBy: string | { _id: string; name: string; email: string; phone: string; location?: UserLocation };
   bloodGroup: BloodGroup;
   unitsRequired: number;
   hospital: string;
@@ -34,6 +34,46 @@ export type EmergencyRequest = {
   status: RequestStatus;
   createdAt: string;
   updatedAt: string;
+};
+
+export type InventoryItem = {
+  _id: string;
+  bloodGroup: BloodGroup;
+  units: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AvailabilityThresholds = {
+  highlyAvailable: number;
+  veryHigh: number;
+  high: number;
+  good: number;
+  available: number;
+  moderate: number;
+  low: number;
+  veryLow: number;
+  critical: number;
+  almostEmpty: number;
+};
+
+export type InventoryUpload = {
+  _id: string;
+  fileName: string;
+  fileType: "xlsx" | "xls" | "csv" | "pdf";
+  mode: "merge" | "replace";
+  createdAt: string;
+  summary: { validRecords: number; unitsAdded: number; errors?: string[]; unitsByGroup?: Partial<Record<BloodGroup, number>> };
+};
+
+export type HospitalInput = {
+  name: string;
+  address: string;
+  state: string;
+  district: string;
+  phone: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 export const bloodGroups: BloodGroup[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];

@@ -506,14 +506,14 @@ Add:
 
 ## Sprint 7 – Admin Features
 
-- [ ] Admin dashboard
-- [ ] Blood inventory
-- [ ] Inventory upload
-- [ ] Manual inventory adjustment
-- [ ] Emergency requests
-- [ ] Approve/reject requests
-- [ ] Hospital management
-- [ ] Admin notifications
+- [x] Admin dashboard
+- [x] Blood inventory
+- [x] Inventory upload
+- [x] Manual inventory adjustment
+- [x] Emergency requests
+- [x] Approve/reject requests
+- [x] Hospital management
+- [x] Admin notifications
 
 ---
 
