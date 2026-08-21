@@ -64,7 +64,17 @@ export function NearbyPlaceCard({ place, selected, onSelect }: NearbyPlaceCardPr
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 14, borderWidth: 1, gap: spacing.sm, padding: spacing.md },
+  card: {
+    borderRadius: 20,
+    borderWidth: 1,
+    elevation: 1,
+    gap: spacing.sm,
+    padding: spacing.md,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+  },
   header: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
   badge: { borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   badgeText: { color: "#FFFFFF", fontSize: 10, fontWeight: "800", letterSpacing: 0.4, textTransform: "uppercase" },

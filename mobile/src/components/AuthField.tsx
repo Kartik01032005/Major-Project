@@ -32,7 +32,7 @@ export function AuthError({ message }: { message: string }) {
 }
 
 const styles = StyleSheet.create({
-  label: { fontSize: 12, fontWeight: "700", marginBottom: spacing.sm, textTransform: "uppercase" },
-  input: { borderRadius: 12, borderWidth: 1, fontSize: 16, minHeight: 52, paddingHorizontal: spacing.md },
+  label: { fontSize: 14, fontWeight: "600", marginBottom: 6 },
+  input: { borderRadius: 12, borderWidth: 1, fontSize: 15, minHeight: 48, paddingHorizontal: spacing.md },
   error: { fontSize: 13, lineHeight: 19, marginTop: spacing.sm },
 });

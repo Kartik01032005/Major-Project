@@ -2,6 +2,7 @@ export const themeColors = {
   light: {
     accent: "#DC2626",
     accentDark: "#B91C1C",
+    accentLight: "#FFF1F2",
     background: "#FFFFFF",
     border: "#E2E8F0",
     ink: "#0F172A",
@@ -24,6 +25,7 @@ export const themeColors = {
   dark: {
     accent: "#EF4444",
     accentDark: "#F87171",
+    accentLight: "#1A0505",
     background: "#060910",
     border: "#1E293B",
     ink: "#F8FAFC",

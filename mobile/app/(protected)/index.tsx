@@ -2,6 +2,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { AppScreen, SectionTitle, Surface } from "../../src/components/AppScreen";
 import { PrimaryButton } from "../../src/components/PrimaryButton";
+import { SecondaryButton } from "../../src/components/SecondaryButton";
 import { useAuth } from "../../src/context/AuthContext";
 import { emergencyService } from "../../src/services/emergencyService";
 import { requestBelongsToUser, type EmergencyRequest } from "../../src/types/userFeatures";
@@ -28,7 +29,7 @@ export default function DashboardScreen() {
   const ownRequests = requests.filter((request) => requestBelongsToUser(request, user));
 
   return <AppScreen title={`Hello, ${user.name.split(" ")[0]}.`} subtitle="Your blood donation profile, requests, and account in one place.">
-    <Surface style={styles.hero}><View style={[styles.bloodBadge, { backgroundColor: colors.accent }]}><Text style={[styles.bloodText, { color: colors.surface }]}>{user.bloodGroup ?? "--"}</Text></View><View style={styles.heroCopy}><Text style={[styles.heroTitle, { color: colors.ink }]}>{user.bloodGroup ? "Your blood group is ready" : "Add your blood group"}</Text><Text style={[styles.heroText, { color: colors.muted }]}>{user.isAvailableDonor ? "You are marked available to help nearby." : "You are currently unavailable to donate."}</Text></View></Surface>
+    <Surface style={[styles.hero, { backgroundColor: colors.accent, borderColor: colors.accent }]}><View style={[styles.bloodBadge, { backgroundColor: "#FFFFFF26" }]}><Text style={[styles.bloodText, { color: colors.surface }]}>{user.bloodGroup ?? "--"}</Text></View><View style={styles.heroCopy}><Text style={[styles.heroTitle, { color: colors.surface }]}>{user.bloodGroup ? "Your blood group is ready" : "Add your blood group"}</Text><Text style={[styles.heroText, { color: "#FEE2E2" }]}>{user.isAvailableDonor ? "You are marked available to help nearby." : "You are currently unavailable to donate."}</Text></View></Surface>
     <Link href="/(protected)/emergency" asChild><View style={styles.cta}><PrimaryButton label="Create emergency request" onPress={() => undefined} /></View></Link>
     <SectionTitle>Request overview</SectionTitle>
     <Surface>
@@ -41,7 +42,7 @@ export default function DashboardScreen() {
       {error ? <Text style={[styles.error, { color: colors.warning }]}>{error}</Text> : null}
     </Surface>
     <SectionTitle>Quick actions</SectionTitle>
-    <View style={styles.actions}><Link href="/(protected)/profile" asChild><PrimaryButton label="Update profile" onPress={() => undefined} /></Link><Link href="/(protected)/history" asChild><PrimaryButton label="View request history" onPress={() => undefined} /></Link></View>
+    <View style={styles.actions}><Link href="/(protected)/profile" asChild><SecondaryButton label="Update profile" onPress={() => undefined} /></Link><Link href="/(protected)/history" asChild><SecondaryButton label="View request history" onPress={() => undefined} /></Link></View>
   </AppScreen>;
 }
 

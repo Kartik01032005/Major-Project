@@ -29,11 +29,16 @@ const styles = StyleSheet.create({
   button: {
     alignItems: "center",
     borderRadius: 12,
+    elevation: 2,
     justifyContent: "center",
-    minHeight: 52,
+    minHeight: 48,
     paddingHorizontal: spacing.lg,
+    shadowColor: "#991B1B",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   pressed: { opacity: 0.84 },
   disabled: { opacity: 0.65 },
-  label: { fontSize: 16, fontWeight: "700" },
+  label: { fontSize: 15, fontWeight: "700", letterSpacing: -0.1 },
 });

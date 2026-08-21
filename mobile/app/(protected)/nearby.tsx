@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   legend: { alignItems: "center", marginTop: spacing.sm },
   searchRow: { marginTop: spacing.lg },
   search: { borderRadius: 12, borderWidth: 1, fontSize: 15, minHeight: 48, paddingHorizontal: spacing.md },
-  filterRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm },
+  filterRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.sm },
   chip: { borderRadius: 999, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
   chipText: { fontSize: 13, fontWeight: "800" },
 });
