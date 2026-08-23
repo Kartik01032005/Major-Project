@@ -308,7 +308,6 @@ Always keep the project production-ready.
 - SMS Notifications
 - Email Notifications
 - Progressive Web App (PWA)
-- Mobile Application
 - Docker Support
 - Kubernetes Deployment
 - Multi-Language Support
@@ -320,35 +319,6 @@ Always keep the project production-ready.
 This project is developed for educational and academic purposes.
 
 ---
-## 📱 Mobile Application
-
-BloodLink also provides a mobile application built using React Native and Expo.
-
-The mobile application uses the same backend and database as the web application.
-
-### Mobile Features
-
-- Authentication
-- User Dashboard
-- Emergency Blood Requests
-- Nearby Blood Banks
-- Google Maps Navigation
-- Real-Time Notifications
-- Blood Request History
-- Profile Management
-- Admin Features
-- Blood Inventory Management
-
-### Mobile Technology
-
-- React Native
-- Expo
-- TypeScript
-- Expo Router
-- React Query
-- Zustand
-- React Native Maps
-
 # 👨‍💻 Author
 
 **Kartik Nilekani**

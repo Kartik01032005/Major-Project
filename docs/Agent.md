@@ -395,17 +395,4 @@ Always keep the codebase:
 - Scalable
 - Maintainable
 - Secure
-- Production-ready## Mobile Development Rules
-
-- The mobile application must be developed inside `mobile/`.
-- Do not place React Native code inside `client/`.
-- Do not create a separate backend for the mobile application.
-- Use the existing `server/` APIs.
-- Do not create a separate MongoDB database for mobile.
-- Reuse existing API contracts wherever possible.
-- Keep shared types consistent between applications.
-- Never expose backend secrets in the mobile application.
-- Never connect the mobile application directly to MongoDB.
-- All authorization must be enforced by the backend.
-- Maintain the existing web application functionality.
-- Test mobile changes without breaking the web application.
+- Production-ready

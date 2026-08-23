@@ -137,12 +137,6 @@ Deployment
 - Vercel
 - Render
 
-## Mobile Application
-
-BloodLink will provide a dedicated mobile application for Android and iOS using React Native and Expo.
-
-The mobile application will use the existing BloodLink backend APIs and database, ensuring that web and mobile users share the same authentication, emergency requests, blood inventory, notifications, and user data.
-
 ## Scalability Requirements
 
 - Support multiple simultaneous users and emergency requests.
