@@ -29,6 +29,7 @@ interface DashboardContextType {
     unitsRequired?: number;
   }) => Promise<void>;
   updateRequestStatus: (id: string, status: "approved" | "rejected") => Promise<void>;
+  cancelRequest: (id: string) => Promise<void>;
   refreshRequests: () => Promise<void>;
 
   // Blood Inventory
@@ -248,6 +249,14 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     [refreshRequests]
   );
 
+  const cancelRequest = useCallback(
+    async (id: string) => {
+      await dashboardService.cancelRequest(id);
+      await refreshRequests();
+    },
+    [refreshRequests]
+  );
+
   // ── Blood Inventory ────────────────────────────────────────────────────────
 
   const updateInventory = useCallback(
@@ -354,6 +363,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         loadingRequests,
         createRequest,
         updateRequestStatus,
+        cancelRequest,
         refreshRequests,
         inventory,
         loadingInventory,

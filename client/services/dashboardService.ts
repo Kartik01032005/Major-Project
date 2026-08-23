@@ -41,8 +41,9 @@ export const dashboardService = {
     return response.data.data;
   },
 
-  deleteRequest: async (id: string): Promise<void> => {
-    await api.delete(`/emergency/${id}`);
+  cancelRequest: async (id: string): Promise<EmergencyRequest> => {
+    const response = await api.delete<{ success: boolean; data: EmergencyRequest }>(`/emergency/${id}`);
+    return response.data.data;
   },
 
   // Inventory

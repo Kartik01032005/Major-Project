@@ -197,20 +197,79 @@ describe("Emergency request approve/reject", () => {
   });
 });
 
-// ─── Delete Emergency Request ───────────────────────────────────────────────
+// ─── Cancel Emergency Request ───────────────────────────────────────────────
 describe("DELETE /api/emergency/:id", () => {
-  it("owner should delete their own request", async () => {
+  afterEach(async () => {
+    await EmergencyRequest.deleteMany({});
+  });
+
+  const createRequest = async () => {
     const createRes = await request(app)
       .post("/api/emergency")
       .set("Authorization", `Bearer ${userToken}`)
       .send(emergencyPayload);
-    const requestId = createRes.body.data._id;
+    return createRes.body.data._id as string;
+  };
 
+  it("owner should cancel their own pending request and persist the status", async () => {
+    const requestId = await createRequest();
     const res = await request(app)
       .delete(`/api/emergency/${requestId}`)
       .set("Authorization", `Bearer ${userToken}`);
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
+    expect(res.body.data.status).toBe("Cancelled");
+    await expect(EmergencyRequest.findById(requestId).select("status")).resolves.toMatchObject({
+      status: "Cancelled",
+    });
   });
+
+  it("should reject cancellation without authentication", async () => {
+    const requestId = await createRequest();
+    const res = await request(app).delete(`/api/emergency/${requestId}`);
+
+    expect(res.status).toBe(401);
+  });
+
+  it("should prevent a different user from cancelling the request", async () => {
+    const requestId = await createRequest();
+    const res = await request(app)
+      .delete(`/api/emergency/${requestId}`)
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(403);
+  });
+
+  it("should return not found for a nonexistent request", async () => {
+    const requestId = new mongoose.Types.ObjectId().toString();
+    const res = await request(app)
+      .delete(`/api/emergency/${requestId}`)
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(404);
+  });
+
+  it("should reject an invalid request ID", async () => {
+    const res = await request(app)
+      .delete("/api/emergency/not-an-id")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(400);
+  });
+
+  it.each(["Approved", "Rejected", "Completed", "Cancelled"] as const)(
+    "should reject cancellation after the request is %s",
+    async (status) => {
+    const requestId = await createRequest();
+    await EmergencyRequest.findByIdAndUpdate(requestId, { status });
+
+    const res = await request(app)
+      .delete(`/api/emergency/${requestId}`)
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(409);
+    expect(res.body.message).toBe("Only pending requests can be cancelled");
+    }
+  );
 });
