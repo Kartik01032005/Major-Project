@@ -64,10 +64,11 @@ export default function CTASection() {
                 Register as donor
               </Button>
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="lg"
                 href="/register?role=admin"
-                className="text-white border border-white/20 hover:bg-white/10"
+                icon={<FiArrowRight size={15} />}
+                iconPosition="right"
               >
                 Join as blood bank
               </Button>
