@@ -249,9 +249,9 @@
 
 # Testing
 
-- [ ] Frontend Testing
-- [ ] Backend Testing
-- [ ] API Testing
+- [x] Frontend Testing
+- [x] Backend Testing
+- [x] API Testing
 - [ ] Responsive Testing
 - [ ] Performance Testing
 
