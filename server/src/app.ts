@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import dotenv from "dotenv";
+import "./config/env.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import emergencyRoutes from "./routes/emergencyRoutes.js";
@@ -10,8 +10,6 @@ import inventoryRoutes from "./routes/inventoryRoutes.js";
 import hospitalRoutes from "./routes/hospitalRoutes.js";
 
 import { generalLimiter, strictLimiter } from "./middleware/rateLimiter.js";
-
-dotenv.config();
 
 const app = express();
 
