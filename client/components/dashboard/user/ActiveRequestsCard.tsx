@@ -43,7 +43,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   const currentUserId = user?._id;
 
   const handleCancel = async (requestId: string) => {
-    if (!window.confirm("Cancel this emergency request?")) return;
+    if (!window.confirm("Are you sure you want to cancel this emergency request?")) return;
 
     setCancelError(null);
     setCancelLoading(requestId);
