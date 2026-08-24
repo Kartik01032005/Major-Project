@@ -22,19 +22,24 @@ const defaultFallbackContext: LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window !== "undefined") {
+  // Keep the server and the client's hydration render deterministic. The saved
+  // browser preference is applied only after React has hydrated this tree.
+  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
       try {
         const stored = localStorage.getItem(LOCALE_STORAGE_KEY) as Locale | null;
         if (stored && ["en", "kn", "ml", "ta", "te", "hi", "mr"].includes(stored)) {
-          return stored;
+          setLocaleState(stored);
         }
       } catch (e) {
         console.error("Failed to read language preference from localStorage", e);
       }
-    }
-    return DEFAULT_LOCALE;
-  });
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale);

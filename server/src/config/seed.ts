@@ -32,23 +32,36 @@ export const seedInitialData = async (): Promise<void> => {
     }
 
     // 2. Ensure Regular Donor User exists
-    let donorUser = await User.findOne({ email: "rahul@gmail.com" });
+    // Either unique identifier may already belong to an existing user. Looking
+    // up both prevents repeated startups from trying to insert the same phone.
+    const donorUser = await User.findOne({
+      $or: [
+        { email: "rahul@gmail.com" },
+        { phone: "9876543210" },
+      ],
+    });
     if (!donorUser) {
-      await User.create({
-        name: "Rahul Kumar",
-        email: "rahul@gmail.com",
-        password: "password123",
-        phone: "9876543210",
-        bloodGroup: "O+",
-        role: "user",
-        isAvailableDonor: true,
-        location: {
-          state: "Karnataka",
-          district: "Mysore",
-          latitude: 12.2958,
-          longitude: 76.6394,
-        },
-      });
+      try {
+        await User.create({
+          name: "Rahul Kumar",
+          email: "rahul@gmail.com",
+          password: "password123",
+          phone: "9876543210",
+          bloodGroup: "O+",
+          role: "user",
+          isAvailableDonor: true,
+          location: {
+            state: "Karnataka",
+            district: "Mysore",
+            latitude: 12.2958,
+            longitude: 76.6394,
+          },
+        });
+      } catch (error: any) {
+        // A concurrent startup can still win the race after the lookup. In
+        // that case, leave the existing user untouched and continue seeding.
+        if (error?.code !== 11000) throw error;
+      }
     }
 
     // 3. Ensure Blood Bank Organization Admin exists

@@ -54,7 +54,7 @@ export default function Navbar() {
             : "bg-transparent",
         ].join(" ")}
       >
-        <div className="container-custom">
+        <div className="container-custom navbar-container">
           <nav
             className="flex items-center justify-between h-16"
             aria-label="Main navigation"
@@ -62,7 +62,7 @@ export default function Navbar() {
             {/* ── Logo ─────────────────────────────────────────── */}
             <Link
               href="/"
-              className="flex items-center gap-2.5 group outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg"
+              className="flex shrink-0 items-center gap-2.5 group outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg"
               aria-label="BloodLink – Home"
             >
               <motion.div
@@ -83,15 +83,15 @@ export default function Navbar() {
             </Link>
 
             {/* ── Desktop Links ─────────────────────────────────── */}
-            <ul className="hidden md:flex items-center gap-0.5" role="list">
+            <ul className="hidden 2xl:flex flex-1 min-w-0 items-center justify-center gap-0.5 px-4" role="list">
               {navLinks.map((link) => {
                 const active = pathname === link.href;
                 return (
-                  <li key={link.href}>
+                  <li key={link.href} className="flex-none">
                     <Link
                       href={link.href}
                       className={[
-                        "relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 outline-none",
+                        "relative inline-flex whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 outline-none",
                         "focus-visible:ring-2 focus-visible:ring-red-500",
                         active
                           ? "text-red-600 dark:text-red-400"
@@ -113,12 +113,12 @@ export default function Navbar() {
             </ul>
 
             {/* ── Desktop CTA ───────────────────────────────────── */}
-            <div className="hidden md:flex items-center gap-3">
-              <LanguageSelector />
+            <div className="hidden 2xl:flex shrink-0 items-center gap-3 whitespace-nowrap">
+              <LanguageSelector className="shrink-0" />
               <ThemeToggle />
               {user ? (
                 <>
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  <span className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-400 font-medium">
                     {t("nav_hello")}{" "}
                     <span className="font-semibold text-slate-900 dark:text-white">{user.name.split(" ")[0]}</span>
                   </span>
@@ -148,7 +148,7 @@ export default function Navbar() {
             </div>
 
             {/* ── Hamburger ─────────────────────────────────────── */}
-            <div className="md:hidden flex items-center gap-2">
+            <div className="2xl:hidden flex items-center gap-2">
               <LanguageSelector />
               <ThemeToggle />
               <button
@@ -203,7 +203,7 @@ export default function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm 2xl:hidden"
               aria-hidden="true"
               onClick={() => setMobileOpen(false)}
             />
@@ -222,7 +222,7 @@ export default function Navbar() {
                 "fixed top-0 right-0 bottom-0 z-50 w-[280px]",
                 "bg-white dark:bg-slate-950",
                 "border-l border-slate-200 dark:border-slate-800",
-                "flex flex-col shadow-2xl md:hidden",
+                "flex flex-col shadow-2xl 2xl:hidden",
               ].join(" ")}
             >
               {/* Drawer Header */}

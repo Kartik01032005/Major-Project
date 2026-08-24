@@ -157,6 +157,10 @@ body {
 @media (min-width: 768px) { .container-custom { padding-inline: 2.5rem; } }
 @media (min-width: 1280px) { .container-custom { padding-inline: 2rem; } }
 
+/* The desktop navbar contains intrinsically sized translated links and account
+   controls, so it needs more room than the content sections it wraps. */
+.navbar-container { max-width: 1600px; }
+
 /* Section Spacing */
 .section-padding { padding-block: 6rem; }
 @media (min-width: 768px) { .section-padding { padding-block: 7rem; } }

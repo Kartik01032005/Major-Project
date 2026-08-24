@@ -1,8 +1,9 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { LOCALES, LOCALE_STORAGE_KEY, getTranslations, translations } from "@/i18n";
-import { LanguageProvider, useTranslation } from "@/context";
+import { AuthProvider, LanguageProvider, useTranslation } from "@/context";
 import LanguageSelector from "@/components/ui/LanguageSelector";
+import Navbar from "@/components/layout/Navbar";
 import Home from "@/app/page";
 
 // Mock next/navigation
@@ -14,6 +15,13 @@ jest.mock("next/navigation", () => ({
   }),
   usePathname: () => "/",
 }));
+
+jest.mock("@/components/ui/ThemeToggle", () => {
+  function ThemeToggleMock() {
+    return <div data-testid="theme-toggle" />;
+  }
+  return ThemeToggleMock;
+});
 
 describe("Multilingual i18n Suite", () => {
   beforeEach(() => {
@@ -47,6 +55,30 @@ describe("Multilingual i18n Suite", () => {
     // @ts-expect-error testing invalid locale
     const fallbackDict = getTranslations("invalid_locale");
     expect(fallbackDict).toEqual(translations.en);
+  });
+
+  it("renders English before restoring a saved locale after hydration", () => {
+    jest.useFakeTimers();
+    localStorage.setItem(LOCALE_STORAGE_KEY, "kn");
+    const LanguageText = () => {
+      const { t } = useTranslation();
+      return <span data-testid="hydration-language">{t("nav_home")}</span>;
+    };
+
+    try {
+      render(
+        <LanguageProvider>
+          <LanguageText />
+        </LanguageProvider>
+      );
+
+      expect(screen.getByTestId("hydration-language")).toHaveTextContent(translations.en.nav_home);
+
+      act(() => jest.runAllTimers());
+      expect(screen.getByTestId("hydration-language")).toHaveTextContent(translations.kn.nav_home);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it("should switch language and update UI via useTranslation", () => {
@@ -142,7 +174,7 @@ describe("Multilingual i18n Suite", () => {
     expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe("hi");
   });
 
-  it("persists the locale after the provider remounts", () => {
+  it("restores the persisted locale after hydration", async () => {
     localStorage.setItem(LOCALE_STORAGE_KEY, "hi");
     const TestComponent = () => {
       const { locale } = useTranslation();
@@ -155,8 +187,10 @@ describe("Multilingual i18n Suite", () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByTestId("persisted-locale")).toHaveTextContent("hi");
-    expect(document.documentElement.lang).toBe("hi");
+    await waitFor(() => {
+      expect(screen.getByTestId("persisted-locale")).toHaveTextContent("hi");
+      expect(document.documentElement.lang).toBe("hi");
+    });
   });
 
   it("supports keyboard navigation and Escape in the language selector", async () => {
@@ -178,6 +212,41 @@ describe("Multilingual i18n Suite", () => {
     fireEvent.keyDown(marathi, { key: "Escape" });
     await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
     expect(trigger).toHaveFocus();
+  });
+
+  it("keeps every translated navigation label intact in the responsive navbar", () => {
+    const NavbarHarness = () => {
+      const { setLocale } = useTranslation();
+      return (
+        <>
+          {LOCALES.map((locale) => (
+            <button key={locale.code} onClick={() => setLocale(locale.code)}>
+              {locale.code}
+            </button>
+          ))}
+          <AuthProvider>
+            <Navbar />
+          </AuthProvider>
+        </>
+      );
+    };
+
+    render(
+      <LanguageProvider>
+        <NavbarHarness />
+      </LanguageProvider>
+    );
+
+    for (const locale of LOCALES) {
+      fireEvent.click(screen.getByRole("button", { name: locale.code }));
+      expect(screen.getByRole("link", { name: translations[locale.code].nav_home })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: translations[locale.code].nav_features })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: translations[locale.code].nav_how_it_works })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: translations[locale.code].nav_about })).toBeInTheDocument();
+    }
+
+    const navigationList = screen.getByRole("list");
+    expect(navigationList).toHaveClass("2xl:flex", "flex-1", "min-w-0");
   });
 
   it("renders the Home landing page wrapped in LanguageProvider", () => {
