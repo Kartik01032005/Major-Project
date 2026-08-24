@@ -1,6 +1,6 @@
 import React from "react";
-import { render, screen, fireEvent, act } from "@testing-library/react";
-import { LOCALES, DEFAULT_LOCALE, LOCALE_STORAGE_KEY, getTranslations, translations } from "@/i18n";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { LOCALES, LOCALE_STORAGE_KEY, getTranslations, translations } from "@/i18n";
 import { LanguageProvider, useTranslation } from "@/context";
 import LanguageSelector from "@/components/ui/LanguageSelector";
 import Home from "@/app/page";
@@ -140,6 +140,44 @@ describe("Multilingual i18n Suite", () => {
     fireEvent.click(screen.getByRole("option", { name: /हिन्दी/i }));
     expect(triggerBtn).toHaveTextContent("हिन्दी");
     expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe("hi");
+  });
+
+  it("persists the locale after the provider remounts", () => {
+    localStorage.setItem(LOCALE_STORAGE_KEY, "hi");
+    const TestComponent = () => {
+      const { locale } = useTranslation();
+      return <span data-testid="persisted-locale">{locale}</span>;
+    };
+
+    render(
+      <LanguageProvider>
+        <TestComponent />
+      </LanguageProvider>
+    );
+
+    expect(screen.getByTestId("persisted-locale")).toHaveTextContent("hi");
+    expect(document.documentElement.lang).toBe("hi");
+  });
+
+  it("supports keyboard navigation and Escape in the language selector", async () => {
+    render(
+      <LanguageProvider>
+        <LanguageSelector />
+      </LanguageProvider>
+    );
+
+    const trigger = screen.getByRole("button", { name: /select language/i });
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+
+    const english = screen.getByRole("option", { name: /english/i });
+    fireEvent.keyDown(english, { key: "End" });
+    const marathi = screen.getAllByRole("option")[6];
+    expect(marathi).toHaveFocus();
+    fireEvent.keyDown(marathi, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("listbox")).not.toBeInTheDocument());
+    expect(trigger).toHaveFocus();
   });
 
   it("renders the Home landing page wrapped in LanguageProvider", () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiBell, FiCheck, FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiPackage } from "react-icons/fi";
 import { useDashboard, useTranslation } from "@/context";
@@ -17,9 +17,15 @@ const TYPE_CONFIG: Record<NotificationType, { icon: React.ReactNode; color: stri
 export default function NotificationsPanel() {
   const { notifications, unreadCount, markAllRead, markRead } = useDashboard();
   const { t } = useTranslation();
+  const [currentTime, setCurrentTime] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setCurrentTime(Date.now()), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   function timeAgo(date: string): string {
-    const diff = Date.now() - new Date(date).getTime();
+    const diff = currentTime - new Date(date).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 1) return t("common_just_now");
     if (mins < 60) return `${mins}${t("common_ago_minutes")}`;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { Locale, Translations, DEFAULT_LOCALE, LOCALE_STORAGE_KEY, getTranslations } from "@/i18n";
 
 interface LanguageContextType {
@@ -48,6 +48,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   const currentTranslations = getTranslations(locale);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   const t = useCallback(
     (key: keyof Translations): string => {

@@ -15,6 +15,9 @@ export default function LanguageSelector({ className = "", isMobileDrawer = fals
   const { locale, setLocale } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const restoreFocusRef = useRef(false);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -34,13 +37,48 @@ export default function LanguageSelector({ className = "", isMobileDrawer = fals
     setIsOpen(false);
   };
 
+  const focusOption = (index: number) => {
+    optionRefs.current[index]?.focus();
+  };
+
+  const handleTriggerKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      setIsOpen(true);
+      requestAnimationFrame(() => focusOption(event.key === "ArrowDown" ? 0 : LOCALES.length - 1));
+    }
+    if (event.key === "Escape") setIsOpen(false);
+  };
+
+  const handleOptionKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      focusOption((index + 1) % LOCALES.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      focusOption((index - 1 + LOCALES.length) % LOCALES.length);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      focusOption(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      focusOption(LOCALES.length - 1);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      restoreFocusRef.current = true;
+      setIsOpen(false);
+    }
+  };
+
   return (
     <div className={`relative inline-block text-left ${className}`} ref={dropdownRef}>
       {/* Trigger Button */}
       <button
         id="language-selector-btn"
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
+        onKeyDown={handleTriggerKeyDown}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label="Select Language"
@@ -67,7 +105,14 @@ export default function LanguageSelector({ className = "", isMobileDrawer = fals
       </button>
 
       {/* Dropdown Options */}
-      <AnimatePresence>
+      <AnimatePresence
+        onExitComplete={() => {
+          if (restoreFocusRef.current) {
+            triggerRef.current?.focus();
+            restoreFocusRef.current = false;
+          }
+        }}
+      >
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: isMobileDrawer ? 4 : 8, scale: 0.96 }}
@@ -87,13 +132,16 @@ export default function LanguageSelector({ className = "", isMobileDrawer = fals
           >
             {LOCALES.map((loc) => {
               const isSelected = loc.code === locale;
+              const index = LOCALES.indexOf(loc);
               return (
                 <button
                   key={loc.code}
+                  ref={(element) => { optionRefs.current[index] = element; }}
                   type="button"
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => handleSelect(loc.code)}
+                  onKeyDown={(event) => handleOptionKeyDown(event, index)}
                   className={[
                     "w-full flex items-center justify-between px-3.5 py-2 text-sm text-left transition-colors",
                     isSelected

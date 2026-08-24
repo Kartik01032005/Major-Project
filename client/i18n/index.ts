@@ -1,4 +1,4 @@
-import { Locale, Translations, LOCALES, DEFAULT_LOCALE, LOCALE_STORAGE_KEY } from "./types";
+import { Locale, Translations, DEFAULT_LOCALE } from "./types";
 import en from "./en";
 import kn from "./kn";
 import ml from "./ml";
