@@ -6,7 +6,7 @@ import {
   getRequestById,
   approveRequest,
   rejectRequest,
-  deleteRequest
+  cancelRequest
 } from "../controllers/emergencyController.js";
 import { authGuard, adminGuard } from "../middleware/auth.js";
 
@@ -39,6 +39,6 @@ router.get("/", getAllRequests);
 router.get("/:id", getRequestById);
 router.put("/:id/approve", authGuard, adminGuard, approveRequest);
 router.put("/:id/reject", authGuard, adminGuard, rejectRequest);
-router.delete("/:id", authGuard, deleteRequest);
+router.delete("/:id", authGuard, cancelRequest);
 
 export default router;

@@ -207,6 +207,7 @@
 - [x] Get Requests
 - [x] Approve Request
 - [x] Reject Request
+- [x] Cancel Request
 
 ## Inventory APIs
 

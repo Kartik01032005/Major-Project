@@ -13,7 +13,7 @@ export interface IEmergencyRequest extends Document {
     latitude: number;
     longitude: number;
   };
-  status: "Pending" | "Approved" | "Rejected" | "Completed";
+  status: "Pending" | "Approved" | "Rejected" | "Completed" | "Cancelled";
   approvedBy?: Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;

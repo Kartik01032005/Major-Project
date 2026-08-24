@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader } from "react-icons/fi";
 import { useAuth } from "@/context";
@@ -12,6 +12,7 @@ const STATUS_CONFIG: Record<RequestStatus, { label: string; color: string; icon:
   Approved:  { label: "Approved",  color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", icon: <FiCheckCircle size={12} /> },
   Rejected:  { label: "Rejected",  color: "bg-red-100    text-red-700    dark:bg-red-900/30    dark:text-red-400",    icon: <FiXCircle size={12} /> },
   Completed: { label: "Completed", color: "bg-slate-100  text-slate-700  dark:bg-slate-800     dark:text-slate-400",  icon: <FiCheckCircle size={12} /> },
+  Cancelled: { label: "Cancelled", color: "bg-slate-100  text-slate-700  dark:bg-slate-800     dark:text-slate-400",  icon: <FiXCircle size={12} /> },
 };
 
 const BLOOD_GROUP_COLORS: Record<string, string> = {
@@ -31,13 +32,29 @@ interface ActiveRequestsCardProps {
 
 export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardProps) {
   const { user } = useAuth();
-  const { requests, refreshRequests, loadingRequests } = useDashboard();
+  const { requests, refreshRequests, loadingRequests, cancelRequest } = useDashboard();
+  const [cancelLoading, setCancelLoading] = useState<string | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   useEffect(() => {
     refreshRequests();
   }, [refreshRequests]);
 
   const currentUserId = user?._id;
+
+  const handleCancel = async (requestId: string) => {
+    if (!window.confirm("Are you sure you want to cancel this emergency request?")) return;
+
+    setCancelError(null);
+    setCancelLoading(requestId);
+    try {
+      await cancelRequest(requestId);
+    } catch (error) {
+      setCancelError(error instanceof Error ? error.message : "Failed to cancel request");
+    } finally {
+      setCancelLoading(null);
+    }
+  };
 
   // Show only this user's requests
   const myRequests = requests.filter((r) => {
@@ -101,6 +118,11 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
         </div>
       ) : (
         <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+          {cancelError && (
+            <li className="px-5 py-3 text-xs text-red-600 dark:text-red-400" role="alert">
+              {cancelError}
+            </li>
+          )}
           {myRequests.map((req, i) => {
             const status = STATUS_CONFIG[req.status];
             const bgColor = BLOOD_GROUP_COLORS[req.bloodGroup] ?? "";
@@ -140,6 +162,19 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                     </span>
                   </div>
                 </div>
+                {req.status === "Pending" && (
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => handleCancel(req._id)}
+                      disabled={cancelLoading === req._id}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {cancelLoading === req._id && <FiLoader size={12} className="animate-spin" />}
+                      {cancelLoading === req._id ? "Cancelling..." : "Cancel Request"}
+                    </button>
+                  </div>
+                )}
               </motion.li>
             );
           })}

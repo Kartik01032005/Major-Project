@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
+import mongoose from "mongoose";
 import EmergencyRequest from "../models/EmergencyRequest.js";
 import User from "../models/User.js";
 import { broadcast } from "../socket/socket.js";
@@ -227,13 +228,18 @@ export const rejectRequest = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// @desc    Delete emergency request (Owner or Admin)
+// @desc    Cancel pending emergency request (Owner only)
 // @route   DELETE /api/emergency/:id
 // @access  Private
-export const deleteRequest = async (req: Request, res: Response): Promise<void> => {
+export const cancelRequest = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
       res.status(401).json({ success: false, message: "Not authorized" });
+      return;
+    }
+
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      res.status(400).json({ success: false, message: "Invalid request ID" });
       return;
     }
 
@@ -243,23 +249,29 @@ export const deleteRequest = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    // Verify ownership or admin privileges
-    if (request.requestBy.toString() !== req.user._id.toString() && req.user.role !== "admin") {
-      res.status(403).json({ success: false, message: "Not authorized to delete this request" });
+    if (request.requestBy.toString() !== req.user._id.toString()) {
+      res.status(403).json({ success: false, message: "Not authorized to cancel this request" });
       return;
     }
 
-    await EmergencyRequest.deleteOne({ _id: req.params.id });
+    if (request.status !== "Pending") {
+      res.status(409).json({ success: false, message: "Only pending requests can be cancelled" });
+      return;
+    }
 
-    // Notify all clients of deletion
-    broadcast("request_deleted", { _id: req.params.id });
+    request.status = "Cancelled";
+    await request.save();
+
+    const populatedRequest = await request.populate("requestBy", "name email phone location");
+    broadcast("request_updated", populatedRequest);
 
     res.status(200).json({
       success: true,
-      message: "Emergency request deleted successfully"
+      message: "Emergency request cancelled successfully",
+      data: populatedRequest
     });
   } catch (error: any) {
-    console.error("❌ Delete request error:", error);
-    res.status(500).json({ success: false, message: "Server error during request deletion" });
+    console.error("❌ Cancel request error:", error);
+    res.status(500).json({ success: false, message: "Server error during request cancellation" });
   }
 };

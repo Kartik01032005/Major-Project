@@ -12,6 +12,7 @@ const STATUS_CONFIG: Record<RequestStatus, { label: string; badge: string; icon:
   Approved:  { label: "Approved",  badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", icon: <FiCheckCircle size={12} /> },
   Rejected:  { label: "Rejected",  badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", icon: <FiXCircle size={12} /> },
   Completed: { label: "Completed", badge: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400", icon: <FiCheckCircle size={12} /> },
+  Cancelled: { label: "Cancelled", badge: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400", icon: <FiXCircle size={12} /> },
 };
 
 const BLOOD_GROUP_COLORS: Record<string, string> = {
@@ -60,6 +61,7 @@ export default function EmergencyRequestsTable() {
     Approved:  requests.filter((r) => matchesFilter(r.status, "Approved")).length,
     Rejected:  requests.filter((r) => matchesFilter(r.status, "Rejected")).length,
     Completed: requests.filter((r) => matchesFilter(r.status, "Completed")).length,
+    Cancelled: requests.filter((r) => matchesFilter(r.status, "Cancelled")).length,
   };
 
   const FILTERS: { key: FilterType; label: string }[] = [
@@ -67,6 +69,7 @@ export default function EmergencyRequestsTable() {
     { key: "Pending",  label: `Pending (${counts.Pending})` },
     { key: "Approved", label: `Approved (${counts.Approved})` },
     { key: "Rejected", label: `Rejected (${counts.Rejected})` },
+    { key: "Cancelled", label: `Cancelled (${counts.Cancelled})` },
   ];
 
   const handleAction = async (id: string, action: "approved" | "rejected") => {

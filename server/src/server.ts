@@ -14,7 +14,7 @@ const startServer = async () => {
   initSocket(server);
   startNotificationWorker();
 
-  server.listen(PORT, () => {
+  server.listen(Number(PORT), "0.0.0.0", () => {
     console.log(`🚀 Server listening in development mode on port ${PORT}`);
     console.log(`👉 http://localhost:${PORT}`);
   });

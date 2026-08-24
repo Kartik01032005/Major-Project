@@ -99,7 +99,7 @@ export interface ApiResponse<T = unknown> {
 
 // ─── Emergency Request ────────────────────────────────────────────────────────
 
-export type RequestStatus = "Pending" | "Approved" | "Rejected" | "Completed";
+export type RequestStatus = "Pending" | "Approved" | "Rejected" | "Completed" | "Cancelled";
 
 export interface EmergencyRequest {
   _id: string;
@@ -253,4 +253,3 @@ export type AvailabilityLevel =
   | "Very Low"
   | "Critical"
   | "Almost Empty";
-

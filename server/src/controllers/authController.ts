@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import User from "../models/User.js";
 import EmergencyRequest from "../models/EmergencyRequest.js";
 import Notification from "../models/Notification.js";
@@ -21,21 +22,34 @@ const generateToken = (id: string): string => {
 export const register = async (req: Request, res: Response): Promise<void> => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(400).json({ success: false, errors: errors.array() });
+    res.status(400).json({
+      success: false,
+      errors: errors.array(),
+      message: errors.array()[0]?.msg || "Validation failed"
+    });
+    return;
+  }
+
+  if (mongoose.connection.readyState !== 1) {
+    res.status(503).json({
+      success: false,
+      message: "Database is unavailable. Please verify MongoDB is running or MONGODB_URI is configured.",
+    });
     return;
   }
 
   const { name, email, password, phone, role, location, organizationName } = req.body;
+  const normalizedEmail = email ? email.toLowerCase().trim() : "";
 
   try {
     // Check if user already exists
-    const existingEmail = await User.findOne({ email });
+    const existingEmail = await User.findOne({ email: normalizedEmail });
     if (existingEmail) {
       res.status(400).json({ success: false, message: "Email already exists." });
       return;
     }
 
-    const existingPhone = await User.findOne({ phone });
+    const existingPhone = await User.findOne({ phone: phone?.trim() });
     if (existingPhone) {
       res.status(400).json({ success: false, message: "Phone number already exists." });
       return;
@@ -54,9 +68,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Create user (password hashing is handled in User Schema pre-save)
     const newUser = await User.create({
       name: finalName,
-      email,
+      email: normalizedEmail,
       password,
-      phone,
+      phone: phone?.trim(),
       role: role ?? "user",
       location: userLocation,
     });
@@ -78,7 +92,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error: any) {
     console.error("❌ Registration error:", error);
-    res.status(500).json({ success: false, message: "Server error during registration" });
+    res.status(500).json({ success: false, message: error.message || "Server error during registration" });
   }
 };
 
@@ -86,15 +100,28 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 export const login = async (req: Request, res: Response): Promise<void> => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(400).json({ success: false, errors: errors.array() });
+    res.status(400).json({
+      success: false,
+      errors: errors.array(),
+      message: errors.array()[0]?.msg || "Invalid email or password"
+    });
+    return;
+  }
+
+  if (mongoose.connection.readyState !== 1) {
+    res.status(503).json({
+      success: false,
+      message: "Database is unavailable. Please verify MongoDB is running or MONGODB_URI is configured.",
+    });
     return;
   }
 
   const { email, password } = req.body;
+  const normalizedEmail = email ? email.toLowerCase().trim() : "";
 
   try {
     // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       res.status(401).json({ success: false, message: "Invalid email or password" });
       return;
@@ -134,7 +161,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error: any) {
     console.error("❌ Login error:", error);
-    res.status(500).json({ success: false, message: "Server error during login" });
+    res.status(500).json({ success: false, message: error.message || "Server error during login" });
   }
 };
 
