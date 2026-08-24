@@ -126,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<ApiResponse<{ token: string; user: User }>> => {
     try {
-      const res = await authService.login(email, password);
+      const res = await authService.login(email.trim(), password);
       
       if (res.success && res.data) {
         const { token: apiToken, user: apiUser } = res.data;
@@ -145,7 +145,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, message: res.message || "Invalid credentials." };
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      const errMsg = errorObj.response?.data?.message || errorObj.message || "Login failed. Please try again.";
+      const errMsg = errorObj.response?.data?.message || 
+        (errorObj.message?.includes("Network Error") ? "Unable to connect to BloodLink server. Please ensure the backend is running." : errorObj.message) || 
+        "Login failed. Please try again.";
       return { success: false, message: errMsg };
     }
   };
@@ -180,7 +182,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, message: regRes.message || "Registration failed." };
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string; errors?: Array<{ msg?: string }> } }; message?: string };
-      const errMsg = errorObj.response?.data?.message || errorObj.response?.data?.errors?.[0]?.msg || errorObj.message || "Registration failed.";
+      const errMsg = errorObj.response?.data?.message || 
+        errorObj.response?.data?.errors?.[0]?.msg || 
+        (errorObj.message?.includes("Network Error") ? "Unable to connect to BloodLink server. Please ensure the backend is running." : errorObj.message) || 
+        "Registration failed.";
       return { success: false, message: errMsg };
     }
   };
