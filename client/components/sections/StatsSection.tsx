@@ -2,18 +2,19 @@
 
 import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { Stat } from "@/types";
-
-const stats: Stat[] = [
-  { id: 1, value: "10,000", label: "Registered donors", suffix: "+" },
-  { id: 2, value: "5,200", label: "Requests fulfilled", suffix: "+" },
-  { id: 3, value: "200", label: "Partner hospitals", suffix: "+" },
-  { id: 4, value: "50", label: "Cities covered", suffix: "+" },
-];
+import { useTranslation } from "@/context";
 
 export default function StatsSection() {
+  const { t } = useTranslation();
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
+
+  const stats = [
+    { id: 1, value: "10,000", label: t("stats_donors_label"), suffix: "+" },
+    { id: 2, value: "5,200", label: t("stats_fulfilled_label"), suffix: "+" },
+    { id: 3, value: "200", label: t("stats_hospitals_label"), suffix: "+" },
+    { id: 4, value: "50", label: t("stats_states_label"), suffix: "+" },
+  ];
 
   return (
     <section
@@ -35,11 +36,10 @@ export default function StatsSection() {
           className="text-center mb-12"
         >
           <h2 className="text-3xl font-bold text-white tracking-tight mb-3">
-            BloodLink by the numbers
+            {t("stats_title")}
           </h2>
           <p className="text-sm text-slate-400 max-w-md mx-auto">
-            Real impact. Real lives saved. Join a growing network of donors
-            making a difference every day.
+            {t("stats_sub")}
           </p>
         </motion.div>
 

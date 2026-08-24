@@ -7,20 +7,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiMenu, FiX, FiArrowRight } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import Button from "@/components/ui/Button";
-import { NavLink } from "@/types";
-import { useAuth } from "@/context";
+import { useAuth, useTranslation } from "@/context";
 import { useRouter } from "next/navigation";
 import ThemeToggle from "@/components/ui/ThemeToggle";
-
-const NAV_LINKS: NavLink[] = [
-  { label: "Home", href: "/" },
-  { label: "Features", href: "/#features" },
-  { label: "How It Works", href: "/#how-it-works" },
-  { label: "About", href: "/#about" },
-];
+import LanguageSelector from "@/components/ui/LanguageSelector";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -30,6 +24,13 @@ export default function Navbar() {
     setPrevPathname(pathname);
     setMobileOpen(false);
   }
+
+  const navLinks = [
+    { label: t("nav_home"), href: "/" },
+    { label: t("nav_features"), href: "/#features" },
+    { label: t("nav_how_it_works"), href: "/#how-it-works" },
+    { label: t("nav_about"), href: "/#about" },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -83,7 +84,7 @@ export default function Navbar() {
 
             {/* ── Desktop Links ─────────────────────────────────── */}
             <ul className="hidden md:flex items-center gap-0.5" role="list">
-              {NAV_LINKS.map((link) => {
+              {navLinks.map((link) => {
                 const active = pathname === link.href;
                 return (
                   <li key={link.href}>
@@ -113,23 +114,25 @@ export default function Navbar() {
 
             {/* ── Desktop CTA ───────────────────────────────────── */}
             <div className="hidden md:flex items-center gap-3">
+              <LanguageSelector />
               <ThemeToggle />
               {user ? (
                 <>
                   <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    Hello, <span className="font-semibold text-slate-900 dark:text-white">{user.name.split(" ")[0]}</span>
+                    {t("nav_hello")}{" "}
+                    <span className="font-semibold text-slate-900 dark:text-white">{user.name.split(" ")[0]}</span>
                   </span>
                   <Button variant="outline" size="sm" href="/dashboard">
-                    Dashboard
+                    {t("nav_dashboard")}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => { logout(); router.push("/"); }}>
-                    Sign out
+                    {t("nav_sign_out")}
                   </Button>
                 </>
               ) : (
                 <>
                   <Button variant="ghost" size="sm" href="/login">
-                    Sign in
+                    {t("nav_sign_in")}
                   </Button>
                   <Button
                     variant="primary"
@@ -138,7 +141,7 @@ export default function Navbar() {
                     icon={<FiArrowRight size={13} />}
                     iconPosition="right"
                   >
-                    Get started
+                    {t("nav_get_started")}
                   </Button>
                 </>
               )}
@@ -146,6 +149,7 @@ export default function Navbar() {
 
             {/* ── Hamburger ─────────────────────────────────────── */}
             <div className="md:hidden flex items-center gap-2">
+              <LanguageSelector />
               <ThemeToggle />
               <button
                 id="mobile-menu-toggle"
@@ -158,7 +162,7 @@ export default function Navbar() {
                 onClick={() => setMobileOpen((p) => !p)}
                 aria-expanded={mobileOpen}
                 aria-controls="mobile-menu"
-                aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                aria-label={mobileOpen ? t("nav_close_menu") : t("nav_open_menu")}
               >
                 <AnimatePresence mode="wait">
                   {mobileOpen ? (
@@ -232,7 +236,7 @@ export default function Navbar() {
                 <button
                   className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   onClick={() => setMobileOpen(false)}
-                  aria-label="Close menu"
+                  aria-label={t("nav_close_menu")}
                 >
                   <FiX size={18} />
                 </button>
@@ -240,7 +244,7 @@ export default function Navbar() {
 
               {/* Drawer Links */}
               <nav className="flex-1 overflow-y-auto p-3">
-                {NAV_LINKS.map((link, i) => (
+                {navLinks.map((link, i) => (
                   <motion.div
                     key={link.href}
                     initial={{ opacity: 0, x: 16 }}
@@ -265,25 +269,28 @@ export default function Navbar() {
 
               {/* Drawer Footer CTA */}
               <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <div className="pb-2">
+                  <LanguageSelector isMobileDrawer className="w-full" />
+                </div>
                 {user ? (
                   <>
                     <div className="px-4 py-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                      Logged in as <span className="font-semibold text-slate-900 dark:text-white">{user.name}</span>
+                      {t("nav_logged_in_as")} <span className="font-semibold text-slate-900 dark:text-white">{user.name}</span>
                     </div>
                     <Button variant="primary" size="md" href="/dashboard" fullWidth onClick={() => setMobileOpen(false)}>
-                      Dashboard
+                      {t("nav_dashboard")}
                     </Button>
                     <Button variant="outline" size="md" onClick={() => { logout(); setMobileOpen(false); router.push("/"); }} fullWidth>
-                      Sign out
+                      {t("nav_sign_out")}
                     </Button>
                   </>
                 ) : (
                   <>
                     <Button variant="outline" size="md" href="/login" fullWidth onClick={() => setMobileOpen(false)}>
-                      Sign in
+                      {t("nav_sign_in")}
                     </Button>
                     <Button variant="primary" size="md" href="/register" fullWidth onClick={() => setMobileOpen(false)}>
-                      Get started free
+                      {t("nav_get_started_free")}
                     </Button>
                   </>
                 )}

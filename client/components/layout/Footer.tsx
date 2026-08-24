@@ -1,19 +1,10 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { FaDroplet, FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { MdOutlineEmail, MdOutlinePhone, MdOutlineLocationOn } from "react-icons/md";
-
-const quickLinks = [
-  { label: "Home", href: "/" },
-  { label: "Features", href: "/#features" },
-  { label: "How It Works", href: "/#how-it-works" },
-  { label: "About", href: "/#about" },
-];
-
-const legalLinks = [
-  { label: "Privacy Policy", href: "/privacy" },
-  { label: "Terms of Service", href: "/terms" },
-];
+import { useTranslation } from "@/context";
 
 const socialLinks = [
   { icon: FaGithub, href: "https://github.com/Kartik01032005/Major-Project", label: "GitHub" },
@@ -22,7 +13,20 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const { t } = useTranslation();
   const year = new Date().getFullYear();
+
+  const quickLinks = [
+    { label: t("nav_home"), href: "/" },
+    { label: t("nav_features"), href: "/#features" },
+    { label: t("nav_how_it_works"), href: "/#how-it-works" },
+    { label: t("nav_about"), href: "/#about" },
+  ];
+
+  const legalLinks = [
+    { label: t("footer_privacy"), href: "/privacy" },
+    { label: t("footer_terms"), href: "/terms" },
+  ];
 
   return (
     <footer
@@ -50,9 +54,7 @@ export default function Footer() {
             </Link>
 
             <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
-              Connecting blood donors, blood banks, and hospitals in
-              real time — because every second matters during a medical
-              emergency.
+              {t("footer_tagline")}
             </p>
 
             <ul className="space-y-2.5" role="list" aria-label="Contact information">
@@ -78,7 +80,7 @@ export default function Footer() {
           {/* ── Quick Links ──────────────────────────────────────── */}
           <div className="lg:col-span-3 space-y-4">
             <h3 className="text-xs font-semibold tracking-widest uppercase text-slate-500">
-              Navigation
+              {t("footer_navigation")}
             </h3>
             <ul className="space-y-2.5" role="list">
               {quickLinks.map((link) => (
@@ -98,7 +100,7 @@ export default function Footer() {
           <div className="lg:col-span-4 space-y-6">
             <div className="space-y-4">
               <h3 className="text-xs font-semibold tracking-widest uppercase text-slate-500">
-                Legal
+                {t("footer_legal")}
               </h3>
               <ul className="space-y-2.5" role="list">
                 {legalLinks.map((link) => (
@@ -116,7 +118,7 @@ export default function Footer() {
 
             <div className="space-y-3">
               <h3 className="text-xs font-semibold tracking-widest uppercase text-slate-500">
-                Follow us
+                {t("footer_follow_us")}
               </h3>
               <div className="flex gap-2.5">
                 {socialLinks.map(({ icon: Icon, href, label }) => (
@@ -145,10 +147,10 @@ export default function Footer() {
         {/* ── Bottom Bar ─────────────────────────────────────────── */}
         <div className="mt-12 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-slate-600">
-            © {year} BloodLink. All rights reserved.
+            © {year} BloodLink. {t("footer_rights")}
           </p>
           <p className="text-xs text-slate-600">
-            Built with ❤️ by{" "}
+            {t("footer_built_by")}{" "}
             <a
               href="https://github.com/Kartik01032005"
               target="_blank"

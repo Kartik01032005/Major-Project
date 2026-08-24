@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { FiBell, FiCheck, FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiPackage } from "react-icons/fi";
-import { useDashboard } from "@/context";
+import { useDashboard, useTranslation } from "@/context";
 import { NotificationType } from "@/types";
 
 const TYPE_CONFIG: Record<NotificationType, { icon: React.ReactNode; color: string }> = {
@@ -14,18 +14,19 @@ const TYPE_CONFIG: Record<NotificationType, { icon: React.ReactNode; color: stri
   System:     { icon: <FiInfo size={15} />,          color: "text-slate-500 bg-slate-100 dark:bg-slate-800" },
 };
 
-function timeAgo(date: string): string {
-  const diff = Date.now() - new Date(date).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
-
 export default function NotificationsPanel() {
   const { notifications, unreadCount, markAllRead, markRead } = useDashboard();
+  const { t } = useTranslation();
+
+  function timeAgo(date: string): string {
+    const diff = Date.now() - new Date(date).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return t("common_just_now");
+    if (mins < 60) return `${mins}${t("common_ago_minutes")}`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}${t("common_ago_hours")}`;
+    return `${Math.floor(hrs / 24)}${t("common_ago_days")}`;
+  }
 
   return (
     <motion.div
@@ -40,10 +41,10 @@ export default function NotificationsPanel() {
           <span className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/40 flex items-center justify-center text-red-600">
             <FiBell size={15} />
           </span>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Notifications</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{t("notifications_title")}</h3>
           {unreadCount > 0 && (
             <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400">
-              {unreadCount} new
+              {unreadCount} {t("notifications_new")}
             </span>
           )}
         </div>
@@ -52,7 +53,7 @@ export default function NotificationsPanel() {
             onClick={markAllRead}
             className="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:underline"
           >
-            <FiCheck size={12} /> Mark all read
+            <FiCheck size={12} /> {t("notifications_mark_all")}
           </button>
         )}
       </div>
@@ -63,8 +64,8 @@ export default function NotificationsPanel() {
           <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mb-3">
             <FiBell size={22} />
           </div>
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No notifications yet</p>
-          <p className="text-xs text-slate-400 mt-1">You&apos;ll be notified about request updates here.</p>
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-300">{t("notifications_empty_title")}</p>
+          <p className="text-xs text-slate-400 mt-1">{t("notifications_empty_sub")}</p>
         </div>
       ) : (
         <ul className="divide-y divide-slate-100 dark:divide-slate-800 max-h-80 overflow-y-auto">
@@ -103,7 +104,7 @@ export default function NotificationsPanel() {
 
                 {/* Unread dot */}
                 {!n.isRead && (
-                  <span className="mt-1.5 w-2 h-2 rounded-full bg-red-500 flex-shrink-0" aria-label="Unread" />
+                  <span className="mt-1.5 w-2 h-2 rounded-full bg-red-500 flex-shrink-0" aria-label={t("notifications_unread")} />
                 )}
               </motion.li>
             );

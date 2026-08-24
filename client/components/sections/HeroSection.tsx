@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { FaDroplet } from "react-icons/fa6";
 import { FiArrowRight, FiActivity, FiMapPin } from "react-icons/fi";
 import Button from "@/components/ui/Button";
+import { useTranslation } from "@/context";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -18,6 +19,8 @@ const fadeUp = {
 const bloodGroups = ["A+", "B+", "O+", "AB+", "A−", "B−", "O−", "AB−"];
 
 export default function HeroSection() {
+  const { t } = useTranslation();
+
   return (
     <section
       id="home"
@@ -66,7 +69,7 @@ export default function HeroSection() {
             <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible">
               <span className="section-badge mb-6">
                 <FaDroplet size={10} aria-hidden="true" />
-                Smart Blood Donor Network
+                {t("hero_badge")}
               </span>
             </motion.div>
 
@@ -78,10 +81,10 @@ export default function HeroSection() {
               animate="visible"
               className="display-xl text-slate-900 dark:text-white mt-4 mb-5"
             >
-              Find Blood.{" "}
-              <span className="gradient-text">Save Lives.</span>
+              {t("hero_headline_1")}{" "}
+              <span className="gradient-text">{t("hero_headline_2")}</span>
               <br />
-              In Real Time.
+              {t("hero_headline_3")}
             </motion.h1>
 
             {/* Subtext */}
@@ -92,9 +95,7 @@ export default function HeroSection() {
               animate="visible"
               className="body-lg mb-8 text-slate-500 dark:text-slate-400"
             >
-              BloodLink instantly connects patients with nearby donors and blood banks
-              using live notifications, real-time inventory, and Google Maps — so that
-              no emergency waits for blood.
+              {t("hero_sub")}
             </motion.p>
 
             {/* CTA Row */}
@@ -112,10 +113,10 @@ export default function HeroSection() {
                 icon={<FiArrowRight size={15} />}
                 iconPosition="right"
               >
-                Request blood now
+                {t("hero_cta_primary")}
               </Button>
               <Button variant="outline" size="lg" href="/#how-it-works">
-                See how it works
+                {t("hero_cta_secondary")}
               </Button>
             </motion.div>
 
@@ -128,9 +129,9 @@ export default function HeroSection() {
               className="flex items-center gap-6 pt-4 border-t border-slate-100 dark:border-slate-800"
             >
               {[
-                { value: "10K+", label: "Donors" },
-                { value: "5K+", label: "Fulfilled" },
-                { value: "200+", label: "Hospitals" },
+                { value: "10K+", label: t("hero_stat_donors") },
+                { value: "5K+", label: t("hero_stat_fulfilled") },
+                { value: "200+", label: t("hero_stat_hospitals") },
               ].map((s) => (
                 <div key={s.label}>
                   <div className="text-xl font-bold text-slate-900 dark:text-white">
@@ -183,7 +184,7 @@ export default function HeroSection() {
                 {/* Blood inventory mini */}
                 <div>
                   <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2.5 uppercase tracking-wider">
-                    Live Inventory
+                    {t("hero_live_inventory")}
                   </p>
                   <div className="grid grid-cols-4 gap-2">
                     {[
@@ -211,13 +212,16 @@ export default function HeroSection() {
                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
                   <FiMapPin size={14} className="text-red-500 shrink-0" />
                   <span className="text-xs text-slate-600 dark:text-slate-400">
-                    3 blood banks found within 5 km
+                    3 {t("hero_blood_banks_nearby")}
                   </span>
                 </div>
 
                 {/* CTA button */}
-                <button className="w-full h-9 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-[0_4px_14px_0_rgb(220_38_38_/_0.3)]">
-                  Request Emergency Blood
+                <button
+                  type="button"
+                  className="w-full h-9 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors shadow-[0_4px_14px_0_rgb(220_38_38_/_0.3)]"
+                >
+                  {t("hero_request_emergency")}
                 </button>
               </div>
             </div>
@@ -234,9 +238,9 @@ export default function HeroSection() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                    Donor found — 0.8 km
+                    {t("hero_donor_found")}
                   </p>
-                  <p className="text-[10px] text-slate-500">30 seconds ago</p>
+                  <p className="text-[10px] text-slate-500">{t("hero_seconds_ago")}</p>
                 </div>
               </div>
             </motion.div>

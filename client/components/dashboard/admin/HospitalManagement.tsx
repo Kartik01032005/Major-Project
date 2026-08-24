@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiCrosshair, FiPlus, FiEdit3, FiTrash2, FiPhone, FiMapPin, FiCheck, FiX, FiAlertTriangle } from "react-icons/fi";
-import { useDashboard } from "@/context";
+import { useDashboard, useTranslation } from "@/context";
 import { Hospital } from "@/types";
 
 interface HospitalFormData {
@@ -29,6 +29,7 @@ function HospitalModal({
   initial?: HospitalFormData;
   title: string;
 }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState<HospitalFormData>(initial ?? EMPTY_FORM);
   const [errors, setErrors] = useState<Partial<HospitalFormData>>({});
 
@@ -100,29 +101,29 @@ function HospitalModal({
 
             <div className="px-5 py-4 space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Hospital / Blood Bank Name *</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t("hospital_name")} *</label>
                 <input type="text" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Apollo Blood Bank" className={inputCls("name")} />
                 {errors.name && <p className="text-[11px] text-red-500 mt-1">{errors.name}</p>}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Address *</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t("emergency_address")} *</label>
                 <input type="text" value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Street, Area" className={inputCls("address")} />
                 {errors.address && <p className="text-[11px] text-red-500 mt-1">{errors.address}</p>}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">State *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t("emergency_state")} *</label>
                   <input type="text" value={form.state} onChange={(e) => set("state", e.target.value)} placeholder="Karnataka" className={inputCls("state")} />
                   {errors.state && <p className="text-[11px] text-red-500 mt-1">{errors.state}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">District *</label>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t("emergency_district")} *</label>
                   <input type="text" value={form.district} onChange={(e) => set("district", e.target.value)} placeholder="Mysore" className={inputCls("district")} />
                   {errors.district && <p className="text-[11px] text-red-500 mt-1">{errors.district}</p>}
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Phone *</label>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t("hospital_contact")} *</label>
                 <input type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="10-digit number" maxLength={10} className={inputCls("phone")} />
                 {errors.phone && <p className="text-[11px] text-red-500 mt-1">{errors.phone}</p>}
               </div>
@@ -130,10 +131,10 @@ function HospitalModal({
 
             <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-slate-100 dark:border-slate-800">
               <button onClick={onClose} className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                Cancel
+                {t("hospital_cancel")}
               </button>
               <button onClick={handleSave} className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors">
-                <FiCheck size={13} /> Save Hospital
+                <FiCheck size={13} /> {t("hospital_save")}
               </button>
             </div>
           </motion.div>
@@ -145,6 +146,7 @@ function HospitalModal({
 
 export default function HospitalManagement() {
   const { hospitals, addHospital, updateHospital, deleteHospital } = useDashboard();
+  const { t } = useTranslation();
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState<Hospital | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -177,13 +179,13 @@ export default function HospitalManagement() {
           <span className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600">
             <FiCrosshair size={15} />
           </span>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Hospital Management</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{t("hospital_title")}</h3>
           <span className="text-[11px] text-slate-400 ml-1">{hospitals.length} registered</span>
           <button
             onClick={() => setShowAdd(true)}
             className="ml-auto flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors"
           >
-            <FiPlus size={13} /> Add Hospital
+            <FiPlus size={13} /> {t("hospital_add")}
           </button>
         </div>
 
@@ -193,9 +195,9 @@ export default function HospitalManagement() {
             <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mb-3">
               <FiCrosshair size={22} />
             </div>
-            <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">No hospitals added</p>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">{t("hospital_no_records")}</p>
             <button onClick={() => setShowAdd(true)} className="text-xs font-semibold px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors">
-              Add Hospital
+              {t("hospital_add")}
             </button>
           </div>
         ) : (
@@ -247,7 +249,7 @@ export default function HospitalManagement() {
       </motion.div>
 
       {/* Add Modal */}
-      <HospitalModal open={showAdd} onClose={() => setShowAdd(false)} onSave={handleAdd} title="Add Hospital" />
+      <HospitalModal open={showAdd} onClose={() => setShowAdd(false)} onSave={handleAdd} title={t("hospital_add")} />
 
       {/* Edit Modal */}
       {editTarget && (
@@ -256,7 +258,7 @@ export default function HospitalManagement() {
           onClose={() => setEditTarget(null)}
           onSave={handleEdit}
           initial={{ name: editTarget.name, address: editTarget.address, state: editTarget.state, district: editTarget.district, phone: editTarget.phone }}
-          title="Edit Hospital"
+          title={t("hospital_edit")}
         />
       )}
 
@@ -283,14 +285,14 @@ export default function HospitalManagement() {
                 <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/40 flex items-center justify-center text-red-600 mb-4">
                   <FiAlertTriangle size={22} />
                 </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Delete Hospital?</h3>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">{t("hospital_confirm_delete")}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">This action cannot be undone.</p>
                 <div className="flex items-center gap-2 w-full">
                   <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                    Cancel
+                    {t("hospital_cancel")}
                   </button>
                   <button onClick={() => confirmDelete(deleteTarget)} className="flex-1 py-2 rounded-xl bg-red-600 text-xs font-semibold text-white hover:bg-red-700 transition-colors">
-                    Delete
+                    {t("hospital_delete")}
                   </button>
                 </div>
               </div>

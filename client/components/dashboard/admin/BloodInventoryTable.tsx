@@ -7,7 +7,7 @@ import {
   FiUploadCloud, FiSliders, FiClock, FiRefreshCw,
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
-import { useDashboard } from "@/context";
+import { useDashboard, useTranslation } from "@/context";
 import { BloodInventoryItem, AvailabilityThresholds } from "@/types";
 import BulkUploadModal from "./BulkUploadModal";
 import StockThresholdsModal from "./StockThresholdsModal";
@@ -75,6 +75,7 @@ interface EditingRow { id: string; value: number }
 
 export default function BloodInventoryTable() {
   const { inventory, thresholds, updateInventory, adjustInventory, syncInventoryFromUpload } = useDashboard();
+  const { t } = useTranslation();
 
   const [editing, setEditing] = useState<EditingRow | null>(null);
   const [adjustPanel, setAdjustPanel] = useState<AdjustPanel | null>(null);
@@ -149,13 +150,13 @@ export default function BloodInventoryTable() {
             </span>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Blood Bank Inventory</h3>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t("inventory_title")}</h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                  {totalStockUnits} Total Units
+                  {totalStockUnits} {t("admin_stat_units")}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Last updated {new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                {t("inventory_updated")} {new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
               </p>
             </div>
           </div>
@@ -167,21 +168,21 @@ export default function BloodInventoryTable() {
               className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
             >
               <FiUploadCloud size={14} />
-              Bulk Upload File
+              {t("inventory_bulk_upload")}
             </button>
             <button
               onClick={() => setIsThresholdsOpen(true)}
               className="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors flex items-center gap-1.5"
             >
               <FiSliders size={13} />
-              Levels &amp; Cutoffs
+              {t("inventory_set_thresholds")}
             </button>
             <button
               onClick={() => setIsHistoryOpen(true)}
               className="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors flex items-center gap-1.5"
             >
               <FiClock size={13} />
-              Upload History
+              {t("inventory_upload_history")}
             </button>
           </div>
         </div>
@@ -191,11 +192,11 @@ export default function BloodInventoryTable() {
           <table className="w-full" role="grid" aria-label="Blood inventory table">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/60">
-                <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Blood Group</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Units</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden sm:table-cell">10-Level Availability Indicator</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden md:table-cell">Last Updated</th>
-                <th className="text-right px-5 py-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Actions</th>
+                <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t("inventory_blood_group")}</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t("inventory_units")}</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden sm:table-cell">{t("inventory_status")}</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide hidden md:table-cell">{t("inventory_updated")}</th>
+                <th className="text-right px-5 py-3 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t("inventory_actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -237,7 +238,7 @@ export default function BloodInventoryTable() {
                           />
                         ) : (
                           <span className={`text-lg font-bold ${item.units === 0 ? "text-red-600" : "text-slate-900 dark:text-white"}`}>
-                            {item.units} <span className="text-xs font-normal text-slate-400">units</span>
+                            {item.units} <span className="text-xs font-normal text-slate-400">{t("admin_stat_units")}</span>
                           </span>
                         )}
                       </td>
@@ -263,16 +264,16 @@ export default function BloodInventoryTable() {
                                 onClick={saveEdit}
                                 disabled={busy}
                                 className="h-7 px-2.5 flex items-center gap-1 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 text-xs font-semibold transition-colors disabled:opacity-50"
-                                aria-label="Save"
+                                aria-label={t("inventory_save")}
                               >
-                                <FiCheck size={12} /> Save
+                                <FiCheck size={12} /> {t("inventory_save")}
                               </button>
                               <button
                                 onClick={cancelEdit}
                                 className="h-7 px-2.5 flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold transition-colors"
-                                aria-label="Cancel"
+                                aria-label={t("inventory_cancel")}
                               >
-                                <FiX size={12} /> Cancel
+                                <FiX size={12} /> {t("inventory_cancel")}
                               </button>
                             </>
                           ) : (
@@ -288,7 +289,7 @@ export default function BloodInventoryTable() {
                                 aria-label={`Add units for ${item.bloodGroup}`}
                                 id={`add-units-${item.bloodGroup.replace("+", "pos").replace("-", "neg")}`}
                               >
-                                <FiPlus size={12} /> Add
+                                <FiPlus size={12} /> {t("inventory_add")}
                               </button>
 
                               {/* Remove Units */}
@@ -303,7 +304,7 @@ export default function BloodInventoryTable() {
                                 aria-label={`Remove units for ${item.bloodGroup}`}
                                 id={`remove-units-${item.bloodGroup.replace("+", "pos").replace("-", "neg")}`}
                               >
-                                <FiMinus size={12} /> Remove
+                                <FiMinus size={12} /> {t("inventory_delete")}
                               </button>
 
                               {/* Sync with Uploaded File */}
@@ -367,7 +368,7 @@ export default function BloodInventoryTable() {
                                 autoFocus
                                 aria-label={`Amount to ${adjustPanel?.mode}`}
                               />
-                              <span className="text-xs text-slate-400">units</span>
+                              <span className="text-xs text-slate-400">{t("admin_stat_units")}</span>
                               <button
                                 onClick={applyAdjust}
                                 disabled={busy}
@@ -383,7 +384,7 @@ export default function BloodInventoryTable() {
                                 onClick={() => setAdjustPanel(null)}
                                 className="h-8 px-3 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                               >
-                                Cancel
+                                {t("inventory_cancel")}
                               </button>
                             </div>
                           </td>

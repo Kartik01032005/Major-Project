@@ -5,30 +5,7 @@ import { motion } from "framer-motion";
 import { FaDroplet } from "react-icons/fa6";
 import { FiHeart, FiUsers, FiShield } from "react-icons/fi";
 import Card from "@/components/ui/Card";
-
-const pillars = [
-  {
-    id: 1,
-    icon: FiHeart,
-    title: "Our Mission",
-    description:
-      "Drastically reduce the time to locate blood during emergencies by creating a real-time, connected platform for donors, blood banks, and hospitals.",
-  },
-  {
-    id: 2,
-    icon: FiUsers,
-    title: "Who We Serve",
-    description:
-      "Blood donors, patients in urgent need, hospital administrators managing inventory, and blood banks tracking stock in real time.",
-  },
-  {
-    id: 3,
-    icon: FiShield,
-    title: "Our Commitment",
-    description:
-      "Data security, user privacy, and system reliability come first. Your information is encrypted and never shared without consent.",
-  },
-];
+import { useTranslation } from "@/context";
 
 const iconColors = [
   { bg: "bg-red-50 dark:bg-red-950/50", icon: "text-red-600" },
@@ -37,6 +14,29 @@ const iconColors = [
 ];
 
 export default function AboutSection() {
+  const { t } = useTranslation();
+
+  const pillars = [
+    {
+      id: 1,
+      icon: FiHeart,
+      title: t("about_mission_title"),
+      description: t("about_mission_text"),
+    },
+    {
+      id: 2,
+      icon: FiUsers,
+      title: t("about_vision_title"),
+      description: t("about_vision_text"),
+    },
+    {
+      id: 3,
+      icon: FiShield,
+      title: "Data Security",
+      description: "Data security, user privacy, and system reliability come first. Your information is encrypted and never shared without consent.",
+    },
+  ];
+
   return (
     <section
       id="about"
@@ -53,14 +53,12 @@ export default function AboutSection() {
           transition={{ duration: 0.55 }}
           className="max-w-2xl mx-auto text-center mb-14"
         >
-          <span className="section-badge mb-4">About BloodLink</span>
+          <span className="section-badge mb-4">{t("about_badge")}</span>
           <h2 className="display-lg text-slate-900 dark:text-white mt-4 mb-4">
-            What is <span className="gradient-text">BloodLink</span>?
+            {t("about_title")}
           </h2>
           <p className="body-lg text-slate-500 dark:text-slate-400">
-            A modern full-stack platform that bridges the gap between blood donors
-            and patients in critical need — powered by real-time technology
-            and a clean, intuitive experience.
+            {t("about_sub")}
           </p>
         </motion.div>
 

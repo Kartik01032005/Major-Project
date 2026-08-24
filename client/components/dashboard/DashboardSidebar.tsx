@@ -10,29 +10,13 @@ import {
   FiChevronLeft, FiChevronRight,
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
-import { useAuth } from "@/context";
+import { useAuth, useTranslation } from "@/context";
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ReactNode;
 }
-
-const USER_NAV: NavItem[] = [
-  { label: "Overview",         href: "/dashboard",                  icon: <FiHome size={18} /> },
-  { label: "My Profile",       href: "/dashboard/profile",          icon: <FiUser size={18} /> },
-  { label: "Emergency Request",href: "/dashboard/emergency",        icon: <FiAlertCircle size={18} /> },
-  { label: "My Requests",      href: "/dashboard/requests",         icon: <FiList size={18} /> },
-  { label: "Notifications",    href: "/dashboard/notifications",    icon: <FiBell size={18} /> },
-  { label: "Nearby Banks",     href: "/dashboard/nearby",           icon: <FiMap size={18} /> },
-];
-
-const ADMIN_NAV: NavItem[] = [
-  { label: "Overview",         href: "/dashboard/admin",            icon: <FiHome size={18} /> },
-  { label: "Blood Inventory",  href: "/dashboard/admin/inventory",  icon: <FiPackage size={18} /> },
-  { label: "Hospitals",        href: "/dashboard/admin/hospitals",  icon: <FiCrosshair size={18} /> },
-  { label: "Emergency Requests",href: "/dashboard/admin/requests",  icon: <FiAlertCircle size={18} /> },
-];
 
 const BLOOD_GROUP_COLORS: Record<string, string> = {
   "A+": "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
@@ -59,10 +43,27 @@ export default function DashboardSidebar({
   setMobileOpen,
 }: DashboardSidebarProps) {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
 
-  const nav = user?.role === "admin" ? ADMIN_NAV : USER_NAV;
+  const userNav: NavItem[] = [
+    { label: t("sidebar_overview"),          href: "/dashboard",                  icon: <FiHome size={18} /> },
+    { label: t("sidebar_my_profile"),        href: "/dashboard/profile",          icon: <FiUser size={18} /> },
+    { label: t("sidebar_emergency_request"), href: "/dashboard/emergency",        icon: <FiAlertCircle size={18} /> },
+    { label: t("sidebar_my_requests"),       href: "/dashboard/requests",         icon: <FiList size={18} /> },
+    { label: t("sidebar_notifications"),     href: "/dashboard/notifications",    icon: <FiBell size={18} /> },
+    { label: t("sidebar_nearby_banks"),      href: "/dashboard/nearby",           icon: <FiMap size={18} /> },
+  ];
+
+  const adminNav: NavItem[] = [
+    { label: t("sidebar_overview"),           href: "/dashboard/admin",            icon: <FiHome size={18} /> },
+    { label: t("sidebar_blood_inventory"),    href: "/dashboard/admin/inventory",  icon: <FiPackage size={18} /> },
+    { label: t("sidebar_hospitals"),          href: "/dashboard/admin/hospitals",  icon: <FiCrosshair size={18} /> },
+    { label: t("sidebar_emergency_requests"), href: "/dashboard/admin/requests",  icon: <FiAlertCircle size={18} /> },
+  ];
+
+  const nav = user?.role === "admin" ? adminNav : userNav;
   const initials = user?.name
     ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : "?";
@@ -147,13 +148,13 @@ export default function DashboardSidebar({
 
         <button
           onClick={handleLogout}
-          title="Sign out"
+          title={t("sidebar_sign_out")}
           className={[
             "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg",
             "text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30",
             "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
           ].join(" ")}
-          aria-label="Sign out"
+          aria-label={t("sidebar_sign_out")}
         >
           <FiLogOut size={16} />
         </button>
@@ -186,7 +187,7 @@ export default function DashboardSidebar({
             "transition-colors hover:bg-slate-50 dark:hover:bg-slate-700",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
           ].join(" ")}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? t("sidebar_expand") : t("sidebar_collapse")}
         >
           {collapsed ? <FiChevronRight size={13} /> : <FiChevronLeft size={13} />}
         </button>
@@ -225,7 +226,7 @@ export default function DashboardSidebar({
               <button
                 className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 onClick={() => setMobileOpen(false)}
-                aria-label="Close navigation"
+                aria-label={t("sidebar_close_nav")}
               >
                 <FiX size={18} />
               </button>

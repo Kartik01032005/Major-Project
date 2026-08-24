@@ -4,8 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiAlertCircle, FiMapPin, FiPhone, FiCheck } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
-import { useAuth } from "@/context";
-import { useDashboard } from "@/context";
+import { useAuth, useDashboard, useTranslation } from "@/context";
 import { BloodGroup } from "@/types";
 
 const BLOOD_GROUPS: BloodGroup[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -18,6 +17,7 @@ interface EmergencyRequestModalProps {
 export default function EmergencyRequestModal({ open, onClose }: EmergencyRequestModalProps) {
   const { user } = useAuth();
   const { createRequest } = useDashboard();
+  const { t } = useTranslation();
 
   const [bloodGroup, setBloodGroup] = useState<BloodGroup>(user?.bloodGroup ?? "O+");
   const [state, setState] = useState(user?.location?.state ?? "");
@@ -31,12 +31,12 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!state.trim()) e.state = "State is required";
-    if (!district.trim()) e.district = "District is required";
-    if (!hospitalName.trim()) e.hospitalName = "Hospital name is required";
-    if (!address.trim()) e.address = "Address is required";
-    if (!contactNumber.trim()) e.contactNumber = "Contact number is required";
-    else if (!/^\d{10}$/.test(contactNumber)) e.contactNumber = "Enter a valid 10-digit number";
+    if (!state.trim()) e.state = t("emergency_err_state");
+    if (!district.trim()) e.district = t("emergency_err_district");
+    if (!hospitalName.trim()) e.hospitalName = t("emergency_err_hospital");
+    if (!address.trim()) e.address = t("emergency_err_address");
+    if (!contactNumber.trim()) e.contactNumber = t("emergency_err_contact_required");
+    else if (!/^\d{10}$/.test(contactNumber)) e.contactNumber = t("emergency_err_contact_invalid");
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -51,7 +51,7 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } } };
       console.error("Failed to create emergency request:", err);
-      setErrors({ form: errorObj?.response?.data?.message || "Failed to submit request. Please try again." });
+      setErrors({ form: errorObj?.response?.data?.message || t("emergency_err_generic") });
     } finally {
       setLoading(false);
     }
@@ -94,7 +94,7 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
             key="modal"
             role="dialog"
             aria-modal="true"
-            aria-label="Emergency Blood Request"
+            aria-label={t("emergency_title")}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -112,8 +112,8 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                 <FiAlertCircle size={20} />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-900 dark:text-white">Emergency Blood Request</h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Nearby donors will be notified instantly</p>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">{t("emergency_title")}</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t("emergency_subtitle")}</p>
               </div>
               <button
                 onClick={handleClose}
@@ -136,15 +136,15 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                   <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600 mb-4">
                     <FiCheck size={32} />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Request Submitted!</h3>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{t("emergency_success_title")}</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                    Your emergency blood request for <strong>{bloodGroup}</strong> has been submitted. Nearby donors and blood banks will be notified.
+                    {t("emergency_success_sub")} (<strong>{bloodGroup}</strong>)
                   </p>
                   <button
                     onClick={handleClose}
                     className="px-6 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors"
                   >
-                    Close
+                    {t("emergency_close")}
                   </button>
                 </motion.div>
               ) : (
@@ -160,7 +160,7 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                   {/* Blood Group */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Blood Group Required *
+                      {t("emergency_blood_group_label")}
                     </label>
                     <div className="grid grid-cols-4 gap-2">
                       {BLOOD_GROUPS.map((bg) => (
@@ -185,7 +185,7 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        State *
+                        {t("emergency_state")}
                       </label>
                       <input
                         type="text"
@@ -199,7 +199,7 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        District *
+                        {t("emergency_district")}
                       </label>
                       <input
                         type="text"
@@ -216,7 +216,7 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                   {/* Hospital */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Hospital Name *
+                      {t("emergency_hospital")}
                     </label>
                     <div className="relative">
                       <FiMapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -224,7 +224,7 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                         type="text"
                         value={hospitalName}
                         onChange={(e) => setHospitalName(e.target.value)}
-                        placeholder="City General Hospital"
+                        placeholder={t("emergency_ph_hospital")}
                         className={[inputCls("hospitalName"), "pl-9"].join(" ")}
                         aria-describedby={errors.hospitalName ? "hospital-error" : undefined}
                       />
@@ -235,12 +235,12 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                   {/* Address */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Exact Address *
+                      {t("emergency_address")}
                     </label>
                     <textarea
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      placeholder="Ward no. 4, Main Road..."
+                      placeholder={t("emergency_ph_address")}
                       rows={2}
                       className={[
                         "w-full px-3.5 py-2.5 rounded-xl border text-sm resize-none",
@@ -257,7 +257,7 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                   {/* Contact */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Contact Number *
+                      {t("emergency_contact")}
                     </label>
                     <div className="relative">
                       <FiPhone size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -265,7 +265,7 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                         type="tel"
                         value={contactNumber}
                         onChange={(e) => setContactNumber(e.target.value)}
-                        placeholder="10-digit number"
+                        placeholder={t("emergency_ph_contact")}
                         maxLength={10}
                         className={[inputCls("contactNumber"), "pl-9"].join(" ")}
                         aria-describedby={errors.contactNumber ? "contact-error" : undefined}
@@ -286,9 +286,9 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                     ].join(" ")}
                   >
                     {loading ? (
-                      <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Submitting...</>
+                      <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t("emergency_submitting")}</>
                     ) : (
-                      <><FiAlertCircle size={16} /> Submit Emergency Request</>
+                      <><FiAlertCircle size={16} /> {t("emergency_submit")}</>
                     )}
                   </button>
                 </motion.form>

@@ -4,9 +4,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FiAlertCircle, FiActivity, FiToggleLeft, FiToggleRight } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
-import { useAuth } from "@/context";
-
-
+import { useAuth, useTranslation } from "@/context";
 
 interface WelcomeBannerProps {
   onEmergencyClick: () => void;
@@ -14,11 +12,12 @@ interface WelcomeBannerProps {
 
 export default function WelcomeBanner({ onEmergencyClick }: WelcomeBannerProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [isDonorAvailable, setIsDonorAvailable] = useState(user?.isAvailableDonor ?? true);
 
   const greetHour = new Date().getHours();
   const greeting =
-    greetHour < 12 ? "Good morning" : greetHour < 17 ? "Good afternoon" : "Good evening";
+    greetHour < 12 ? t("banner_good_morning") : greetHour < 17 ? t("banner_good_afternoon") : t("banner_good_evening");
 
   const firstName = user?.name?.split(" ")[0] ?? "there";
 
@@ -53,7 +52,7 @@ export default function WelcomeBanner({ onEmergencyClick }: WelcomeBannerProps) 
             {greeting}, {firstName}! 👋
           </h2>
           <p className="text-red-100 text-sm">
-            Your donation can save up to 3 lives. Thank you for being a donor.
+            {t("banner_subtitle")}
           </p>
 
           {/* Blood group + donor toggle */}
@@ -61,7 +60,7 @@ export default function WelcomeBanner({ onEmergencyClick }: WelcomeBannerProps) 
             {/* Blood group badge */}
             <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-semibold">
               <FaDroplet size={13} />
-              Blood Group: {user?.bloodGroup ?? "—"}
+              {t("banner_blood_group")} {user?.bloodGroup ?? "—"}
             </div>
 
             {/* Donor availability toggle */}
@@ -74,12 +73,12 @@ export default function WelcomeBanner({ onEmergencyClick }: WelcomeBannerProps) 
                   : "bg-white/10 text-red-200 hover:bg-white/15",
               ].join(" ")}
               aria-pressed={isDonorAvailable}
-              aria-label="Toggle donor availability"
+              aria-label={t("banner_donor_available_label")}
             >
               {isDonorAvailable ? (
-                <><FiToggleRight size={18} /> Available to donate</>
+                <><FiToggleRight size={18} /> {t("banner_available")}</>
               ) : (
-                <><FiToggleLeft size={18} /> Not available</>
+                <><FiToggleLeft size={18} /> {t("banner_not_available")}</>
               )}
             </button>
           </div>
@@ -99,10 +98,10 @@ export default function WelcomeBanner({ onEmergencyClick }: WelcomeBannerProps) 
             ].join(" ")}
           >
             <FiAlertCircle size={17} className="animate-heartbeat" />
-            Emergency Blood Request
+            {t("banner_emergency_btn")}
           </button>
           <p className="text-[11px] text-red-200 mt-2 text-center">
-            Notifies nearby donors instantly
+            {t("banner_emergency_note")}
           </p>
         </div>
       </div>

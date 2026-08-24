@@ -5,8 +5,11 @@ import { motion } from "framer-motion";
 import { FaDroplet } from "react-icons/fa6";
 import { FiArrowRight } from "react-icons/fi";
 import Button from "@/components/ui/Button";
+import { useTranslation } from "@/context";
 
 export default function CTASection() {
+  const { t } = useTranslation();
+
   return (
     <section
       id="cta"
@@ -44,13 +47,11 @@ export default function CTASection() {
             </motion.div>
 
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-              Ready to save a life?
+              {t("cta_title")}
             </h2>
 
             <p className="text-base text-red-100 leading-relaxed">
-              Join thousands of donors making a difference. Register today and
-              become part of India&apos;s fastest blood donor network — free, secure,
-              and always available.
+              {t("cta_sub")}
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -61,7 +62,7 @@ export default function CTASection() {
                 icon={<FiArrowRight size={15} />}
                 iconPosition="right"
               >
-                Register as donor
+                {t("cta_primary")}
               </Button>
               <Button
                 variant="secondary"
@@ -70,13 +71,13 @@ export default function CTASection() {
                 icon={<FiArrowRight size={15} />}
                 iconPosition="right"
               >
-                Join as blood bank
+                {t("cta_secondary")}
               </Button>
             </div>
 
             <p className="text-xs text-red-200 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" aria-hidden="true" />
-              Free to join · No credit card · Secure &amp; private
+              {t("cta_note")}
             </p>
           </div>
         </motion.div>

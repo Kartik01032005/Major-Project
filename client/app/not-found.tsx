@@ -1,7 +1,12 @@
+"use client";
+
 import React from "react";
 import Button from "@/components/ui/Button";
+import { useTranslation } from "@/context";
 
 export default function NotFound() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
       <div className="max-w-md w-full text-center space-y-6">
@@ -24,20 +29,20 @@ export default function NotFound() {
         {/* Content */}
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Page Not Found
+            {t("notfound_title")}
           </h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-            The page you are attempting to reach does not exist or may have been relocated.
+            {t("notfound_description")}
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Button href="/" variant="primary" size="md" fullWidth className="sm:w-auto">
-            Return to Home
+            {t("notfound_home")}
           </Button>
           <Button href="/dashboard" variant="outline" size="md" fullWidth className="sm:w-auto">
-            Go to Dashboard
+            {t("notfound_dashboard")}
           </Button>
         </div>
 

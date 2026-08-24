@@ -4,36 +4,31 @@ import React, { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiBell, FiMenu, FiCheck } from "react-icons/fi";
-import { useAuth } from "@/context";
-import { useDashboard } from "@/context";
+import { useAuth, useDashboard, useTranslation } from "@/context";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
-// ─── Page title map ───────────────────────────────────────────────────────────
-const PAGE_TITLES: Record<string, string> = {
-  "/dashboard":                   "Overview",
-  "/dashboard/profile":           "My Profile",
-  "/dashboard/emergency":         "Emergency Request",
-  "/dashboard/requests":          "My Requests",
-  "/dashboard/notifications":     "Notifications",
-  "/dashboard/nearby":            "Nearby Blood Banks",
-  "/dashboard/admin":             "Admin Overview",
-  "/dashboard/admin/inventory":   "Blood Inventory",
-  "/dashboard/admin/hospitals":   "Hospital Management",
-  "/dashboard/admin/requests":    "Emergency Requests",
-};
-
-interface DashboardTopbarProps {
-  onMenuClick: () => void;
-}
-
-export default function DashboardTopbar({ onMenuClick }: DashboardTopbarProps) {
+export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => void }) {
   const { user } = useAuth();
   const { notifications, unreadCount, markAllRead, markRead } = useDashboard();
+  const { t } = useTranslation();
   const pathname = usePathname();
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  const pageTitle = PAGE_TITLES[pathname] ?? "Dashboard";
+  const pageTitles: Record<string, string> = {
+    "/dashboard":                   t("topbar_overview"),
+    "/dashboard/profile":           t("topbar_my_profile"),
+    "/dashboard/emergency":         t("topbar_emergency_request"),
+    "/dashboard/requests":          t("topbar_my_requests"),
+    "/dashboard/notifications":     t("topbar_notifications"),
+    "/dashboard/nearby":            t("topbar_nearby_banks"),
+    "/dashboard/admin":             t("topbar_admin_overview"),
+    "/dashboard/admin/inventory":   t("topbar_blood_inventory"),
+    "/dashboard/admin/hospitals":   t("topbar_hospital_management"),
+    "/dashboard/admin/requests":    t("topbar_emergency_requests"),
+  };
+
+  const pageTitle = pageTitles[pathname] ?? t("topbar_dashboard");
 
   // Close notif dropdown on outside click
   useEffect(() => {
@@ -70,7 +65,7 @@ export default function DashboardTopbar({ onMenuClick }: DashboardTopbarProps) {
         <h1 className="text-base font-semibold text-slate-900 dark:text-white truncate">{pageTitle}</h1>
         {user && (
           <p className="text-xs text-slate-400 dark:text-slate-500 hidden sm:block">
-            {user.role === "admin" ? "Administrator" : "Donor Account"} · {user.email}
+            {user.role === "admin" ? t("topbar_administrator") : t("topbar_donor_account")} · {user.email}
           </p>
         )}
       </div>
@@ -90,7 +85,7 @@ export default function DashboardTopbar({ onMenuClick }: DashboardTopbarProps) {
               "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
             ].join(" ")}
             onClick={() => setNotifOpen((p) => !p)}
-            aria-label={`Notifications (${unreadCount} unread)`}
+            aria-label={`${t("topbar_notifications_label")} (${unreadCount} ${t("notifications_new")})`}
             aria-haspopup="true"
             aria-expanded={notifOpen}
           >
@@ -121,17 +116,17 @@ export default function DashboardTopbar({ onMenuClick }: DashboardTopbarProps) {
                   "overflow-hidden",
                 ].join(" ")}
                 role="dialog"
-                aria-label="Notifications"
+                aria-label={t("topbar_notifications_label")}
               >
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">Notifications</span>
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">{t("topbar_notifications_label")}</span>
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllRead}
                       className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 hover:underline font-medium"
                     >
-                      <FiCheck size={12} /> Mark all read
+                      <FiCheck size={12} /> {t("topbar_mark_all_read")}
                     </button>
                   )}
                 </div>
@@ -139,7 +134,7 @@ export default function DashboardTopbar({ onMenuClick }: DashboardTopbarProps) {
                 {/* List */}
                 <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
                   {recentNotifs.length === 0 ? (
-                    <div className="py-10 text-center text-sm text-slate-400">No notifications yet</div>
+                    <div className="py-10 text-center text-sm text-slate-400">{t("topbar_no_notifications")}</div>
                   ) : (
                     recentNotifs.map((n) => (
                       <button

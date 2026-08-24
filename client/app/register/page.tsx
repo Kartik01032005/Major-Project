@@ -8,7 +8,7 @@ import {
   FiUser, FiMail, FiPhone, FiLock, FiEye, FiEyeOff,
   FiMapPin, FiActivity, FiUserCheck, FiHeart
 } from "react-icons/fi";
-import { useAuth } from "@/context";
+import { useAuth, useTranslation } from "@/context";
 import { UserRole } from "@/types";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
@@ -16,6 +16,7 @@ import Button from "@/components/ui/Button";
 
 function RegisterFormContent() {
   const { register } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialRole = searchParams.get("role");
@@ -47,45 +48,45 @@ function RegisterFormContent() {
     let isValid = true;
 
     if (!name) {
-      tempErrors.name = role === "user" ? "Full name is required." : "Contact person name is required.";
+      tempErrors.name = role === "user" ? t("register_err_name_required") : t("register_err_contact_required");
       isValid = false;
     }
 
     if (role === "admin" && !organizationName) {
-      tempErrors.organizationName = "Hospital or Blood Bank name is required.";
+      tempErrors.organizationName = t("register_err_org_required");
       isValid = false;
     }
 
     if (!email) {
-      tempErrors.email = "Email address is required.";
+      tempErrors.email = t("register_err_email_required");
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      tempErrors.email = "Please enter a valid email address.";
+      tempErrors.email = t("register_err_email_invalid");
       isValid = false;
     }
 
     if (!phone) {
-      tempErrors.phone = "Phone number is required.";
+      tempErrors.phone = t("register_err_phone_required");
       isValid = false;
     } else if (!/^\d{10}$/.test(phone)) {
-      tempErrors.phone = "Please enter a valid 10-digit phone number.";
+      tempErrors.phone = t("register_err_phone_invalid");
       isValid = false;
     }
 
     if (!password) {
-      tempErrors.password = "Password is required.";
+      tempErrors.password = t("register_err_password_required");
       isValid = false;
     } else if (password.length < 6) {
-      tempErrors.password = "Password must be at least 6 characters.";
+      tempErrors.password = t("register_err_password_length");
       isValid = false;
     }
 
     if (!state) {
-      tempErrors.state = "State is required.";
+      tempErrors.state = t("register_err_state_required");
       isValid = false;
     }
     if (!district) {
-      tempErrors.district = "District is required.";
+      tempErrors.district = t("register_err_district_required");
       isValid = false;
     }
 
@@ -123,7 +124,7 @@ function RegisterFormContent() {
         setGeneralError(response.message);
       }
     } catch {
-      setGeneralError("An unexpected error occurred. Please try again.");
+      setGeneralError(t("register_err_generic"));
     } finally {
       setLoading(false);
     }
@@ -137,10 +138,10 @@ function RegisterFormContent() {
           <FiActivity size={22} className="animate-heartbeat" />
         </div>
         <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-          Create your account
+          {t("register_title")}
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Join our network to donate or request blood in real time
+          {t("register_subtitle")}
         </p>
       </div>
 
@@ -157,7 +158,7 @@ function RegisterFormContent() {
           ].join(" ")}
         >
           <FiUser size={13} />
-          Individual Donor
+          {t("register_tab_donor")}
         </button>
         <button
           type="button"
@@ -170,7 +171,7 @@ function RegisterFormContent() {
           ].join(" ")}
         >
           <FiUserCheck size={13} />
-          Blood Bank / Admin
+          {t("register_tab_admin")}
         </button>
       </div>
 
@@ -196,12 +197,12 @@ function RegisterFormContent() {
               // Individual fields
               <>
                 <Input
-                  label="Full name"
+                  label={t("register_label_full_name")}
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   error={errors.name}
-                  placeholder="John Doe"
+                  placeholder={t("register_ph_full_name")}
                   leftIcon={<FiUser size={16} />}
                   required
                 />
@@ -210,22 +211,22 @@ function RegisterFormContent() {
               // Admin/Hospital fields
               <>
                 <Input
-                  label="Blood Bank / Hospital name"
+                  label={t("register_label_org_name")}
                   type="text"
                   value={organizationName}
                   onChange={(e) => setOrganizationName(e.target.value)}
                   error={errors.organizationName}
-                  placeholder="City General Blood Bank"
+                  placeholder={t("register_ph_org_name")}
                   leftIcon={<FiHeart size={16} />}
                   required
                 />
                 <Input
-                  label="Contact person name"
+                  label={t("register_label_contact_name")}
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   error={errors.name}
-                  placeholder="Dr. Sarah Johnson"
+                  placeholder={t("register_ph_contact_name")}
                   leftIcon={<FiUser size={16} />}
                   required
                 />
@@ -234,41 +235,41 @@ function RegisterFormContent() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="Email address"
+                label={t("register_label_email")}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 error={errors.email}
-                placeholder="name@example.com"
+                placeholder={t("register_ph_email")}
                 leftIcon={<FiMail size={16} />}
                 required
               />
               <Input
-                label="Phone number"
+                label={t("register_label_phone")}
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 error={errors.phone}
-                placeholder="10-digit number"
+                placeholder={t("register_ph_phone")}
                 leftIcon={<FiPhone size={16} />}
                 required
               />
             </div>
 
             <Input
-              label="Password"
+              label={t("register_label_password")}
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               error={errors.password}
-              placeholder="••••••••"
+              placeholder={t("register_ph_password")}
               leftIcon={<FiLock size={16} />}
               rightIcon={
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors focus:outline-none"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? t("login_hide_password") : t("login_show_password")}
                 >
                   {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
                 </button>
@@ -279,22 +280,22 @@ function RegisterFormContent() {
             {/* Address fields for both */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="State"
+                label={t("register_label_state")}
                 type="text"
                 value={state}
                 onChange={(e) => setState(e.target.value)}
                 error={errors.state}
-                placeholder="Karnataka"
+                placeholder={t("register_ph_state")}
                 leftIcon={<FiMapPin size={16} />}
                 required
               />
               <Input
-                label="District"
+                label={t("register_label_district")}
                 type="text"
                 value={district}
                 onChange={(e) => setDistrict(e.target.value)}
                 error={errors.district}
-                placeholder="Mysore"
+                placeholder={t("register_ph_district")}
                 leftIcon={<FiMapPin size={16} />}
                 required
               />
@@ -310,18 +311,18 @@ function RegisterFormContent() {
           fullWidth
           className="mt-6"
         >
-          Create account
+          {t("register_submit")}
         </Button>
       </form>
 
       {/* Footer Link */}
       <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
-        Already have an account?{" "}
+        {t("register_have_account")}{" "}
         <Link
           href="/login"
           className="font-semibold text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
         >
-          Sign in
+          {t("register_login_link")}
         </Link>
       </p>
     </Card>

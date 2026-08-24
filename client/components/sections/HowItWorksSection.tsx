@@ -5,30 +5,7 @@ import { motion } from "framer-motion";
 import { FaDroplet } from "react-icons/fa6";
 import { FiUserPlus, FiAlertTriangle, FiNavigation } from "react-icons/fi";
 import { Step } from "@/types";
-
-const steps: Step[] = [
-  {
-    id: 1,
-    step: "01",
-    title: "Create your account",
-    description:
-      "Register in seconds. Enter your location and role. Your profile is ready to save lives immediately.",
-  },
-  {
-    id: 2,
-    step: "02",
-    title: "Submit an emergency request",
-    description:
-      "When blood is needed urgently, post a request with blood group, hospital, and contact details. Nearby donors are notified instantly.",
-  },
-  {
-    id: 3,
-    step: "03",
-    title: "Connect and navigate",
-    description:
-      "Donors and blood banks respond in real time. Once approved, Google Maps guides you directly to the nearest blood source.",
-  },
-];
+import { useTranslation } from "@/context";
 
 const stepIcons = [FiUserPlus, FiAlertTriangle, FiNavigation];
 
@@ -39,6 +16,32 @@ const stepColors = [
 ];
 
 export default function HowItWorksSection() {
+  const { t } = useTranslation();
+
+  const steps: Step[] = [
+    {
+      id: 1,
+      step: "01",
+      title: "Create your account",
+      description:
+        "Register in seconds. Enter your location and role. Your profile is ready to save lives immediately.",
+    },
+    {
+      id: 2,
+      step: "02",
+      title: "Submit an emergency request",
+      description:
+        "When blood is needed urgently, post a request with blood group, hospital, and contact details. Nearby donors are notified instantly.",
+    },
+    {
+      id: 3,
+      step: "03",
+      title: "Connect and navigate",
+      description:
+        "Donors and blood banks respond in real time. Once approved, Google Maps guides you directly to the nearest blood source.",
+    },
+  ];
+
   return (
     <section
       id="how-it-works"
@@ -57,15 +60,13 @@ export default function HowItWorksSection() {
         >
           <span className="section-badge mb-4">
             <FaDroplet size={10} aria-hidden="true" />
-            How It Works
+            {t("hiw_badge")}
           </span>
           <h2 className="display-lg text-slate-900 dark:text-white mt-4 mb-4">
-            Three steps.{" "}
-            <span className="gradient-text">Life-saving results.</span>
+            {t("hiw_title")}
           </h2>
           <p className="body-lg text-slate-500 dark:text-slate-400">
-            BloodLink is designed to be fast and intuitive — even in
-            the most critical moments.
+            {t("hiw_sub")}
           </p>
         </motion.div>
 

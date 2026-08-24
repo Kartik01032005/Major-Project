@@ -422,4 +422,4 @@ Update TASKS.md and relevant documentation after completion.
 
 ## Product Scope
 
-BloodLink Mobile/React Native development was discontinued. The project now maintains the web application as the primary product.
+gitBloodLink Mobile/React Native development was discontinued. The project now maintains the web application as the primary product.

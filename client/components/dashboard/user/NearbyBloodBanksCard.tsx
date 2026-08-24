@@ -7,6 +7,7 @@ import { FiMap, FiPhone, FiNavigation, FiMapPin, FiExternalLink } from "react-ic
 import { FaDroplet } from "react-icons/fa6";
 import MapContainer from "@/components/map/MapContainer";
 import { MapBloodBank } from "@/types";
+import { useTranslation } from "@/context";
 
 const MOCK_BLOOD_BANKS: MapBloodBank[] = [
   {
@@ -59,6 +60,8 @@ const BLOOD_GROUP_COLORS: Record<string, string> = {
 };
 
 export default function NearbyBloodBanksCard() {
+  const { t } = useTranslation();
+
   const openMaps = (bank: MapBloodBank) => {
     const query = encodeURIComponent(`${bank.name}, ${bank.address}, ${bank.district}`);
     window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, "_blank");
@@ -80,13 +83,13 @@ export default function NearbyBloodBanksCard() {
           <span className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/40 flex items-center justify-center text-red-600">
             <FiMap size={15} />
           </span>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Nearby Blood Banks</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{t("nearby_title")}</h3>
         </div>
         <Link
           href="/dashboard/nearby"
           className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline flex items-center gap-1"
         >
-          View Full Map <FiExternalLink size={12} />
+          {t("nearby_view_map")} <FiExternalLink size={12} />
         </Link>
       </div>
 

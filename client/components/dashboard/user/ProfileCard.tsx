@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiPhone, FiMapPin, FiCalendar, FiEdit3, FiCheck, FiX } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
-import { useAuth } from "@/context";
+import { useAuth, useTranslation } from "@/context";
 import { authService } from "@/services";
 
 const BLOOD_GROUP_COLORS: Record<string, string> = {
@@ -32,6 +32,7 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 
 export default function ProfileCard() {
   const { user, logout } = useAuth();
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
   const [phone, setPhone] = useState(user?.phone ?? "");
@@ -103,7 +104,7 @@ export default function ProfileCard() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">{user?.name}</h3>
-            <p className="text-xs text-slate-400">Member since {user?.createdAt ? new Date(user.createdAt).getFullYear() : "—"}</p>
+            <p className="text-xs text-slate-400">{t("profile_member_since")} {user?.createdAt ? new Date(user.createdAt).getFullYear() : "—"}</p>
           </div>
           <AnimatePresence mode="wait">
             {saved ? (
@@ -114,7 +115,7 @@ export default function ProfileCard() {
                 exit={{ opacity: 0, scale: 0.8 }}
                 className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400"
               >
-                <FiCheck size={14} /> Saved
+                <FiCheck size={14} /> {t("profile_saved")}
               </motion.span>
             ) : editing ? (
               <motion.div key="editing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
@@ -122,13 +123,13 @@ export default function ProfileCard() {
                   onClick={handleSave}
                   className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
                 >
-                  <FiCheck size={13} /> Save
+                  <FiCheck size={13} /> {t("profile_save")}
                 </button>
                 <button
                   onClick={() => setEditing(false)}
                   className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                 >
-                  <FiX size={13} /> Cancel
+                  <FiX size={13} /> {t("profile_cancel")}
                 </button>
               </motion.div>
             ) : (
@@ -139,7 +140,7 @@ export default function ProfileCard() {
                 onClick={() => setEditing(true)}
                 className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors"
               >
-                <FiEdit3 size={13} /> Edit Profile
+                <FiEdit3 size={13} /> {t("profile_edit")}
               </motion.button>
             )}
           </AnimatePresence>
@@ -147,11 +148,11 @@ export default function ProfileCard() {
 
         {/* Info grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InfoRow icon={<FiMail size={15} />} label="Email" value={user?.email ?? ""} />
+          <InfoRow icon={<FiMail size={15} />} label={t("profile_email")} value={user?.email ?? ""} />
           <div className="flex items-start gap-3">
             <span className="mt-0.5 text-slate-400 dark:text-slate-500 flex-shrink-0"><FiPhone size={15} /></span>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">Phone</p>
+              <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide">{t("profile_phone")}</p>
               {editing ? (
                 <input
                   type="tel"
@@ -168,12 +169,12 @@ export default function ProfileCard() {
           </div>
           <InfoRow
             icon={<FiMapPin size={15} />}
-            label="Location"
-            value={user?.location ? `${user.location.district}, ${user.location.state}` : "Not set"}
+            label={t("profile_location")}
+            value={user?.location ? `${user.location.district}, ${user.location.state}` : t("profile_not_set")}
           />
           <InfoRow
             icon={<FiCalendar size={15} />}
-            label="Joined"
+            label={t("profile_joined")}
             value={user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" }) : "—"}
           />
         </div>
@@ -183,15 +184,15 @@ export default function ProfileCard() {
 
         {/* Delete Account Section */}
         <div className="rounded-xl border border-red-200 dark:border-red-950/40 bg-red-50/30 dark:bg-red-950/10 p-4">
-          <h4 className="text-sm font-bold text-red-600 dark:text-red-400 mb-1">Delete Account</h4>
+          <h4 className="text-sm font-bold text-red-600 dark:text-red-400 mb-1">{t("profile_delete_title")}</h4>
           <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-            Deleting your account will permanently remove all your data from BloodLink. This action cannot be undone.
+            {t("profile_delete_description")}
           </p>
           <button
             onClick={() => setShowDeleteModal(true)}
             className="px-4 py-2 rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors"
           >
-            Delete Account
+            {t("profile_delete_btn")}
           </button>
         </div>
       </div>
@@ -227,10 +228,10 @@ export default function ProfileCard() {
               ].join(" ")}
             >
               <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">
-                Are you absolutely sure?
+                {t("profile_delete_confirm_title")}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
-                Deleting your account will permanently remove all your data from BloodLink. This action cannot be undone.
+                {t("profile_delete_confirm_description")}
               </p>
 
               {deleteError && (
@@ -245,7 +246,7 @@ export default function ProfileCard() {
                   disabled={deleting}
                   className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold transition-colors"
                 >
-                  Cancel
+                  {t("profile_delete_cancel_btn")}
                 </button>
                 <button
                   onClick={handleDeleteAccount}
@@ -255,10 +256,10 @@ export default function ProfileCard() {
                   {deleting ? (
                     <>
                       <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Deleting...
+                      {t("profile_deleting")}
                     </>
                   ) : (
-                    "Yes, Delete Account"
+                    t("profile_delete_confirm_btn")
                   )}
                 </button>
               </div>

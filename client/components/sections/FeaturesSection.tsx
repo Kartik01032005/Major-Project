@@ -7,52 +7,7 @@ import {
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import Card from "@/components/ui/Card";
-import { Feature } from "@/types";
-
-const features: Feature[] = [
-  {
-    id: 1,
-    icon: "bell",
-    title: "Real-Time Alerts",
-    description:
-      "Emergency notifications reach nearby donors and blood banks in milliseconds via Socket.IO.",
-  },
-  {
-    id: 2,
-    icon: "map",
-    title: "Google Maps Integration",
-    description:
-      "Discover nearby blood banks, view hospital locations, and get turn-by-turn navigation.",
-  },
-  {
-    id: 3,
-    icon: "drop",
-    title: "Live Blood Inventory",
-    description:
-      "Blood banks update stock in real time. Users instantly see availability for all 8 blood groups.",
-  },
-  {
-    id: 4,
-    icon: "lock",
-    title: "Secure Authentication",
-    description:
-      "JWT-based login with bcrypt hashing. Role-based access for donors and blood bank admins.",
-  },
-  {
-    id: 5,
-    icon: "activity",
-    title: "Emergency Management",
-    description:
-      "Create, track, and manage emergency requests with real-time approval workflows.",
-  },
-  {
-    id: 6,
-    icon: "mobile",
-    title: "Mobile-First Design",
-    description:
-      "Fully responsive across smartphones, tablets, and desktops for access anywhere.",
-  },
-];
+import { useTranslation } from "@/context";
 
 const iconMap: Record<string, React.ElementType> = {
   bell: FiBell,
@@ -82,6 +37,53 @@ const card: Variants = {
 };
 
 export default function FeaturesSection() {
+  const { t } = useTranslation();
+
+  const features = [
+    {
+      id: 1,
+      icon: "bell",
+      title: "Real-Time Alerts",
+      description:
+        "Emergency notifications reach nearby donors and blood banks in milliseconds via Socket.IO.",
+    },
+    {
+      id: 2,
+      icon: "map",
+      title: "Google Maps Integration",
+      description:
+        "Discover nearby blood banks, view hospital locations, and get turn-by-turn navigation.",
+    },
+    {
+      id: 3,
+      icon: "drop",
+      title: "Live Blood Inventory",
+      description:
+        "Blood banks update stock in real time. Users instantly see availability for all 8 blood groups.",
+    },
+    {
+      id: 4,
+      icon: "lock",
+      title: "Secure Authentication",
+      description:
+        "JWT-based login with bcrypt hashing. Role-based access for donors and blood bank admins.",
+    },
+    {
+      id: 5,
+      icon: "activity",
+      title: "Emergency Management",
+      description:
+        "Create, track, and manage emergency requests with real-time approval workflows.",
+    },
+    {
+      id: 6,
+      icon: "mobile",
+      title: "Mobile-First Design",
+      description:
+        "Fully responsive across smartphones, tablets, and desktops for access anywhere.",
+    },
+  ];
+
   return (
     <section
       id="features"
@@ -100,15 +102,13 @@ export default function FeaturesSection() {
         >
           <span className="section-badge mb-4">
             <FaDroplet size={10} aria-hidden="true" />
-            Platform Features
+            {t("features_badge")}
           </span>
           <h2 className="display-lg text-slate-900 dark:text-white mt-4 mb-4">
-            Everything you need,{" "}
-            <span className="gradient-text">when you need it</span>
+            {t("features_title")}
           </h2>
           <p className="body-lg text-slate-500 dark:text-slate-400">
-            BloodLink combines powerful tools to make blood donation and emergency
-            response faster, safer, and smarter.
+            {t("features_sub")}
           </p>
         </motion.div>
 

@@ -4,10 +4,11 @@ import React from "react";
 import { motion } from "framer-motion";
 import { FiAlertCircle, FiCrosshair, FiClock } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
-import { useDashboard } from "@/context";
+import { useDashboard, useTranslation } from "@/context";
 
 export default function AdminStatsCards() {
   const { inventory, requests, hospitals } = useDashboard();
+  const { t } = useTranslation();
 
   const totalUnits = inventory.reduce((sum, item) => sum + item.units, 0);
   const activeRequests = requests.filter((r) => r.status === "Pending").length;
@@ -16,9 +17,9 @@ export default function AdminStatsCards() {
   const stats = [
     {
       id: "total-units",
-      label: "Total Blood Units",
+      label: t("admin_stat_total_inventory"),
       value: totalUnits,
-      suffix: "units",
+      suffix: t("admin_stat_units"),
       icon: <FaDroplet size={20} />,
       color: "bg-red-100 dark:bg-red-950/40 text-red-600",
       trend: "+12 this week",
@@ -26,7 +27,7 @@ export default function AdminStatsCards() {
     },
     {
       id: "active-requests",
-      label: "Active Requests",
+      label: t("admin_stat_pending_requests"),
       value: activeRequests,
       suffix: "pending",
       icon: <FiAlertCircle size={20} />,
@@ -36,7 +37,7 @@ export default function AdminStatsCards() {
     },
     {
       id: "hospitals",
-      label: "Hospitals Managed",
+      label: t("admin_stat_hospitals"),
       value: hospitals.length,
       suffix: "registered",
       icon: <FiCrosshair size={20} />,
@@ -46,7 +47,7 @@ export default function AdminStatsCards() {
     },
     {
       id: "pending-approvals",
-      label: "Pending Approvals",
+      label: t("admin_stat_pending_requests"),
       value: pendingApprovals,
       suffix: "to review",
       icon: <FiClock size={20} />,

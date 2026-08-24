@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import Button from "@/components/ui/Button";
+import { useTranslation } from "@/context";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -9,6 +10,8 @@ interface ErrorProps {
 }
 
 export default function GlobalError({ error, reset }: ErrorProps) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     // Log exception for telemetry / diagnostics
     console.error("Unhandled Application Exception:", error);
@@ -37,10 +40,10 @@ export default function GlobalError({ error, reset }: ErrorProps) {
         {/* Content */}
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Something Went Wrong
+            {t("error_title")}
           </h1>
           <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-            An unexpected application error occurred. We have logged this issue and are working to resolve it.
+            {t("error_description")}
           </p>
           {error?.message && (
             <p className="mt-2 text-xs font-mono bg-slate-100 dark:bg-slate-950 p-2.5 rounded-lg text-slate-700 dark:text-slate-300 break-words text-left">
@@ -52,10 +55,10 @@ export default function GlobalError({ error, reset }: ErrorProps) {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Button onClick={() => reset()} variant="primary" size="md" fullWidth className="sm:w-auto">
-            Try Again
+            {t("error_retry")}
           </Button>
           <Button href="/" variant="outline" size="md" fullWidth className="sm:w-auto">
-            Back to Home
+            {t("error_home")}
           </Button>
         </div>
       </div>

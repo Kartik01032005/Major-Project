@@ -4,15 +4,15 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiAlertCircle, FiCheckCircle, FiXCircle, FiClock, FiMapPin, FiPhone, FiUser, FiLoader } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
-import { useDashboard } from "@/context";
+import { useDashboard, useTranslation } from "@/context";
 import { RequestStatus, EmergencyRequest } from "@/types";
 
-const STATUS_CONFIG: Record<RequestStatus, { label: string; badge: string; icon: React.ReactNode }> = {
-  Pending:   { label: "Pending",   badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",   icon: <FiClock size={12} /> },
-  Approved:  { label: "Approved",  badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", icon: <FiCheckCircle size={12} /> },
-  Rejected:  { label: "Rejected",  badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", icon: <FiXCircle size={12} /> },
-  Completed: { label: "Completed", badge: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400", icon: <FiCheckCircle size={12} /> },
-  Cancelled: { label: "Cancelled", badge: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400", icon: <FiXCircle size={12} /> },
+const STATUS_CONFIG: Record<RequestStatus, { badge: string; icon: React.ReactNode }> = {
+  Pending:   { badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",   icon: <FiClock size={12} /> },
+  Approved:  { badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400", icon: <FiCheckCircle size={12} /> },
+  Rejected:  { badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", icon: <FiXCircle size={12} /> },
+  Completed: { badge: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400", icon: <FiCheckCircle size={12} /> },
+  Cancelled: { badge: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400", icon: <FiXCircle size={12} /> },
 };
 
 const BLOOD_GROUP_COLORS: Record<string, string> = {
@@ -41,6 +41,7 @@ function getLocation(req: EmergencyRequest): string {
 
 export default function EmergencyRequestsTable() {
   const { requests, updateRequestStatus, refreshRequests, loadingRequests } = useDashboard();
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<FilterType>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -54,6 +55,17 @@ export default function EmergencyRequestsTable() {
     return String(reqStatus).toLowerCase() === String(targetFilter).toLowerCase();
   };
 
+  const getStatusLabel = (status: RequestStatus) => {
+    switch (status) {
+      case "Pending": return t("requests_status_pending");
+      case "Approved": return t("requests_status_approved");
+      case "Rejected": return t("requests_status_rejected");
+      case "Completed": return t("requests_status_completed");
+      case "Cancelled": return t("requests_status_cancelled");
+      default: return status;
+    }
+  };
+
   const filtered = requests.filter((r) => matchesFilter(r.status, filter));
   const counts = {
     all: requests.length,
@@ -65,11 +77,11 @@ export default function EmergencyRequestsTable() {
   };
 
   const FILTERS: { key: FilterType; label: string }[] = [
-    { key: "all",      label: `All (${counts.all})` },
-    { key: "Pending",  label: `Pending (${counts.Pending})` },
-    { key: "Approved", label: `Approved (${counts.Approved})` },
-    { key: "Rejected", label: `Rejected (${counts.Rejected})` },
-    { key: "Cancelled", label: `Cancelled (${counts.Cancelled})` },
+    { key: "all",      label: `${t("admin_requests_all_statuses")} (${counts.all})` },
+    { key: "Pending",  label: `${t("requests_status_pending")} (${counts.Pending})` },
+    { key: "Approved", label: `${t("requests_status_approved")} (${counts.Approved})` },
+    { key: "Rejected", label: `${t("requests_status_rejected")} (${counts.Rejected})` },
+    { key: "Cancelled", label: `${t("requests_status_cancelled")} (${counts.Cancelled})` },
   ];
 
   const handleAction = async (id: string, action: "approved" | "rejected") => {
@@ -95,7 +107,7 @@ export default function EmergencyRequestsTable() {
           <span className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/40 flex items-center justify-center text-red-600">
             <FiAlertCircle size={15} />
           </span>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Emergency Requests</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{t("admin_requests_title")}</h3>
           {counts.Pending > 0 && (
             <span className="ml-1 text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-red-600 text-white">
               {counts.Pending}
@@ -132,10 +144,10 @@ export default function EmergencyRequestsTable() {
             <FiAlertCircle size={22} />
           </div>
           <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-            No {filter !== "all" ? filter.toLowerCase() : ""} requests
+            {t("admin_requests_no_records")}
           </p>
           {loadingRequests && (
-            <p className="text-xs text-slate-400 mt-1">Loading requests...</p>
+            <p className="text-xs text-slate-400 mt-1">{t("admin_requests_loading")}</p>
           )}
         </div>
       ) : (
@@ -143,6 +155,7 @@ export default function EmergencyRequestsTable() {
           {filtered.map((req, i) => {
             const formattedStatus = (req.status ? req.status.charAt(0).toUpperCase() + req.status.slice(1).toLowerCase() : "Pending") as RequestStatus;
             const statusCfg = STATUS_CONFIG[formattedStatus] ?? STATUS_CONFIG[req.status] ?? STATUS_CONFIG.Pending;
+            const statusLabel = getStatusLabel(formattedStatus);
             const bgColor = BLOOD_GROUP_COLORS[req.bloodGroup] ?? "";
             const isExpanded = expandedId === req._id;
             const requesterName = getRequesterName(req);
@@ -179,7 +192,7 @@ export default function EmergencyRequestsTable() {
 
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${statusCfg.badge}`}>
-                        {statusCfg.icon} {statusCfg.label}
+                        {statusCfg.icon} {statusLabel}
                       </span>
                       <span className="text-[10px] text-slate-400 hidden sm:inline">
                         {new Date(req.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" })}
@@ -202,24 +215,24 @@ export default function EmergencyRequestsTable() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 mb-4">
                           <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                             <FiMapPin size={13} className="text-slate-400" />
-                            <span><strong>Address:</strong> {req.address}</span>
+                            <span><strong>{t("emergency_address")}:</strong> {req.address}</span>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                             <FiPhone size={13} className="text-slate-400" />
-                            <span><strong>Contact:</strong> {req.contactNumber}</span>
+                            <span><strong>{t("emergency_contact")}:</strong> {req.contactNumber}</span>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                             <FaDroplet size={11} className="text-red-400" />
-                            <span><strong>Blood Group:</strong> {req.bloodGroup} {req.unitsRequired ? `(${req.unitsRequired} units)` : ""}</span>
+                            <span><strong>{t("emergency_blood_group_label")}:</strong> {req.bloodGroup} {req.unitsRequired ? `(${req.unitsRequired} ${t("admin_stat_units")})` : ""}</span>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                             <FiClock size={13} className="text-slate-400" />
-                            <span><strong>Submitted:</strong> {new Date(req.createdAt).toLocaleString("en-IN")}</span>
+                            <span><strong>{t("admin_requests_date")}:</strong> {new Date(req.createdAt).toLocaleString("en-IN")}</span>
                           </div>
                           {typeof req.requestBy === "object" && req.requestBy?.location && (
                             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                               <FiUser size={13} className="text-slate-400" />
-                              <span><strong>Requester Location:</strong> {req.requestBy.location.district}, {req.requestBy.location.state}</span>
+                              <span><strong>{t("admin_requests_location")}:</strong> {req.requestBy.location.district}, {req.requestBy.location.state}</span>
                             </div>
                           )}
                         </div>
@@ -236,7 +249,7 @@ export default function EmergencyRequestsTable() {
                                 ? <FiLoader size={13} className="animate-spin" />
                                 : <FiCheckCircle size={13} />
                               }
-                              Approve Request
+                              {t("admin_requests_approve")}
                             </button>
                             <button
                               onClick={() => handleAction(req._id, "rejected")}
@@ -247,7 +260,7 @@ export default function EmergencyRequestsTable() {
                                 ? <FiLoader size={13} className="animate-spin" />
                                 : <FiXCircle size={13} />
                               }
-                              Reject
+                              {t("admin_requests_reject")}
                             </button>
                           </div>
                         )}

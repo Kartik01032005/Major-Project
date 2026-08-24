@@ -5,6 +5,7 @@ import { motion, type Variants } from "framer-motion";
 import { FaDroplet } from "react-icons/fa6";
 import { FiCheck } from "react-icons/fi";
 import { WhyPoint } from "@/types";
+import { useTranslation } from "@/context";
 
 const points: WhyPoint[] = [
   {
@@ -59,6 +60,8 @@ const item: Variants = {
 };
 
 export default function WhyChooseSection() {
+  const { t } = useTranslation();
+
   return (
     <section
       id="why-choose"
@@ -124,11 +127,10 @@ export default function WhyChooseSection() {
             >
               <span className="section-badge mb-4">
                 <FaDroplet size={10} aria-hidden="true" />
-                Why BloodLink
+                {t("why_badge")}
               </span>
               <h2 className="display-lg text-slate-900 dark:text-white mt-4">
-                Why choose{" "}
-                <span className="gradient-text">BloodLink</span>?
+                {t("why_title")}
               </h2>
             </motion.div>
 
