@@ -246,7 +246,7 @@ describe("Multilingual i18n Suite", () => {
     }
 
     const navigationList = screen.getByRole("list");
-    expect(navigationList).toHaveClass("2xl:flex", "flex-1", "min-w-0");
+    expect(navigationList).toHaveClass("md:flex", "flex-1", "min-w-0");
   });
 
   it("renders the Home landing page wrapped in LanguageProvider", () => {

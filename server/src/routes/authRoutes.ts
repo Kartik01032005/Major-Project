@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { body } from "express-validator";
-import { register, login, getMe, deleteAccount } from "../controllers/authController.js";
+import { register, login, getMe, deleteAccount, forgotPassword, resetPassword } from "../controllers/authController.js";
 import { authGuard } from "../middleware/auth.js";
 
 const router = Router();
@@ -29,8 +29,19 @@ const loginValidation = [
   body("password").notEmpty().withMessage("Password is required"),
 ];
 
+const forgotPasswordValidation = [
+  body("email").isEmail().withMessage("Please provide a valid email address"),
+];
+
+const resetPasswordValidation = [
+  body("token").notEmpty().withMessage("Reset token is required"),
+  body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
+];
+
 router.post("/register", registerValidation, register);
 router.post("/login", loginValidation, login);
+router.post("/forgot-password", forgotPasswordValidation, forgotPassword);
+router.post("/reset-password", resetPasswordValidation, resetPassword);
 router.get("/me", authGuard, getMe);
 router.delete("/delete-account", authGuard, deleteAccount);
 

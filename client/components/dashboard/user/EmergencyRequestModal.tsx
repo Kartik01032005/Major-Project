@@ -6,6 +6,8 @@ import { FiX, FiAlertCircle, FiMapPin, FiPhone, FiCheck } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useDashboard, useTranslation } from "@/context";
 import { BloodGroup } from "@/types";
+import Select from "@/components/ui/Select";
+import { ALL_STATES, getDistrictsByState } from "@/utils/locations";
 
 const BLOOD_GROUPS: BloodGroup[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -181,36 +183,40 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                     </div>
                   </div>
 
-                  {/* Location */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        {t("emergency_state")}
-                      </label>
-                      <input
-                        type="text"
-                        value={state}
-                        onChange={(e) => setState(e.target.value)}
-                        placeholder="Karnataka"
-                        className={inputCls("state")}
-                        aria-describedby={errors.state ? "state-error" : undefined}
-                      />
-                      {errors.state && <p id="state-error" className="text-[11px] text-red-500 mt-1">{errors.state}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                        {t("emergency_district")}
-                      </label>
-                      <input
-                        type="text"
-                        value={district}
-                        onChange={(e) => setDistrict(e.target.value)}
-                        placeholder="Mysore"
-                        className={inputCls("district")}
-                        aria-describedby={errors.district ? "district-error" : undefined}
-                      />
-                      {errors.district && <p id="district-error" className="text-[11px] text-red-500 mt-1">{errors.district}</p>}
-                    </div>
+                  {/* Location Dropdowns */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Select
+                      label={t("emergency_state")}
+                      value={state}
+                      onChange={(e) => {
+                        setState(e.target.value);
+                        setDistrict("");
+                        setErrors((prev) => ({ ...prev, state: "", district: "" }));
+                      }}
+                      error={errors.state}
+                      placeholder={t("register_ph_state") || "Select State"}
+                      leftIcon={<FiMapPin size={16} />}
+                      options={ALL_STATES}
+                      required
+                    />
+                    <Select
+                      label={t("emergency_district")}
+                      value={district}
+                      onChange={(e) => {
+                        setDistrict(e.target.value);
+                        setErrors((prev) => ({ ...prev, district: "" }));
+                      }}
+                      error={errors.district}
+                      placeholder={
+                        state
+                          ? (t("register_ph_district") || "Select District")
+                          : "Select State first"
+                      }
+                      leftIcon={<FiMapPin size={16} />}
+                      options={state ? getDistrictsByState(state) : []}
+                      disabled={!state}
+                      required
+                    />
                   </div>
 
                   {/* Hospital */}

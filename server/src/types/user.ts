@@ -16,6 +16,8 @@ export interface IUser extends Document {
   role: "user" | "admin";
   isAvailableDonor: boolean;
   location: ILocation;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword: (enteredPassword: string) => Promise<boolean>;

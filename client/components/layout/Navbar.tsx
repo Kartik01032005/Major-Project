@@ -83,7 +83,7 @@ export default function Navbar() {
             </Link>
 
             {/* ── Desktop Links ─────────────────────────────────── */}
-            <ul className="hidden 2xl:flex flex-1 min-w-0 items-center justify-center gap-0.5 px-4" role="list">
+            <ul className="hidden md:flex flex-1 min-w-0 items-center justify-center gap-0.5 px-4" role="list">
               {navLinks.map((link) => {
                 const active = pathname === link.href;
                 return (
@@ -113,7 +113,7 @@ export default function Navbar() {
             </ul>
 
             {/* ── Desktop CTA ───────────────────────────────────── */}
-            <div className="hidden 2xl:flex shrink-0 items-center gap-3 whitespace-nowrap">
+            <div className="hidden md:flex shrink-0 items-center gap-3 whitespace-nowrap">
               <LanguageSelector className="shrink-0" />
               <ThemeToggle />
               {user ? (
@@ -148,7 +148,7 @@ export default function Navbar() {
             </div>
 
             {/* ── Hamburger ─────────────────────────────────────── */}
-            <div className="2xl:hidden flex items-center gap-2">
+            <div className="md:hidden flex items-center gap-2">
               <LanguageSelector />
               <ThemeToggle />
               <button
@@ -203,7 +203,7 @@ export default function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm 2xl:hidden"
+              className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm md:hidden"
               aria-hidden="true"
               onClick={() => setMobileOpen(false)}
             />
@@ -222,7 +222,7 @@ export default function Navbar() {
                 "fixed top-0 right-0 bottom-0 z-50 w-[280px]",
                 "bg-white dark:bg-slate-950",
                 "border-l border-slate-200 dark:border-slate-800",
-                "flex flex-col shadow-2xl 2xl:hidden",
+                "flex flex-col shadow-2xl md:hidden",
               ].join(" ")}
             >
               {/* Drawer Header */}

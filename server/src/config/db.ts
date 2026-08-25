@@ -20,7 +20,7 @@ export const connectDB = async (): Promise<void> => {
   for (const uri of candidateUris) {
     try {
       const conn = await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 2500,
+        serverSelectionTimeoutMS: 750,
       });
       const hostPort = conn.connection.port
         ? `${conn.connection.host}:${conn.connection.port}`

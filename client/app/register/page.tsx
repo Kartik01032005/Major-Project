@@ -12,7 +12,9 @@ import { useAuth, useTranslation } from "@/context";
 import { UserRole } from "@/types";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
+import { ALL_STATES, getDistrictsByState } from "@/utils/locations";
 
 function RegisterFormContent() {
   const { register } = useAuth();
@@ -277,26 +279,38 @@ function RegisterFormContent() {
               required
             />
 
-            {/* Address fields for both */}
+            {/* State & District Dropdown Selection */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input
+              <Select
                 label={t("register_label_state")}
-                type="text"
                 value={state}
-                onChange={(e) => setState(e.target.value)}
+                onChange={(e) => {
+                  setState(e.target.value);
+                  setDistrict("");
+                  setErrors((prev) => ({ ...prev, state: "", district: "" }));
+                }}
                 error={errors.state}
-                placeholder={t("register_ph_state")}
+                placeholder={t("register_ph_state") || "Select State"}
                 leftIcon={<FiMapPin size={16} />}
+                options={ALL_STATES}
                 required
               />
-              <Input
+              <Select
                 label={t("register_label_district")}
-                type="text"
                 value={district}
-                onChange={(e) => setDistrict(e.target.value)}
+                onChange={(e) => {
+                  setDistrict(e.target.value);
+                  setErrors((prev) => ({ ...prev, district: "" }));
+                }}
                 error={errors.district}
-                placeholder={t("register_ph_district")}
+                placeholder={
+                  state
+                    ? (t("register_ph_district") || "Select District")
+                    : "Select State first"
+                }
                 leftIcon={<FiMapPin size={16} />}
+                options={state ? getDistrictsByState(state) : []}
+                disabled={!state}
                 required
               />
             </div>

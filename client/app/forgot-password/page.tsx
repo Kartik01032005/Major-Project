@@ -7,15 +7,19 @@ import { FiMail, FiArrowLeft, FiCheckCircle, FiActivity } from "react-icons/fi";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import { authService } from "@/services/authService";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [generalError, setGeneralError] = useState("");
+  const [devResetUrl, setDevResetUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const validate = () => {
     setEmailError("");
+    setGeneralError("");
     if (!email) {
       setEmailError("Email address is required.");
       return false;
@@ -31,10 +35,23 @@ export default function ForgotPasswordPage() {
     if (!validate()) return;
 
     setLoading(true);
-    // Simulate server latency
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setLoading(false);
-    setSubmitted(true);
+    setGeneralError("");
+    try {
+      const res = await authService.forgotPassword(email);
+      if (res.success) {
+        if (res.data?.resetUrl) {
+          setDevResetUrl(res.data.resetUrl);
+        }
+        setSubmitted(true);
+      } else {
+        setGeneralError(res.message || "Failed to process password reset request.");
+      }
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      setGeneralError(errorObj?.response?.data?.message || "An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,6 +91,13 @@ export default function ForgotPasswordPage() {
                     We&apos;ll email you instructions to reset your password
                   </p>
                 </div>
+
+                {/* General Error Banner */}
+                {generalError && (
+                  <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 text-xs font-medium text-red-700 dark:text-red-400">
+                    {generalError}
+                  </div>
+                )}
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -127,10 +151,24 @@ export default function ForgotPasswordPage() {
                 </h1>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-3 leading-relaxed">
                   If an account exists for <span className="font-semibold text-slate-800 dark:text-slate-200">{email}</span>,
-                  we have sent password reset instructions.
+                  we have sent password reset instructions with your reset link.
                 </p>
 
-                <div className="mt-8 pt-5 border-t border-slate-100 dark:border-slate-800">
+                {devResetUrl && (
+                  <div className="mt-5 p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 text-left">
+                    <p className="text-xs font-bold text-blue-900 dark:text-blue-200 mb-1">
+                      🛠️ Development Quick Link:
+                    </p>
+                    <Link
+                      href={devResetUrl}
+                      className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 underline break-all font-mono"
+                    >
+                      {devResetUrl}
+                    </Link>
+                  </div>
+                )}
+
+                <div className="mt-8 pt-5 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-3 items-center justify-center">
                   <Link
                     href="/login"
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"

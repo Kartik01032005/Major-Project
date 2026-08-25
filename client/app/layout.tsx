@@ -60,6 +60,7 @@ export const viewport: Viewport = {
 };
 
 import { AuthProvider, LanguageProvider } from "@/context";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -77,6 +78,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 {children}
               </main>
               <Footer />
+              <Chatbot />
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>

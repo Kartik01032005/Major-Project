@@ -61,5 +61,15 @@ export const authService = {
     const response = await api.delete<{ success: boolean; message: string }>("/auth/delete-account");
     return response.data;
   },
+
+  forgotPassword: async (email: string): Promise<{ success: boolean; message: string; data?: { resetUrl?: string } }> => {
+    const response = await api.post<{ success: boolean; message: string; data?: { resetUrl?: string } }>("/auth/forgot-password", { email });
+    return response.data;
+  },
+
+  resetPassword: async (token: string, password: string): Promise<{ success: boolean; message: string }> => {
+    const response = await api.post<{ success: boolean; message: string }>("/auth/reset-password", { token, password });
+    return response.data;
+  },
 };
 export default authService;

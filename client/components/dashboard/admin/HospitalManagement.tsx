@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiCrosshair, FiPlus, FiEdit3, FiTrash2, FiPhone, FiMapPin, FiCheck, FiX, FiAlertTriangle } from "react-icons/fi";
 import { useDashboard, useTranslation } from "@/context";
 import { Hospital } from "@/types";
+import Select from "@/components/ui/Select";
+import { ALL_STATES, getDistrictsByState } from "@/utils/locations";
 
 interface HospitalFormData {
   name: string;
@@ -110,17 +112,27 @@ function HospitalModal({
                 <input type="text" value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Street, Area" className={inputCls("address")} />
                 {errors.address && <p className="text-[11px] text-red-500 mt-1">{errors.address}</p>}
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t("emergency_state")} *</label>
-                  <input type="text" value={form.state} onChange={(e) => set("state", e.target.value)} placeholder="Karnataka" className={inputCls("state")} />
-                  {errors.state && <p className="text-[11px] text-red-500 mt-1">{errors.state}</p>}
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t("emergency_district")} *</label>
-                  <input type="text" value={form.district} onChange={(e) => set("district", e.target.value)} placeholder="Mysore" className={inputCls("district")} />
-                  {errors.district && <p className="text-[11px] text-red-500 mt-1">{errors.district}</p>}
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Select
+                  label={`${t("emergency_state")} *`}
+                  value={form.state}
+                  onChange={(e) => {
+                    set("state", e.target.value);
+                    set("district", "");
+                  }}
+                  error={errors.state}
+                  placeholder="Select State"
+                  options={ALL_STATES}
+                />
+                <Select
+                  label={`${t("emergency_district")} *`}
+                  value={form.district}
+                  onChange={(e) => set("district", e.target.value)}
+                  error={errors.district}
+                  placeholder={form.state ? "Select District" : "Select State first"}
+                  options={form.state ? getDistrictsByState(form.state) : []}
+                  disabled={!form.state}
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t("hospital_contact")} *</label>

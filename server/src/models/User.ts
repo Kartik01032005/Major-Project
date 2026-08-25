@@ -20,7 +20,9 @@ const UserSchema = new Schema<IUser>({
   },
   role: { type: String, required: true, enum: ["user", "admin"], default: "user" },
   isAvailableDonor: { type: Boolean, default: true },
-  location: { type: LocationSchema, required: true }
+  location: { type: LocationSchema, required: true },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date }
 }, {
   timestamps: true
 });

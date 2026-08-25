@@ -7,9 +7,6 @@ import { startNotificationWorker } from "./services/notificationQueue.js";
 const PORT = process.env.PORT ?? 5000;
 
 const startServer = async () => {
-  // Connect to MongoDB Atlas or local MongoDB instance
-  await connectDB();
-
   const server = http.createServer(app);
   initSocket(server);
   startNotificationWorker();
@@ -18,6 +15,9 @@ const startServer = async () => {
     console.log(`🚀 Server listening in development mode on port ${PORT}`);
     console.log(`👉 http://localhost:${PORT}`);
   });
+
+  // Connect to MongoDB Atlas or local/in-memory MongoDB instance
+  await connectDB();
 };
 
 startServer().catch((err) => {

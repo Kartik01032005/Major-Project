@@ -184,6 +184,117 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+// ─── Forgot Password Controller ──────────────────────────────────────────────
+export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({
+      success: false,
+      errors: errors.array(),
+      message: errors.array()[0]?.msg || "Invalid email address"
+    });
+    return;
+  }
+
+  const { email } = req.body;
+  const normalizedEmail = email ? email.toLowerCase().trim() : "";
+
+  try {
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      // Return 200 for security so attackers cannot enumerate valid user emails
+      res.status(200).json({
+        success: true,
+        message: "If an account exists with this email, password reset instructions have been sent."
+      });
+      return;
+    }
+
+    // Generate random reset token
+    const cryptoModule = await import("crypto");
+    const resetToken = cryptoModule.randomBytes(32).toString("hex");
+
+    // Hash token and store in user document
+    const hashedToken = cryptoModule.createHash("sha256").update(resetToken).digest("hex");
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour validity
+    await user.save();
+
+    // Construct reset link
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const resetUrl = `${clientUrl}/reset-password?token=${resetToken}`;
+
+    // Send email
+    const { emailService } = await import("../services/emailService.js");
+    await emailService.sendPasswordResetEmail(user.email, resetUrl, user.name);
+
+    res.status(200).json({
+      success: true,
+      message: "If an account exists with this email, password reset instructions have been sent.",
+      data: {
+        resetToken: process.env.NODE_ENV !== "production" ? resetToken : undefined,
+        resetUrl: process.env.NODE_ENV !== "production" ? resetUrl : undefined,
+      }
+    });
+  } catch (error: any) {
+    console.error("❌ Forgot password error:", error);
+    res.status(500).json({ success: false, message: error.message || "Server error during password reset request" });
+  }
+};
+
+// ─── Reset Password Controller ────────────────────────────────────────────────
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({
+      success: false,
+      errors: errors.array(),
+      message: errors.array()[0]?.msg || "Validation error"
+    });
+    return;
+  }
+
+  const { token, password } = req.body;
+
+  if (!token || !password) {
+    res.status(400).json({ success: false, message: "Token and new password are required." });
+    return;
+  }
+
+  try {
+    const cryptoModule = await import("crypto");
+    const hashedToken = cryptoModule.createHash("sha256").update(token).digest("hex");
+
+    // Find user with matching token and valid expiry
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: new Date() }
+    });
+
+    if (!user) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid or expired password reset token. Please request a new reset link."
+      });
+      return;
+    }
+
+    // Set new password (pre-save hook will hash it with bcrypt)
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password has been reset successfully. You can now log in with your new password."
+    });
+  } catch (error: any) {
+    console.error("❌ Reset password error:", error);
+    res.status(500).json({ success: false, message: error.message || "Server error during password reset" });
+  }
+};
+
 // ─── Delete Account Controller ────────────────────────────────────────────────
 export const deleteAccount = async (req: Request, res: Response): Promise<void> => {
   try {
