@@ -2,13 +2,15 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { ChatMessage, ChatbotCategory } from "@/types/chatbot";
-import { chatbotService, WELCOME_MESSAGE } from "@/services/chatbotService";
+import { chatbotService, getWelcomeMessage } from "@/services/chatbotService";
+import { useLanguage } from "@/context/LanguageContext";
 import ChatbotButton from "./ChatbotButton";
 import ChatWindow from "./ChatWindow";
 
 export const Chatbot: React.FC = () => {
+  const { locale } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [getWelcomeMessage(locale)]);
   const [isTyping, setIsTyping] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +75,7 @@ export const Chatbot: React.FC = () => {
       setIsTyping(true);
 
       try {
-        const botReply = await chatbotService.processMessage(text);
+        const botReply = await chatbotService.processMessage(text, updatedWithUser, locale);
         const updatedWithBot = [...updatedWithUser, botReply];
         setMessages(updatedWithBot);
         saveSession(updatedWithBot);
@@ -84,7 +86,7 @@ export const Chatbot: React.FC = () => {
         setIsTyping(false);
       }
     },
-    [inputValue, isTyping, messages, saveSession]
+    [inputValue, isTyping, locale, messages, saveSession]
   );
 
   const handleQuickReplyClick = useCallback(
@@ -95,14 +97,14 @@ export const Chatbot: React.FC = () => {
   );
 
   const handleClearChat = useCallback(() => {
-    setMessages([WELCOME_MESSAGE]);
+    setMessages([getWelcomeMessage(locale)]);
     setError(null);
     try {
       sessionStorage.removeItem("bloodlink_chat_session");
     } catch {
       // Ignore
     }
-  }, []);
+  }, [locale]);
 
   const handleRetry = useCallback(() => {
     if (lastQuery) {
