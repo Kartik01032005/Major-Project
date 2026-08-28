@@ -209,6 +209,11 @@ const hi: Translations = {
   requests_status_rejected: "अस्वीकृत",
   requests_status_completed: "पूर्ण",
   requests_status_cancelled: "रद्द",
+  requests_clear_btn: "अनुरोध साफ़ करें",
+  requests_clear_modal_title: "अनुरोध साफ़ करें?",
+  requests_clear_modal_msg: "क्या आप वाकई इन अनुरोधों को अपने दृश्य से साफ़ करना चाहते हैं?",
+  requests_clear_confirm_btn: "अनुरोध साफ़ करें",
+  requests_requested_label: "अनुरोध किया गया",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ स्वीकार करने से पहले कृपया पढ़ें",

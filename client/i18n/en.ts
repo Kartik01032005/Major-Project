@@ -240,6 +240,11 @@ const en: Translations = {
   requests_status_rejected: "Rejected",
   requests_status_completed: "Completed",
   requests_status_cancelled: "Cancelled",
+  requests_clear_btn: "Clear Requests",
+  requests_clear_modal_title: "Clear Requests?",
+  requests_clear_modal_msg: "Are you sure you want to clear these requests from your view?",
+  requests_clear_confirm_btn: "Clear Requests",
+  requests_requested_label: "Requested",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ Please read before accepting",

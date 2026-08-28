@@ -208,7 +208,12 @@ const mr: Translations = {
   requests_status_approved: "मंजूर",
   requests_status_rejected: "नाकारले",
   requests_status_completed: "पूर्ण",
-  requests_status_cancelled: "रद्द केले",
+  requests_status_cancelled: "रद्द",
+  requests_clear_btn: "विनंत्या साफ करा",
+  requests_clear_modal_title: "विनंत्या साफ करायच्या?",
+  requests_clear_modal_msg: "तुम्हाला खरोखर तुमच्या दृश्यातून या विनंत्या साफ करायच्या आहेत का?",
+  requests_clear_confirm_btn: "विनंत्या साफ करा",
+  requests_requested_label: "विनंती केली",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ स्वीकारण्यापूर्वी कृपया वाचा",

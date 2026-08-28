@@ -209,6 +209,11 @@ const ml: Translations = {
   requests_status_rejected: "നിരസിച്ചു",
   requests_status_completed: "പൂർത്തിയായി",
   requests_status_cancelled: "റദ്ദാക്കി",
+  requests_clear_btn: "അഭ്യർത്ഥനകൾ മായ്‌ക്കുക",
+  requests_clear_modal_title: "അഭ്യർത്ഥനകൾ മായ്‌ക്കണോ?",
+  requests_clear_modal_msg: "നിങ്ങളുടെ കാഴ്ചയിൽ നിന്ന് ഈ അഭ്യർത്ഥനകൾ മായ്‌ക്കണമെന്ന് ഉറപ്പാണോ?",
+  requests_clear_confirm_btn: "അഭ്യർത്ഥനകൾ മായ്‌ക്കുക",
+  requests_requested_label: "അഭ്യർത്ഥിച്ചു",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ സ്വീകരിക്കുന്നതിന് മുമ്പ് വായിക്കുക",

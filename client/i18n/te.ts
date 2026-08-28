@@ -209,6 +209,11 @@ const te: Translations = {
   requests_status_rejected: "తిరస్కరించబడింది",
   requests_status_completed: "పూర్తయింది",
   requests_status_cancelled: "రద్దు చేయబడింది",
+  requests_clear_btn: "అభ్యర్థనలను క్లియర్ చేయండి",
+  requests_clear_modal_title: "అభ్యర్థనలను క్లియర్ చేయాలా?",
+  requests_clear_modal_msg: "మీ వీక్షణ నుండి ఈ అభ్యర్థనలను ఖచ్చితంగా క్లియర్ చేయాలనుకుంటున్నారా?",
+  requests_clear_confirm_btn: "అభ్యర్థనలను క్లియర్ చేయండి",
+  requests_requested_label: "అభ్యర్థించబడింది",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ అంగీకరించే ముందు దయచేసి చదవండి",

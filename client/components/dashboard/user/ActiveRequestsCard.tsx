@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck, FiNavigation, FiHeart, FiX } from "react-icons/fi";
+import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck, FiNavigation, FiHeart, FiX, FiTrash2 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useDashboard, useTranslation } from "@/context";
 import { RequestStatus, EmergencyRequest } from "@/types";
@@ -51,6 +51,21 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   const [acceptError, setAcceptError] = useState<string | null>(null);
   const [navLoadingId, setNavLoadingId] = useState<string | null>(null);
   const [navErrorId, setNavErrorId] = useState<{ id: string; message: string } | null>(null);
+
+  // Clear Requests View State (Donor/User View Dismissal)
+  const [clearedRequestIds, setClearedRequestIds] = useState<string[]>([]);
+  const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
+
+  const handleConfirmClearRequests = () => {
+    if (activeTab === "donate") {
+      const donateIdsToClear = donateRequests.map((r) => r._id);
+      setClearedRequestIds((prev) => Array.from(new Set([...prev, ...donateIdsToClear])));
+    } else {
+      const myIdsToClear = myRequests.map((r) => r._id);
+      setClearedRequestIds((prev) => Array.from(new Set([...prev, ...myIdsToClear])));
+    }
+    setShowClearConfirmModal(false);
+  };
 
   // Fulfillment & Withdrawal Modals State
   const [donatedReportModalReq, setDonatedReportModalReq] = useState<EmergencyRequest | null>(null);
@@ -228,6 +243,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   // User's own requests
   const myRequests = requests.filter((r) => {
     if (!currentUserId) return false;
+    if (clearedRequestIds.includes(r._id)) return false;
     let reqUserId = "";
     if (typeof r.requestBy === "object" && r.requestBy !== null) {
       reqUserId = r.requestBy._id || "";
@@ -240,6 +256,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   // Requests from other users available to donate (Pending or Approved)
   const donateRequests = requests.filter((r) => {
     if (!currentUserId) return false;
+    if (clearedRequestIds.includes(r._id)) return false;
     let reqUserId = "";
     if (typeof r.requestBy === "object" && r.requestBy !== null) {
       reqUserId = r.requestBy._id || "";
@@ -281,53 +298,66 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
             </button>
           </div>
 
-          {/* Tabs */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveTab("my")}
-              className={[
-                "text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5",
-                activeTab === "my"
-                  ? "bg-red-600 text-white shadow-sm"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700",
-              ].join(" ")}
-            >
-              <span>{t("requests_tab_my_requests")}</span>
-              {myRequests.length > 0 && (
-                <span
-                  className={[
-                    "text-[10px] font-bold px-1.5 py-0.2 rounded-full",
-                    activeTab === "my" ? "bg-white/20 text-white" : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-                  ].join(" ")}
-                >
-                  {myRequests.length}
-                </span>
-              )}
-            </button>
+          {/* Tabs & Clear Requests Button */}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("my")}
+                className={[
+                  "text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5",
+                  activeTab === "my"
+                    ? "bg-red-600 text-white shadow-sm"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700",
+                ].join(" ")}
+              >
+                <span>{t("requests_tab_my_requests")}</span>
+                {myRequests.length > 0 && (
+                  <span
+                    className={[
+                      "text-[10px] font-bold px-1.5 py-0.2 rounded-full",
+                      activeTab === "my" ? "bg-white/20 text-white" : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+                    ].join(" ")}
+                  >
+                    {myRequests.length}
+                  </span>
+                )}
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab("donate")}
-              className={[
-                "text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5",
-                activeTab === "donate"
-                  ? "bg-red-600 text-white shadow-sm"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700",
-              ].join(" ")}
-            >
-              <span>{t("requests_tab_donate_requests")}</span>
-              {donateRequests.length > 0 && (
-                <span
-                  className={[
-                    "text-[10px] font-bold px-1.5 py-0.2 rounded-full",
-                    activeTab === "donate" ? "bg-white/20 text-white" : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-                  ].join(" ")}
-                >
-                  {donateRequests.length}
-                </span>
-              )}
-            </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("donate")}
+                className={[
+                  "text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5",
+                  activeTab === "donate"
+                    ? "bg-red-600 text-white shadow-sm"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700",
+                ].join(" ")}
+              >
+                <span>{t("requests_tab_donate_requests")}</span>
+                {donateRequests.length > 0 && (
+                  <span
+                    className={[
+                      "text-[10px] font-bold px-1.5 py-0.2 rounded-full",
+                      activeTab === "donate" ? "bg-white/20 text-white" : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+                    ].join(" ")}
+                  >
+                    {donateRequests.length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {displayedRequests.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowClearConfirmModal(true)}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ml-auto"
+              >
+                <FiTrash2 size={12} />
+                <span>{t("requests_clear_btn")}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -405,7 +435,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                         {statusIcon} {statusLabel}
                       </span>
                       <span className="text-[10px] text-slate-400">
-                        {new Date(req.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        {t("requests_requested_label")}: {new Date(req.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </div>
                   </div>
@@ -756,6 +786,53 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
               >
                 {withdrawLoading && <FiLoader size={12} className="animate-spin" />}
                 {t("donor_withdraw_confirm_btn")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clear Requests Confirmation Modal */}
+      {showClearConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm pointer-events-auto">
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center flex-shrink-0">
+                  <FiTrash2 size={18} />
+                </span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {t("requests_clear_modal_title")}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowClearConfirmModal(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <FiX size={16} />
+              </button>
+            </div>
+            <div className="px-6 py-5">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                {t("requests_clear_modal_msg")}
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowClearConfirmModal(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                {t("donor_acceptance_cancel_btn")}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmClearRequests}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm"
+              >
+                <FiTrash2 size={12} />
+                {t("requests_clear_confirm_btn")}
               </button>
             </div>
           </div>

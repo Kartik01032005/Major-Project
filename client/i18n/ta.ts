@@ -207,8 +207,13 @@ const ta: Translations = {
   requests_status_pending: "நிலுவையில்",
   requests_status_approved: "அனுமதிக்கப்பட்டது",
   requests_status_rejected: "நிராகரிக்கப்பட்டது",
-  requests_status_completed: "முடிந்தது",
+  requests_status_completed: "நிறைவடைந்தது",
   requests_status_cancelled: "ரத்து செய்யப்பட்டது",
+  requests_clear_btn: "கோரிக்கைகளை நீக்கு",
+  requests_clear_modal_title: "கோரிக்கைகளை நீக்கவா?",
+  requests_clear_modal_msg: "உங்கள் பார்வையிலிருந்து இந்தக் கோரிக்கைகளை நிச்சயமாக நீக்க விரும்புகிறீர்களா?",
+  requests_clear_confirm_btn: "கோரிக்கைகளை நீக்கு",
+  requests_requested_label: "கோரப்பட்டது",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ ஏற்பதற்கு முன் படிக்கவும்",

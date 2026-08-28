@@ -239,7 +239,12 @@ const kn: Translations = {
   requests_status_approved: "ಅನುಮೋದಿಸಲಾಗಿದೆ",
   requests_status_rejected: "ತಿರಸ್ಕರಿಸಲಾಗಿದೆ",
   requests_status_completed: "ಪೂರ್ಣಗೊಂಡಿದೆ",
-  requests_status_cancelled: "ರದ್ದು ಮಾಡಲಾಗಿದೆ",
+  requests_status_cancelled: "ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ",
+  requests_clear_btn: "ಮನವಿಗಳನ್ನು ತೆರವುಗೊಳಿಸಿ",
+  requests_clear_modal_title: "ಮನವಿಗಳನ್ನು ತೆರವುಗೊಳಿಸಬೇಕೇ?",
+  requests_clear_modal_msg: "ನಿಮ್ಮ ವೀಕ್ಷಣೆಯಿಂದ ಈ ಮನವಿಗಳನ್ನು ತೆರವುಗೊಳಿಸಲು ನೀವು ಖಚಿತವಾಗಿ ಬಯಸುತ್ತೀರಾ?",
+  requests_clear_confirm_btn: "ಮನವಿಗಳನ್ನು ತೆರವುಗೊಳಿಸಿ",
+  requests_requested_label: "ಮನವಿ ಮಾಡಲಾಗಿದೆ",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ ಸ್ವೀಕರಿಸುವ ಮೊದಲು ದಯವಿಟ್ಟು ಓದಿ",
