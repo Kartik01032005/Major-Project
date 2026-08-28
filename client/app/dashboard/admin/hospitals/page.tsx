@@ -3,13 +3,14 @@
 import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
-  FiMapPin, FiPhone, FiSearch, FiNavigation,
+  FiMapPin, FiPhone, FiSearch, FiNavigation, FiLoader,
 } from "react-icons/fi";
 import { useDashboard } from "@/context";
 import MapContainer from "@/components/map/MapContainer";
 import HospitalManagement from "@/components/dashboard/admin/HospitalManagement";
 import ProtectedRoute from "@/components/dashboard/ProtectedRoute";
 import { MapHospital } from "@/types";
+import { useHospitalNavigation } from "@/hooks";
 
 // Default coordinates for Karnataka hospitals (seeded mock data)
 // Real lat/lng will come from the backend in a future sprint
@@ -36,6 +37,7 @@ const DEFAULT_CENTER = { lat: 12.9716, lng: 77.5946 }; // Bangalore
 
 export default function AdminHospitalsMapPage() {
   const { hospitals } = useDashboard();
+  const { navLoadingId, navError, navigateToHospital } = useHospitalNavigation();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -65,11 +67,6 @@ export default function AdminHospitalsMapPage() {
     : null;
 
   const mapCenter = selectedMapHospital?.position ?? DEFAULT_CENTER;
-
-  const openMaps = (h: MapHospital) => {
-    const q = encodeURIComponent(`${h.name}, ${h.address}, ${h.district}`);
-    window.open(`https://www.openstreetmap.org/search?query=${q}`, "_blank");
-  };
 
   return (
     <ProtectedRoute requiredRole="admin">
@@ -122,53 +119,78 @@ export default function AdminHospitalsMapPage() {
                   </p>
                 </div>
               ) : (
-                mapHospitals.map((h, i) => (
-                  <motion.div
-                    key={h.id}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    onClick={() => setSelectedId(h.id === selectedId ? null : h.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        setSelectedId(h.id === selectedId ? null : h.id);
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    className={[
-                      "w-full text-left rounded-2xl border p-4 transition-all cursor-pointer",
-                      selectedId === h.id
-                        ? "border-blue-500 bg-blue-50/60 dark:bg-blue-950/20 shadow-md"
-                        : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm",
-                    ].join(" ")}
-                    aria-pressed={selectedId === h.id}
-                    aria-label={`Select ${h.name}`}
-                  >
-                    {/* Hospital icon + name */}
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 flex-shrink-0 mt-0.5">
-                        <FiMapPin size={15} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{h.name}</p>
-                        <p className="text-[11px] text-slate-400 truncate mt-0.5">{h.address}, {h.district}</p>
-                        <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-1">
-                          <FiPhone size={10} /> {h.phone}
+                mapHospitals.map((h, i) => {
+                  const isLoading = navLoadingId === h.id;
+                  const isError = navError?.id === h.id;
+
+                  return (
+                    <motion.div
+                      key={h.id}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      onClick={() => setSelectedId(h.id === selectedId ? null : h.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          setSelectedId(h.id === selectedId ? null : h.id);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      className={[
+                        "w-full text-left rounded-2xl border p-4 transition-all cursor-pointer",
+                        selectedId === h.id
+                          ? "border-blue-500 bg-blue-50/60 dark:bg-blue-950/20 shadow-md"
+                          : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm",
+                      ].join(" ")}
+                      aria-pressed={selectedId === h.id}
+                      aria-label={`Select ${h.name}`}
+                    >
+                      {/* Hospital icon + name */}
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 flex-shrink-0 mt-0.5">
+                          <FiMapPin size={15} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{h.name}</p>
+                          <p className="text-[11px] text-slate-400 truncate mt-0.5">{h.address}, {h.district}</p>
+                          <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-1">
+                            <FiPhone size={10} /> {h.phone}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Navigate button */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); openMaps(h); }}
-                      className="mt-3 w-full flex items-center justify-center gap-1.5 text-[11px] font-semibold py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                      aria-label={`Navigate to ${h.name}`}
-                    >
-                      <FiNavigation size={11} /> Navigate
-                    </button>
-                  </motion.div>
-                ))
+                      {isError && (
+                        <p className="text-[11px] text-red-600 dark:text-red-400 font-medium mt-2">
+                          {navError.message}
+                        </p>
+                      )}
+
+                      {/* Navigate button */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); navigateToHospital(h); }}
+                        disabled={isLoading}
+                        className={[
+                          "mt-3 w-full flex items-center justify-center gap-1.5 text-[11px] font-semibold py-1.5 rounded-lg text-white transition-colors",
+                          isLoading
+                            ? "bg-blue-400 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700 cursor-pointer",
+                        ].join(" ")}
+                        aria-label={`Navigate to ${h.name}`}
+                      >
+                        {isLoading ? (
+                          <>
+                            <FiLoader size={11} className="animate-spin" /> Getting Location...
+                          </>
+                        ) : (
+                          <>
+                            <FiNavigation size={11} /> Navigate
+                          </>
+                        )}
+                      </button>
+                    </motion.div>
+                  );
+                })
               )}
             </div>
           </div>
