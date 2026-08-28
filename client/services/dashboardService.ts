@@ -51,6 +51,21 @@ export const dashboardService = {
     return response.data.data;
   },
 
+  reportDonation: async (id: string): Promise<EmergencyRequest> => {
+    const response = await api.post<{ success: boolean; data: EmergencyRequest }>(`/emergency/${id}/donation-report`);
+    return response.data.data;
+  },
+
+  confirmDonation: async (id: string): Promise<EmergencyRequest> => {
+    const response = await api.post<{ success: boolean; data: EmergencyRequest }>(`/emergency/${id}/donation-confirm`);
+    return response.data.data;
+  },
+
+  withdrawAcceptance: async (id: string, reason: string): Promise<EmergencyRequest> => {
+    const response = await api.post<{ success: boolean; data: EmergencyRequest }>(`/emergency/${id}/withdraw`, { reason });
+    return response.data.data;
+  },
+
   // Inventory
   getInventory: async (): Promise<BloodInventoryItem[]> => {
     const response = await api.get<{ success: boolean; data: BloodInventoryItem[] }>("/inventory");

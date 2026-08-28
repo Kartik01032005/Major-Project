@@ -229,6 +229,32 @@ const ta: Translations = {
   donor_nav_err_invalid_dest: "செல்லுபடியாகாத அல்லது இல்லாத இலக்கு ஆயத்தொலைவுகள்.",
   donor_nav_err_generic: "இருப்பிடத்தைப் பெறும்போது எதிர்பாராத பிழை ஏற்பட்டது.",
 
+  // ── Request Fulfillment & Donor Withdrawal ────────────────────────────────────
+  donor_donated_btn: "🩸 நான் ரத்த தானம் செய்தேன்",
+  donor_donated_modal_title: "ரத்த தானத்தை உறுதிப்படுத்தவும்",
+  donor_donated_modal_message: "இந்த கோரிக்கைக்காக நீங்கள் உண்மையில் ரத்த தானம் செய்துள்ளீர்கள் என்பதை உறுதிப்படுத்தவும்.",
+  donor_donated_confirm_btn: "ஆம், நான் தானம் செய்தேன்",
+  donor_donated_reported_badge: "தானம் தெரிவிக்கப்பட்டது (உறுதிப்படுத்தல் நிலுவையில் உள்ளது)",
+
+  requester_confirm_donation_btn: "✅ பெறப்பட்ட தானத்தை உறுதிப்படுத்தவும்",
+  requester_confirm_modal_title: "தானத்தை உறுதிப்படுத்தவும்",
+  requester_confirm_modal_message: "கொடையாளி கோரப்பட்ட ரத்த தானத்தை பூர்த்தி செய்துவிட்டார் என்பதை உறுதிப்படுத்தவும்.",
+  requester_confirm_action_btn: "தானத்தை உறுதிப்படுத்தவும்",
+  requester_fulfilled_badge: "நிறைவேற்றப்பட்டது ✅",
+
+  donor_withdraw_btn: "⚠️ தானம் செய்ய முடியவில்லை",
+  donor_withdraw_modal_title: "இந்த கோரிக்கையை உங்களால் ஏன் நிறைவேற்ற முடியவில்லை?",
+  donor_withdraw_modal_message: "உங்களால் ஏன் ரத்த தானம் செய்ய முடியவில்லை என்று எங்களிடம் கூறுங்கள், அதனால் கோரியவருக்கு தெரிவிக்கப்பட்டு மற்றொரு கொடையாளி உதவ முடியும்.",
+  donor_withdraw_reason_fit: "மருத்துவ ரீதியாக தகுதியற்றவர்",
+  donor_withdraw_reason_screening: "மருத்துவ பரிசோதனையில் தேர்ச்சி பெறவில்லை",
+  donor_withdraw_reason_health: "சுகாதார பிரச்சனை",
+  donor_withdraw_reason_destination: "இலக்கை அடைய முடியவில்லை",
+  donor_withdraw_reason_emergency: "தனிப்பட்ட/அவசர பிரச்சனை",
+  donor_withdraw_reason_other: "மற்றவை",
+  donor_withdraw_other_ph: "காரணத்தைக் குறிப்பிடவும்...",
+  donor_withdraw_confirm_btn: "திரும்பப் பெறுதலை உறுதிப்படுத்து",
+  donor_withdraw_reason_required_err: "திரும்பப் பெறுவதற்கு முன் ஒரு காரணத்தைத் தேர்ந்தெடுக்கவும் அல்லது வழங்கவும்.",
+
   notifications_title: "அறிவிப்புகள்",
   notifications_new: "புதியது",
   notifications_mark_all: "அனைத்தையும் படித்ததாக குறியிட",

@@ -7,6 +7,9 @@ import {
   approveRequest,
   rejectRequest,
   acceptRequest,
+  reportDonation,
+  confirmDonation,
+  withdrawAcceptance,
   cancelRequest
 } from "../controllers/emergencyController.js";
 import { authGuard, adminGuard } from "../middleware/auth.js";
@@ -39,6 +42,9 @@ router.post("/", authGuard, createRequestValidation, createRequest);
 router.get("/", getAllRequests);
 router.get("/:id", getRequestById);
 router.put("/:id/accept", authGuard, acceptRequest);
+router.post("/:id/donation-report", authGuard, reportDonation);
+router.post("/:id/donation-confirm", authGuard, confirmDonation);
+router.post("/:id/withdraw", authGuard, withdrawAcceptance);
 router.put("/:id/approve", authGuard, adminGuard, approveRequest);
 router.put("/:id/reject", authGuard, adminGuard, rejectRequest);
 router.delete("/:id", authGuard, cancelRequest);

@@ -281,6 +281,32 @@ export interface Translations {
   donor_nav_err_invalid_dest: string;
   donor_nav_err_generic: string;
 
+  // ── Request Fulfillment & Donor Withdrawal ────────────────────────────────────
+  donor_donated_btn: string;
+  donor_donated_modal_title: string;
+  donor_donated_modal_message: string;
+  donor_donated_confirm_btn: string;
+  donor_donated_reported_badge: string;
+
+  requester_confirm_donation_btn: string;
+  requester_confirm_modal_title: string;
+  requester_confirm_modal_message: string;
+  requester_confirm_action_btn: string;
+  requester_fulfilled_badge: string;
+
+  donor_withdraw_btn: string;
+  donor_withdraw_modal_title: string;
+  donor_withdraw_modal_message: string;
+  donor_withdraw_reason_fit: string;
+  donor_withdraw_reason_screening: string;
+  donor_withdraw_reason_health: string;
+  donor_withdraw_reason_destination: string;
+  donor_withdraw_reason_emergency: string;
+  donor_withdraw_reason_other: string;
+  donor_withdraw_other_ph: string;
+  donor_withdraw_confirm_btn: string;
+  donor_withdraw_reason_required_err: string;
+
   // ── Notifications Panel ───────────────────────────────────────────────────────
   notifications_title: string;
   notifications_new: string;

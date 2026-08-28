@@ -38,6 +38,9 @@ const emergencyPayload = {
 
 let userToken: string;
 let adminToken: string;
+let donorToken: string;
+let donorUser: InstanceType<typeof User>;
+let mismatchDonorToken: string;
 
 // ─── Setup / Teardown ────────────────────────────────────────────────────────
 beforeAll(async () => {
@@ -276,9 +279,6 @@ describe("DELETE /api/emergency/:id", () => {
 
 // ─── Accept Emergency Request (Intent to Donate) ────────────────────────────
 describe("PUT /api/emergency/:id/accept", () => {
-  let donorToken: string;
-  let donorUser: InstanceType<typeof User>;
-  let mismatchDonorToken: string;
   let requestId: string;
 
   beforeAll(async () => {
@@ -402,6 +402,138 @@ describe("PUT /api/emergency/:id/accept", () => {
       .set("Authorization", `Bearer ${donorToken}`);
 
     expect(res.status).toBe(404);
+    expect(res.body.success).toBe(false);
+  });
+});
+
+// ─── Fulfillment & Withdrawal Flow ──────────────────────────────────────────
+describe("POST /api/emergency/:id/donation-report, donation-confirm & withdraw", () => {
+  let requestId: string;
+
+  beforeEach(async () => {
+    await EmergencyRequest.deleteMany({});
+    await Notification.deleteMany({});
+
+    // Create a fresh emergency request by userToken (A+)
+    const createRes = await request(app)
+      .post("/api/emergency")
+      .set("Authorization", `Bearer ${userToken}`)
+      .send(emergencyPayload);
+
+    requestId = createRes.body.data._id;
+
+    // donorToken accepts it
+    await request(app)
+      .put(`/api/emergency/${requestId}/accept`)
+      .set("Authorization", `Bearer ${donorToken}`);
+  });
+
+  afterAll(async () => {
+    await EmergencyRequest.deleteMany({});
+    await Notification.deleteMany({});
+  });
+
+  it("authorized donor can report donation", async () => {
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/donation-report`)
+      .set("Authorization", `Bearer ${donorToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.donationReportedBy).toContain(donorUser._id.toString());
+  });
+
+  it("unauthorized user cannot report donation", async () => {
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/donation-report`)
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(403);
+    expect(res.body.success).toBe(false);
+  });
+
+  it("donor cannot report donation twice", async () => {
+    await request(app)
+      .post(`/api/emergency/${requestId}/donation-report`)
+      .set("Authorization", `Bearer ${donorToken}`);
+
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/donation-report`)
+      .set("Authorization", `Bearer ${donorToken}`);
+
+    expect(res.status).toBe(409);
+    expect(res.body.success).toBe(false);
+  });
+
+  it("requester can confirm reported donation to fulfill request", async () => {
+    // First donor reports
+    await request(app)
+      .post(`/api/emergency/${requestId}/donation-report`)
+      .set("Authorization", `Bearer ${donorToken}`);
+
+    // Requester confirms
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/donation-confirm`)
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.status).toBe("Completed");
+  });
+
+  it("unrelated user cannot confirm donation", async () => {
+    await request(app)
+      .post(`/api/emergency/${requestId}/donation-report`)
+      .set("Authorization", `Bearer ${donorToken}`);
+
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/donation-confirm`)
+      .set("Authorization", `Bearer ${mismatchDonorToken}`);
+
+    expect(res.status).toBe(403);
+    expect(res.body.success).toBe(false);
+  });
+
+  it("accepted donor can withdraw with a reason", async () => {
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/withdraw`)
+      .set("Authorization", `Bearer ${donorToken}`)
+      .send({ reason: "Medically unfit" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.acceptedBy).not.toContain(donorUser._id.toString());
+    expect(res.body.data.withdrawnBy.length).toBe(1);
+    expect(res.body.data.withdrawnBy[0].reason).toBe("Medically unfit");
+  });
+
+  it("withdrawal requires a non-empty reason string", async () => {
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/withdraw`)
+      .set("Authorization", `Bearer ${donorToken}`)
+      .send({ reason: "   " });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  it("fulfilled request cannot be withdrawn from", async () => {
+    // Report & Confirm
+    await request(app)
+      .post(`/api/emergency/${requestId}/donation-report`)
+      .set("Authorization", `Bearer ${donorToken}`);
+
+    await request(app)
+      .post(`/api/emergency/${requestId}/donation-confirm`)
+      .set("Authorization", `Bearer ${userToken}`);
+
+    // Try withdraw
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/withdraw`)
+      .set("Authorization", `Bearer ${donorToken}`)
+      .send({ reason: "Health issue" });
+
+    expect(res.status).toBe(409);
     expect(res.body.success).toBe(false);
   });
 });

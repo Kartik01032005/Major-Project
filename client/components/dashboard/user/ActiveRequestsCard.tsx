@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck, FiNavigation } from "react-icons/fi";
+import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck, FiNavigation, FiHeart, FiX } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useDashboard, useTranslation } from "@/context";
 import { RequestStatus, EmergencyRequest } from "@/types";
@@ -41,7 +41,7 @@ interface ActiveRequestsCardProps {
 
 export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardProps) {
   const { user } = useAuth();
-  const { requests, refreshRequests, loadingRequests, cancelRequest, acceptRequest } = useDashboard();
+  const { requests, refreshRequests, loadingRequests, cancelRequest, acceptRequest, reportDonation, confirmDonation, withdrawAcceptance } = useDashboard();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"my" | "donate">("my");
   const [cancelLoading, setCancelLoading] = useState<string | null>(null);
@@ -51,6 +51,72 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   const [acceptError, setAcceptError] = useState<string | null>(null);
   const [navLoadingId, setNavLoadingId] = useState<string | null>(null);
   const [navErrorId, setNavErrorId] = useState<{ id: string; message: string } | null>(null);
+
+  // Fulfillment & Withdrawal Modals State
+  const [donatedReportModalReq, setDonatedReportModalReq] = useState<EmergencyRequest | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+
+  const [requesterConfirmModalReq, setRequesterConfirmModalReq] = useState<EmergencyRequest | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
+  const [withdrawModalReq, setWithdrawModalReq] = useState<EmergencyRequest | null>(null);
+  const [withdrawReasonPreset, setWithdrawReasonPreset] = useState<string>("Medically unfit");
+  const [withdrawReasonOther, setWithdrawReasonOther] = useState<string>("");
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
+
+  const handleConfirmReportDonation = async () => {
+    if (!donatedReportModalReq) return;
+    setReportLoading(true);
+    try {
+      await reportDonation(donatedReportModalReq._id);
+      setDonatedReportModalReq(null);
+    } catch (err: unknown) {
+      console.error("Failed to report donation:", err);
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  const handleConfirmRequesterFulfillment = async () => {
+    if (!requesterConfirmModalReq) return;
+    setConfirmLoading(true);
+    try {
+      await confirmDonation(requesterConfirmModalReq._id);
+      setRequesterConfirmModalReq(null);
+    } catch (err: unknown) {
+      console.error("Failed to confirm donation fulfillment:", err);
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  const handleConfirmWithdrawal = async () => {
+    if (!withdrawModalReq) return;
+    setWithdrawError(null);
+
+    const finalReason = withdrawReasonPreset === "Other"
+      ? withdrawReasonOther.trim()
+      : withdrawReasonPreset.trim();
+
+    if (!finalReason) {
+      setWithdrawError(t("donor_withdraw_reason_required_err"));
+      return;
+    }
+
+    setWithdrawLoading(true);
+    try {
+      await withdrawAcceptance(withdrawModalReq._id, finalReason);
+      setWithdrawModalReq(null);
+      setWithdrawReasonOther("");
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string } } };
+      console.error("Failed to withdraw acceptance:", err);
+      setWithdrawError(errorObj.response?.data?.message || t("donor_nav_err_generic"));
+    } finally {
+      setWithdrawLoading(false);
+    }
+  };
 
   const handleGetLocation = (req: EmergencyRequest) => {
     setNavErrorId(null);
@@ -345,17 +411,36 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                   </div>
 
                   {/* Actions for user's own requests */}
-                  {activeTab === "my" && req.status === "Pending" && (
-                    <div className="mt-3 flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() => handleCancel(req._id)}
-                        disabled={cancelLoading === req._id}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {cancelLoading === req._id && <FiLoader size={12} className="animate-spin" />}
-                        {cancelLoading === req._id ? t("requests_cancelling") : t("requests_cancel")}
-                      </button>
+                  {activeTab === "my" && (
+                    <div className="mt-3 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-3">
+                      <div>
+                        {req.status === "Completed" && (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                            {t("requester_fulfilled_badge")}
+                          </span>
+                        )}
+                        {req.donationReportedBy && req.donationReportedBy.length > 0 && req.status !== "Completed" && (
+                          <button
+                            type="button"
+                            onClick={() => setRequesterConfirmModalReq(req)}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm animate-pulse"
+                          >
+                            <FiCheck size={13} /> {t("requester_confirm_donation_btn")}
+                          </button>
+                        )}
+                      </div>
+
+                      {req.status === "Pending" && (
+                        <button
+                          type="button"
+                          onClick={() => handleCancel(req._id)}
+                          disabled={cancelLoading === req._id}
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {cancelLoading === req._id && <FiLoader size={12} className="animate-spin" />}
+                          {cancelLoading === req._id ? t("requests_cancelling") : t("requests_cancel")}
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -385,50 +470,85 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                         )}
                       </div>
 
-                      {/* Navigation Control for Accepted Requests */}
+                      {/* Actions for Accepted Requests (Navigation, Donated Report, Withdrawal) */}
                       {hasAccepted && (
-                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="w-6 h-6 rounded-lg bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center flex-shrink-0">
-                                <FiNavigation size={13} />
-                              </span>
-                              <div>
-                                <p className="font-semibold text-slate-900 dark:text-white leading-tight truncate">
-                                  {t("donor_nav_title")}
-                                </p>
-                                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                                  {t("donor_nav_sub")}
-                                </p>
+                        <div className="space-y-2">
+                          {/* Navigation Control */}
+                          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="w-6 h-6 rounded-lg bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center flex-shrink-0">
+                                  <FiNavigation size={13} />
+                                </span>
+                                <div>
+                                  <p className="font-semibold text-slate-900 dark:text-white leading-tight truncate">
+                                    {t("donor_nav_title")}
+                                  </p>
+                                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                                    {t("donor_nav_sub")}
+                                  </p>
+                                </div>
                               </div>
+
+                              <button
+                                type="button"
+                                onClick={() => handleGetLocation(req)}
+                                disabled={navLoadingId === req._id}
+                                className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors shadow-sm"
+                              >
+                                {navLoadingId === req._id ? (
+                                  <>
+                                    <FiLoader size={12} className="animate-spin" />
+                                    {t("donor_nav_loading")}
+                                  </>
+                                ) : (
+                                  <>
+                                    <FiNavigation size={12} />
+                                    {t("donor_nav_btn")}
+                                  </>
+                                )}
+                              </button>
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() => handleGetLocation(req)}
-                              disabled={navLoadingId === req._id}
-                              className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors shadow-sm"
-                            >
-                              {navLoadingId === req._id ? (
-                                <>
-                                  <FiLoader size={12} className="animate-spin" />
-                                  {t("donor_nav_loading")}
-                                </>
-                              ) : (
-                                <>
-                                  <FiNavigation size={12} />
-                                  {t("donor_nav_btn")}
-                                </>
-                              )}
-                            </button>
+                            {navErrorId?.id === req._id && (
+                              <div className="flex items-start gap-1.5 text-[11px] text-red-600 dark:text-red-400 pt-1">
+                                <FiAlertCircle size={13} className="flex-shrink-0 mt-0.5" />
+                                <span>{navErrorId.message}</span>
+                              </div>
+                            )}
                           </div>
 
-                          {navErrorId?.id === req._id && (
-                            <div className="flex items-start gap-1.5 text-[11px] text-red-600 dark:text-red-400 pt-1">
-                              <FiAlertCircle size={13} className="flex-shrink-0 mt-0.5" />
-                              <span>{navErrorId.message}</span>
-                            </div>
-                          )}
+                          {/* Fulfillment & Withdrawal Action Buttons */}
+                          <div className="flex items-center justify-between gap-2 pt-1">
+                            {req.donationReportedBy && req.donationReportedBy.includes(user?._id || "") ? (
+                              <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                <FiClock size={12} /> {t("donor_donated_reported_badge")}
+                              </span>
+                            ) : req.status !== "Completed" ? (
+                              <button
+                                type="button"
+                                onClick={() => setDonatedReportModalReq(req)}
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm"
+                              >
+                                <FiHeart size={12} /> {t("donor_donated_btn")}
+                              </button>
+                            ) : null}
+
+                            {req.status !== "Completed" && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setWithdrawModalReq(req);
+                                  setWithdrawReasonPreset("Medically unfit");
+                                  setWithdrawReasonOther("");
+                                  setWithdrawError(null);
+                                }}
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                              >
+                                <FiAlertCircle size={12} /> {t("donor_withdraw_btn")}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -448,6 +568,199 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
         onClose={() => setSelectedRequestForAcceptance(null)}
         onConfirm={handleConfirmAccept}
       />
+
+      {/* Donor "I Donated Blood" Modal */}
+      {donatedReportModalReq && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm pointer-events-auto">
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center flex-shrink-0">
+                  <FiHeart size={18} />
+                </span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {t("donor_donated_modal_title")}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDonatedReportModalReq(null)}
+                disabled={reportLoading}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <FiX size={16} />
+              </button>
+            </div>
+            <div className="px-6 py-5 space-y-3">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                {t("donor_donated_modal_message")}
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setDonatedReportModalReq(null)}
+                disabled={reportLoading}
+                className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                {t("donor_acceptance_cancel_btn")}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReportDonation}
+                disabled={reportLoading}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {reportLoading && <FiLoader size={12} className="animate-spin" />}
+                {t("donor_donated_confirm_btn")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Requester Confirm Donation Modal */}
+      {requesterConfirmModalReq && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm pointer-events-auto">
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                  <FiCheckCircle size={18} />
+                </span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {t("requester_confirm_modal_title")}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRequesterConfirmModalReq(null)}
+                disabled={confirmLoading}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <FiX size={16} />
+              </button>
+            </div>
+            <div className="px-6 py-5 space-y-3">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                {t("requester_confirm_modal_message")}
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setRequesterConfirmModalReq(null)}
+                disabled={confirmLoading}
+                className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                {t("donor_acceptance_cancel_btn")}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRequesterFulfillment}
+                disabled={confirmLoading}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+              >
+                {confirmLoading && <FiLoader size={12} className="animate-spin" />}
+                {t("requester_confirm_action_btn")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Donor Withdrawal Modal */}
+      {withdrawModalReq && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm pointer-events-auto">
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                  <FiAlertCircle size={18} />
+                </span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {t("donor_withdraw_modal_title")}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setWithdrawModalReq(null)}
+                disabled={withdrawLoading}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <FiX size={16} />
+              </button>
+            </div>
+
+            <div className="px-6 py-5 space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                {t("donor_withdraw_modal_message")}
+              </p>
+
+              <div className="space-y-2">
+                {[
+                  { key: "Medically unfit", label: t("donor_withdraw_reason_fit") },
+                  { key: "Did not pass medical screening", label: t("donor_withdraw_reason_screening") },
+                  { key: "Health issue", label: t("donor_withdraw_reason_health") },
+                  { key: "Unable to reach the destination", label: t("donor_withdraw_reason_destination") },
+                  { key: "Personal/emergency issue", label: t("donor_withdraw_reason_emergency") },
+                  { key: "Other", label: t("donor_withdraw_reason_other") },
+                ].map((item) => (
+                  <label key={item.key} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="withdrawReason"
+                      value={item.key}
+                      checked={withdrawReasonPreset === item.key}
+                      onChange={() => setWithdrawReasonPreset(item.key)}
+                      className="text-red-600 focus:ring-red-500"
+                    />
+                    <span>{item.label}</span>
+                  </label>
+                ))}
+              </div>
+
+              {withdrawReasonPreset === "Other" && (
+                <div>
+                  <textarea
+                    rows={2}
+                    placeholder={t("donor_withdraw_other_ph")}
+                    value={withdrawReasonOther}
+                    onChange={(e) => setWithdrawReasonOther(e.target.value)}
+                    className="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/30"
+                  />
+                </div>
+              )}
+
+              {withdrawError && (
+                <p className="text-xs text-red-600 dark:text-red-400 font-medium">
+                  {withdrawError}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setWithdrawModalReq(null)}
+                disabled={withdrawLoading}
+                className="px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                {t("donor_acceptance_cancel_btn")}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmWithdrawal}
+                disabled={withdrawLoading}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+              >
+                {withdrawLoading && <FiLoader size={12} className="animate-spin" />}
+                {t("donor_withdraw_confirm_btn")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

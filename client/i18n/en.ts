@@ -260,6 +260,32 @@ const en: Translations = {
   donor_nav_err_invalid_dest: "Invalid or missing destination coordinates.",
   donor_nav_err_generic: "An unexpected error occurred while getting location.",
 
+  // ── Request Fulfillment & Donor Withdrawal ────────────────────────────────────
+  donor_donated_btn: "🩸 I Donated Blood",
+  donor_donated_modal_title: "Confirm Blood Donation",
+  donor_donated_modal_message: "Please confirm that you actually donated blood for this request.",
+  donor_donated_confirm_btn: "Yes, I Donated",
+  donor_donated_reported_badge: "Donation Reported (Pending Confirmation)",
+
+  requester_confirm_donation_btn: "✅ Confirm Donation Received",
+  requester_confirm_modal_title: "Confirm Donation",
+  requester_confirm_modal_message: "Please confirm that the donor completed the requested blood donation.",
+  requester_confirm_action_btn: "Confirm Donation",
+  requester_fulfilled_badge: "FULFILLED ✅",
+
+  donor_withdraw_btn: "⚠️ Unable to Donate",
+  donor_withdraw_modal_title: "Why can't you fulfill this request?",
+  donor_withdraw_modal_message: "Please tell us why you are unable to donate so the requester can be informed and another donor can help.",
+  donor_withdraw_reason_fit: "Medically unfit",
+  donor_withdraw_reason_screening: "Did not pass medical screening",
+  donor_withdraw_reason_health: "Health issue",
+  donor_withdraw_reason_destination: "Unable to reach the destination",
+  donor_withdraw_reason_emergency: "Personal/emergency issue",
+  donor_withdraw_reason_other: "Other",
+  donor_withdraw_other_ph: "Please specify the reason...",
+  donor_withdraw_confirm_btn: "Confirm Withdrawal",
+  donor_withdraw_reason_required_err: "Please select or provide a reason before withdrawing.",
+
   // ── Notifications Panel ───────────────────────────────────────────────────────
   notifications_title: "Notifications",
   notifications_new: "new",

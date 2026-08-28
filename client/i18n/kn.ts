@@ -260,6 +260,32 @@ const kn: Translations = {
   donor_nav_err_invalid_dest: "ಅಮಾನ್ಯ ಅಥವಾ ಕಾಣೆಯಾದ ಗಮ್ಯಸ್ಥಾನ ನಿರ್ದೇಶಾಂಕಗಳು.",
   donor_nav_err_generic: "ಸ್ಥಳ ಪಡೆಯುವಾಗ ನಿರೀಕ್ಷಿತ ದೋಷ ಸಂಭವಿಸಿದೆ.",
 
+  // ── Request Fulfillment & Donor Withdrawal ────────────────────────────────────
+  donor_donated_btn: "🩸 ನಾನು ರಕ್ತದಾನ ಮಾಡಿದ್ದೇನೆ",
+  donor_donated_modal_title: "ರಕ್ತದಾನವನ್ನು ದೃಢೀಕರಿಸಿ",
+  donor_donated_modal_message: "ಈ ವಿನಂತಿಗಾಗಿ ನೀವು ನಿಜವಾಗಿಯೂ ರಕ್ತದಾನ ಮಾಡಿದ್ದೀರಿ ಎಂದು ದಯವಿಟ್ಟು ದೃಢೀಕರಿಸಿ.",
+  donor_donated_confirm_btn: "ಹೌದು, ನಾನು ದಾನ ಮಾಡಿದ್ದೇನೆ",
+  donor_donated_reported_badge: "ರಕ್ತದಾನ ವರದಿಯಾಗಿದೆ (ದೃಢೀಕರಣ ಬಾಕಿ)",
+
+  requester_confirm_donation_btn: "✅ ಸ್ವೀಕರಿಸಿದ ದಾನವನ್ನು ದೃಢೀಕರಿಸಿ",
+  requester_confirm_modal_title: "ದಾನವನ್ನು ದೃಢೀಕರಿಸಿ",
+  requester_confirm_modal_message: "ದಾನಿಯು ವಿನಂತಿಸಿದ ರಕ್ತದಾನವನ್ನು ಪೂರ್ಣಗೊಳಿಸಿದ್ದಾರೆ ಎಂದು ದಯವಿಟ್ಟು ದೃಢೀಕರಿಸಿ.",
+  requester_confirm_action_btn: "ದಾನವನ್ನು ದೃಢೀಕರಿಸಿ",
+  requester_fulfilled_badge: "ಪೂರ್ಣಗೊಂಡಿದೆ ✅",
+
+  donor_withdraw_btn: "⚠️ ದಾನ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ",
+  donor_withdraw_modal_title: "ಈ ವಿನಂತಿಯನ್ನು ಏಕೆ ಪೂರೈಸಲು ಸಾಧ್ಯವಿಲ್ಲ?",
+  donor_withdraw_modal_message: "ನೀವು ಏಕೆ ರಕ್ತದಾನ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ ಎಂದು ದಯವಿಟ್ಟು ತಿಳಿಸಿ ಇದರಿಂದ ಮನವಿದಾರರಿಗೆ ತಿಳಿಸಬಹುದು ಮತ್ತು ಇನ್ನೊಬ್ಬ ದಾನಿ ನೆರವಾಗಬಹುದು.",
+  donor_withdraw_reason_fit: "ವೈದ್ಯಕೀಯವಾಗಿ ಅನರ್ಹರು",
+  donor_withdraw_reason_screening: "ವೈದ್ಯಕೀಯ ತಪಾಸಣೆಯಲ್ಲಿ ಉತ್ತೀರ್ಣರಾಗಿಲ್ಲ",
+  donor_withdraw_reason_health: "ಆರೋಗ್ಯ ಸಮಸ್ಯೆ",
+  donor_withdraw_reason_destination: "ಗಮ್ಯಸ್ಥಾನ ತಲುಪಲು ಸಾಧ್ಯವಿಲ್ಲ",
+  donor_withdraw_reason_emergency: "ವೈಯಕ್ತಿಕ/ತುರ್ತು ಸಮಸ್ಯೆ",
+  donor_withdraw_reason_other: "ಇತರ",
+  donor_withdraw_other_ph: "ದಯವಿಟ್ಟು ಕಾರಣವನ್ನು ನಮೂದಿಸಿ...",
+  donor_withdraw_confirm_btn: "ಹಿಂಪಡೆಯುವಿಕೆಯನ್ನು ದೃಢೀಕರಿಸಿ",
+  donor_withdraw_reason_required_err: "ಹಿಂಪಡೆಯುವ ಮೊದಲು ದಯವಿಟ್ಟು ಕಾರಣವನ್ನು ಆಯ್ಕೆಮಾಡಿ ಅಥವಾ ಒದಗಿಸಿ.",
+
   // ── Notifications Panel ───────────────────────────────────────────────────────
   notifications_title: "ಅಧಿಸೂಚನೆಗಳು",
   notifications_new: "ಹೊಸ",

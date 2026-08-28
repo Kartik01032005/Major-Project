@@ -313,6 +313,214 @@ export const acceptRequest = async (req: Request, res: Response): Promise<void> 
   }
 };
 
+// @desc    Donor reports having donated blood
+// @route   POST /api/emergency/:id/donation-report
+// @access  Private (accepted donor)
+export const reportDonation = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: "Not authorized" });
+      return;
+    }
+
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      res.status(400).json({ success: false, message: "Invalid request ID" });
+      return;
+    }
+
+    const request = await EmergencyRequest.findById(req.params.id);
+    if (!request) {
+      res.status(404).json({ success: false, message: "Request not found" });
+      return;
+    }
+
+    if (request.status === "Completed" || request.status === "Cancelled") {
+      res.status(409).json({ success: false, message: "Cannot report donation on completed or cancelled requests" });
+      return;
+    }
+
+    const hasAccepted = (request.acceptedBy ?? []).some(
+      (id) => id.toString() === req.user!._id.toString()
+    );
+    if (!hasAccepted) {
+      res.status(403).json({ success: false, message: "Only donors who accepted this request can report donation" });
+      return;
+    }
+
+    const alreadyReported = (request.donationReportedBy ?? []).some(
+      (id) => id.toString() === req.user!._id.toString()
+    );
+    if (alreadyReported) {
+      res.status(409).json({ success: false, message: "You have already reported your donation for this request" });
+      return;
+    }
+
+    request.donationReportedBy = [...(request.donationReportedBy ?? []), req.user._id];
+    request.donationReportedAt = new Date();
+    await request.save();
+
+    enqueueNotification({
+      receiverId: request.requestBy.toString(),
+      title: "🩸 Donation Reported",
+      message: `${req.user.name} reported that the blood donation for ${request.hospital} was completed. Please confirm the donation.`,
+      type: "Emergency"
+    });
+
+    const populatedRequest = await request.populate("requestBy", "name email phone location");
+    broadcast("request_updated", populatedRequest);
+
+    res.status(200).json({
+      success: true,
+      message: "Donation reported successfully. Waiting for requester confirmation.",
+      data: populatedRequest
+    });
+  } catch (error: any) {
+    console.error("❌ Report donation error:", error);
+    res.status(500).json({ success: false, message: "Server error during donation report" });
+  }
+};
+
+// @desc    Requester confirms donation completed & fulfills request
+// @route   POST /api/emergency/:id/donation-confirm
+// @access  Private (requester)
+export const confirmDonation = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: "Not authorized" });
+      return;
+    }
+
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      res.status(400).json({ success: false, message: "Invalid request ID" });
+      return;
+    }
+
+    const request = await EmergencyRequest.findById(req.params.id);
+    if (!request) {
+      res.status(404).json({ success: false, message: "Request not found" });
+      return;
+    }
+
+    if (request.requestBy.toString() !== req.user._id.toString()) {
+      res.status(403).json({ success: false, message: "Only the requester can confirm donation fulfillment" });
+      return;
+    }
+
+    if (request.status === "Completed") {
+      res.status(409).json({ success: false, message: "Request is already fulfilled" });
+      return;
+    }
+
+    if (!request.donationReportedBy || request.donationReportedBy.length === 0) {
+      res.status(409).json({ success: false, message: "No donor has reported donation for this request yet" });
+      return;
+    }
+
+    request.status = "Completed";
+    request.donationConfirmedBy = req.user._id;
+    request.donationConfirmedAt = new Date();
+    await request.save();
+
+    for (const donorId of request.acceptedBy) {
+      enqueueNotification({
+        receiverId: donorId.toString(),
+        title: "✅ Donation Confirmed",
+        message: `Your donation at ${request.hospital} was confirmed by the requester. Request is now fulfilled!`,
+        type: "Emergency"
+      });
+    }
+
+    const populatedRequest = await request.populate("requestBy", "name email phone location");
+    broadcast("request_updated", populatedRequest);
+
+    res.status(200).json({
+      success: true,
+      message: "Donation confirmed successfully. Request is now fulfilled.",
+      data: populatedRequest
+    });
+  } catch (error: any) {
+    console.error("❌ Confirm donation error:", error);
+    res.status(500).json({ success: false, message: "Server error during donation confirmation" });
+  }
+};
+
+// @desc    Donor withdraws acceptance with a required reason
+// @route   POST /api/emergency/:id/withdraw
+// @access  Private (accepted donor)
+export const withdrawAcceptance = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: "Not authorized" });
+      return;
+    }
+
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      res.status(400).json({ success: false, message: "Invalid request ID" });
+      return;
+    }
+
+    const { reason } = req.body;
+    if (!reason || typeof reason !== "string" || !reason.trim()) {
+      res.status(400).json({ success: false, message: "A reason is required to withdraw from a request" });
+      return;
+    }
+
+    const request = await EmergencyRequest.findById(req.params.id);
+    if (!request) {
+      res.status(404).json({ success: false, message: "Request not found" });
+      return;
+    }
+
+    if (request.status === "Completed") {
+      res.status(409).json({ success: false, message: "Cannot withdraw from a request that is already fulfilled" });
+      return;
+    }
+
+    const hasAccepted = (request.acceptedBy ?? []).some(
+      (id) => id.toString() === req.user!._id.toString()
+    );
+    if (!hasAccepted) {
+      res.status(403).json({ success: false, message: "You have not accepted this request" });
+      return;
+    }
+
+    // Remove user from acceptedBy array and record withdrawal
+    request.acceptedBy = (request.acceptedBy ?? []).filter(
+      (id) => id.toString() !== req.user!._id.toString()
+    );
+
+    request.withdrawnBy = [
+      ...(request.withdrawnBy ?? []),
+      {
+        donor: req.user._id,
+        reason: reason.trim(),
+        withdrawnAt: new Date()
+      }
+    ];
+
+    await request.save();
+
+    enqueueNotification({
+      receiverId: request.requestBy.toString(),
+      title: "⚠️ Donor Unable to Donate",
+      message: `${req.user.name} is unable to complete the donation (${reason.trim()}). Another donor may be needed.`,
+      type: "Emergency"
+    });
+
+    const populatedRequest = await request.populate("requestBy", "name email phone location");
+    broadcast("request_updated", populatedRequest);
+
+    res.status(200).json({
+      success: true,
+      message: "Withdrawal recorded successfully.",
+      data: populatedRequest
+    });
+  } catch (error: any) {
+    console.error("❌ Withdraw acceptance error:", error);
+    res.status(500).json({ success: false, message: "Server error during withdrawal" });
+  }
+};
+
 // @desc    Cancel pending emergency request (Owner only)
 // @route   DELETE /api/emergency/:id
 // @access  Private

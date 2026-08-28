@@ -127,6 +127,15 @@ export interface EmergencyRequest {
   status: RequestStatus;
   approvedBy?: string | null;
   acceptedBy?: string[];
+  donationReportedBy?: string[];
+  donationReportedAt?: string | null;
+  donationConfirmedBy?: string | null;
+  donationConfirmedAt?: string | null;
+  withdrawnBy?: Array<{
+    donor: string;
+    reason: string;
+    withdrawnAt: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
