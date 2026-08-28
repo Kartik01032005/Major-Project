@@ -214,6 +214,7 @@ const ml: Translations = {
   requests_clear_modal_msg: "നിങ്ങളുടെ കാഴ്ചയിൽ നിന്ന് ഈ അഭ്യർത്ഥനകൾ മായ്‌ക്കണമെന്ന് ഉറപ്പാണോ?",
   requests_clear_confirm_btn: "അഭ്യർത്ഥനകൾ മായ്‌ക്കുക",
   requests_requested_label: "അഭ്യർത്ഥിച്ചു",
+  requests_previously_approached_badge: "⚠ മുമ്പ് സമീപിച്ചതാണ്",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ സ്വീകരിക്കുന്നതിന് മുമ്പ് വായിക്കുക",

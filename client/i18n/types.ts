@@ -267,6 +267,7 @@ export interface Translations {
   requests_clear_modal_msg: string;
   requests_clear_confirm_btn: string;
   requests_requested_label: string;
+  requests_previously_approached_badge: string;
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: string;

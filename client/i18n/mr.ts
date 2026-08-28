@@ -214,6 +214,7 @@ const mr: Translations = {
   requests_clear_modal_msg: "तुम्हाला खरोखर तुमच्या दृश्यातून या विनंत्या साफ करायच्या आहेत का?",
   requests_clear_confirm_btn: "विनंत्या साफ करा",
   requests_requested_label: "विनंती केली",
+  requests_previously_approached_badge: "⚠ आधी संपर्क साधला",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ स्वीकारण्यापूर्वी कृपया वाचा",

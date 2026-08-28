@@ -214,6 +214,7 @@ const ta: Translations = {
   requests_clear_modal_msg: "உங்கள் பார்வையிலிருந்து இந்தக் கோரிக்கைகளை நிச்சயமாக நீக்க விரும்புகிறீர்களா?",
   requests_clear_confirm_btn: "கோரிக்கைகளை நீக்கு",
   requests_requested_label: "கோரப்பட்டது",
+  requests_previously_approached_badge: "⚠ ஏற்கனவே அணுகப்பட்டது",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ ஏற்பதற்கு முன் படிக்கவும்",

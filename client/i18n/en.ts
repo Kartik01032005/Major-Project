@@ -245,6 +245,7 @@ const en: Translations = {
   requests_clear_modal_msg: "Are you sure you want to clear these requests from your view?",
   requests_clear_confirm_btn: "Clear Requests",
   requests_requested_label: "Requested",
+  requests_previously_approached_badge: "⚠ Previously Approached",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ Please read before accepting",

@@ -402,6 +402,9 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
               const hasAccepted = (req.acceptedBy ?? []).some(
                 (id) => String(id) === String(currentUserId)
               );
+              const hasWithdrawn = (req.withdrawnBy ?? []).some(
+                (entry) => String(entry.donor) === String(currentUserId)
+              );
 
               return (
                 <motion.li
@@ -484,8 +487,12 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                         </span>
 
                         {hasAccepted ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             <FiCheck size={13} /> {t("requests_accepted_badge")}
+                          </span>
+                        ) : hasWithdrawn ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                            <FiAlertCircle size={13} /> {t("requests_previously_approached_badge")}
                           </span>
                         ) : (
                           <button

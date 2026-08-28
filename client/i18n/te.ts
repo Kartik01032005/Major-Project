@@ -214,6 +214,7 @@ const te: Translations = {
   requests_clear_modal_msg: "మీ వీక్షణ నుండి ఈ అభ్యర్థనలను ఖచ్చితంగా క్లియర్ చేయాలనుకుంటున్నారా?",
   requests_clear_confirm_btn: "అభ్యర్థనలను క్లియర్ చేయండి",
   requests_requested_label: "అభ్యర్థించబడింది",
+  requests_previously_approached_badge: "⚠ గతంలో సంప్రదించబడింది",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ అంగీకరించే ముందు దయచేసి చదవండి",

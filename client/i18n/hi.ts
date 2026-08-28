@@ -214,6 +214,7 @@ const hi: Translations = {
   requests_clear_modal_msg: "क्या आप वाकई इन अनुरोधों को अपने दृश्य से साफ़ करना चाहते हैं?",
   requests_clear_confirm_btn: "अनुरोध साफ़ करें",
   requests_requested_label: "अनुरोध किया गया",
+  requests_previously_approached_badge: "⚠ पहले प्रयास किया गया",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ स्वीकार करने से पहले कृपया पढ़ें",

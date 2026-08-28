@@ -245,6 +245,7 @@ const kn: Translations = {
   requests_clear_modal_msg: "ನಿಮ್ಮ ವೀಕ್ಷಣೆಯಿಂದ ಈ ಮನವಿಗಳನ್ನು ತೆರವುಗೊಳಿಸಲು ನೀವು ಖಚಿತವಾಗಿ ಬಯಸುತ್ತೀರಾ?",
   requests_clear_confirm_btn: "ಮನವಿಗಳನ್ನು ತೆರವುಗೊಳಿಸಿ",
   requests_requested_label: "ಮನವಿ ಮಾಡಲಾಗಿದೆ",
+  requests_previously_approached_badge: "⚠ ಮೊದಲು ಸಂಪರ್ಕಿಸಲಾಗಿದೆ",
 
   // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
   donor_acceptance_modal_title: "⚠️ ಸ್ವೀಕರಿಸುವ ಮೊದಲು ದಯವಿಟ್ಟು ಓದಿ",
