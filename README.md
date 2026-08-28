@@ -12,7 +12,7 @@ Current Phase: Documentation & Project Setup
 
 BloodLink is a secure, responsive, and real-time blood donation platform designed to connect patients, blood donors, blood banks, and hospitals during medical emergencies.
 
-The platform aims to reduce the time required to locate blood by providing instant emergency notifications, nearby blood bank discovery using Google Maps, and real-time blood inventory management.
+The platform aims to reduce the time required to locate blood by providing instant emergency notifications, nearby blood bank discovery using OpenStreetMap & Leaflet, and real-time blood inventory management.
 
 ---
 
@@ -36,7 +36,7 @@ The platform aims to reduce the time required to locate blood by providing insta
 - Emergency Blood Request
 - Live Notifications
 - View Nearby Blood Banks
-- Google Maps Navigation
+- OpenStreetMap Navigation
 - Blood Request History
 
 ---
@@ -71,17 +71,15 @@ The platform aims to reduce the time required to locate blood by providing insta
                       │
                       ▼
             Next.js Frontend
-                      │
-               Axios REST API
-                      │
-                      ▼
-           Node.js + Express.js
-              │             │
-              ▼             ▼
-      MongoDB Atlas     Socket.IO
-              │
-              ▼
-     Google Maps API
+              │          │
+              ▼          ▼
+   OpenStreetMap & Leaflet  Axios REST API
+                         │
+                         ▼
+              Node.js + Express.js
+                 │             │
+                 ▼             ▼
+         MongoDB Atlas     Socket.IO
 ```
 
 ---
@@ -132,8 +130,8 @@ Complete project documentation is available in the **docs** folder.
 
 ## Maps
 
-- Google Maps JavaScript API
-- Google Places API
+- OpenStreetMap
+- Leaflet & react-leaflet
 
 ## Notifications
 

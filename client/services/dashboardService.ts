@@ -46,6 +46,11 @@ export const dashboardService = {
     return response.data.data;
   },
 
+  acceptRequest: async (id: string): Promise<EmergencyRequest> => {
+    const response = await api.put<{ success: boolean; data: EmergencyRequest }>(`/emergency/${id}/accept`);
+    return response.data.data;
+  },
+
   // Inventory
   getInventory: async (): Promise<BloodInventoryItem[]> => {
     const response = await api.get<{ success: boolean; data: BloodInventoryItem[] }>("/inventory");

@@ -38,7 +38,7 @@ export default function HowItWorksSection() {
       step: "03",
       title: "Connect and navigate",
       description:
-        "Donors and blood banks respond in real time. Once approved, Google Maps guides you directly to the nearest blood source.",
+        "Donors and blood banks respond in real time. Once approved, OpenStreetMap navigation guides you directly to the nearest blood source.",
     },
   ];
 

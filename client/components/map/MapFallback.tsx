@@ -54,23 +54,13 @@ export default function MapFallback({
           {reason === "no-key" ? <FiKey size={22} /> : <FiAlertTriangle size={22} />}
         </div>
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
-          {reason === "no-key" ? "Google Maps not configured" : "Map failed to load"}
+          {reason === "no-key" ? "Interactive Map Initializing" : "Map failed to load"}
         </p>
         <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs">
           {reason === "no-key"
-            ? "Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your .env.local file to enable the interactive map."
-            : "Unable to load Google Maps. Please check your API key and network connection."}
+            ? "Connecting to OpenStreetMap and Leaflet services."
+            : "Unable to load map tile layer. Please check your network connection."}
         </p>
-        {reason === "no-key" && (
-          <a
-            href="https://console.cloud.google.com/apis/credentials"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 text-xs font-semibold text-red-600 dark:text-red-400 hover:underline flex items-center gap-1"
-          >
-            <FiKey size={11} /> Get API Key →
-          </a>
-        )}
       </div>
     </div>
   );

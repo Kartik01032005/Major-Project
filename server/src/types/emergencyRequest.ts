@@ -15,6 +15,7 @@ export interface IEmergencyRequest extends Document {
   };
   status: "Pending" | "Approved" | "Rejected" | "Completed" | "Cancelled";
   approvedBy?: Types.ObjectId | null;
+  acceptedBy: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }

@@ -50,7 +50,7 @@ export default function FeaturesSection() {
     {
       id: 2,
       icon: "map",
-      title: "Google Maps Integration",
+      title: "OpenStreetMap & Leaflet Integration",
       description:
         "Discover nearby blood banks, view hospital locations, and get turn-by-turn navigation.",
     },

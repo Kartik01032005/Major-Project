@@ -64,7 +64,7 @@ export default function NearbyBloodBanksCard() {
 
   const openMaps = (bank: MapBloodBank) => {
     const query = encodeURIComponent(`${bank.name}, ${bank.address}, ${bank.district}`);
-    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, "_blank");
+    window.open(`https://www.openstreetmap.org/search?query=${query}`, "_blank");
   };
 
   // Center on Bangalore Apollo for default card view

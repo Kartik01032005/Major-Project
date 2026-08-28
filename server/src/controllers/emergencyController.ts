@@ -228,6 +228,91 @@ export const rejectRequest = async (req: Request, res: Response): Promise<void> 
   }
 };
 
+// @desc    Donor accepts an emergency request (intent to donate)
+// @route   PUT /api/emergency/:id/accept
+// @access  Private (donor)
+export const acceptRequest = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: "Not authorized" });
+      return;
+    }
+
+    if (req.user.role !== "user") {
+      res.status(403).json({ success: false, message: "Only donors can accept requests" });
+      return;
+    }
+
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      res.status(400).json({ success: false, message: "Invalid request ID" });
+      return;
+    }
+
+    const request = await EmergencyRequest.findById(req.params.id);
+    if (!request) {
+      res.status(404).json({ success: false, message: "Request not found" });
+      return;
+    }
+
+    if (request.requestBy.toString() === req.user._id.toString()) {
+      res.status(403).json({ success: false, message: "You cannot accept your own request" });
+      return;
+    }
+
+    if (request.status !== "Pending" && request.status !== "Approved") {
+      res.status(409).json({ success: false, message: "This request can no longer be accepted" });
+      return;
+    }
+
+    if (req.user.bloodGroup && request.bloodGroup !== req.user.bloodGroup) {
+      res.status(403).json({ success: false, message: "Blood group does not match this request" });
+      return;
+    }
+
+    const alreadyAccepted = (request.acceptedBy ?? []).some(
+      (id) => id.toString() === req.user!._id.toString()
+    );
+    if (alreadyAccepted) {
+      res.status(409).json({ success: false, message: "You have already accepted this request" });
+      return;
+    }
+
+    const updated = await EmergencyRequest.findOneAndUpdate(
+      {
+        _id: request._id,
+        status: { $in: ["Pending", "Approved"] },
+        acceptedBy: { $ne: req.user._id }
+      },
+      { $addToSet: { acceptedBy: req.user._id } },
+      { new: true }
+    );
+
+    if (!updated) {
+      res.status(409).json({ success: false, message: "You have already accepted this request" });
+      return;
+    }
+
+    enqueueNotification({
+      receiverId: request.requestBy.toString(),
+      title: "A donor can help",
+      message: `${req.user.name} indicated they can donate ${request.bloodGroup} blood at ${request.hospital}.`,
+      type: "Emergency"
+    });
+
+    const populatedRequest = await updated.populate("requestBy", "name email phone location");
+    broadcast("request_updated", populatedRequest);
+
+    res.status(200).json({
+      success: true,
+      message: "Request accepted successfully",
+      data: populatedRequest
+    });
+  } catch (error: unknown) {
+    console.error("❌ Accept request error:", error);
+    res.status(500).json({ success: false, message: "Server error during request acceptance" });
+  }
+};
+
 // @desc    Cancel pending emergency request (Owner only)
 // @route   DELETE /api/emergency/:id
 // @access  Private

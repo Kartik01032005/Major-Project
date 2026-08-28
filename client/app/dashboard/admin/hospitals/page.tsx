@@ -68,7 +68,7 @@ export default function AdminHospitalsMapPage() {
 
   const openMaps = (h: MapHospital) => {
     const q = encodeURIComponent(`${h.name}, ${h.address}, ${h.district}`);
-    window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, "_blank");
+    window.open(`https://www.openstreetmap.org/search?query=${q}`, "_blank");
   };
 
   return (
@@ -180,7 +180,7 @@ export default function AdminHospitalsMapPage() {
               zoom={selectedId ? 15 : 12}
               height="h-full min-h-[320px] lg:min-h-[calc(100vh-14rem)]"
               hospitals={mapHospitals}
-              onHospitalSelect={(h) => setSelectedId(h.id)}
+              onHospitalSelect={(h: MapHospital) => setSelectedId(h.id)}
             />
           </div>
         </div>

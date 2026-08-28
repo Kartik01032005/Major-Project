@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s | BloodLink",
   },
   description:
-    "BloodLink connects blood donors, blood banks, and hospitals in real time during emergencies. Find blood instantly with live inventory, Google Maps, and instant notifications.",
+    "BloodLink connects blood donors, blood banks, and hospitals in real time during emergencies. Find blood instantly with live inventory, OpenStreetMap navigation, and instant notifications.",
   keywords: [
     "blood donor",
     "blood bank",

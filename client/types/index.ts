@@ -122,6 +122,7 @@ export interface EmergencyRequest {
   contactNumber: string;
   status: RequestStatus;
   approvedBy?: string | null;
+  acceptedBy?: string[];
   createdAt: string;
   updatedAt: string;
 }

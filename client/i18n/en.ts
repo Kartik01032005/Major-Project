@@ -31,7 +31,7 @@ const en: Translations = {
   hero_headline_1: "Find Blood.",
   hero_headline_2: "Save Lives.",
   hero_headline_3: "In Real Time.",
-  hero_sub: "BloodLink instantly connects patients with nearby donors and blood banks using live notifications, real-time inventory, and Google Maps — so that no emergency waits for blood.",
+  hero_sub: "BloodLink instantly connects patients with nearby donors and blood banks using live notifications, real-time inventory, and OpenStreetMap — so that no emergency waits for blood.",
   hero_cta_primary: "Request blood now",
   hero_cta_secondary: "See how it works",
   hero_stat_donors: "Donors",
@@ -220,19 +220,33 @@ const en: Translations = {
   profile_deleting: "Deleting...",
 
   // ── Active Requests Card ──────────────────────────────────────────────────────
-  requests_title: "My Requests",
+  requests_title: "Emergency Requests",
+  requests_tab_my_requests: "My Requests",
+  requests_tab_donate_requests: "Requests to Fulfill",
   requests_new: "+ New Request",
   requests_empty_title: "No requests yet",
   requests_empty_sub: "Create your first emergency blood request when needed.",
+  requests_donate_empty_title: "No emergency requests needing donors right now",
+  requests_donate_empty_sub: "When someone nearby needs blood matching your type, it will appear here.",
   requests_create_btn: "Create Request",
   requests_cancel: "Cancel Request",
   requests_cancelling: "Cancelling...",
   requests_confirm_cancel: "Are you sure you want to cancel this emergency request?",
+  requests_accept_btn: "Accept Request",
+  requests_accepted_badge: "Accepted",
+  requests_accepting: "Accepting...",
   requests_status_pending: "Pending",
   requests_status_approved: "Approved",
   requests_status_rejected: "Rejected",
   requests_status_completed: "Completed",
   requests_status_cancelled: "Cancelled",
+
+  // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
+  donor_acceptance_modal_title: "⚠️ Please read before accepting",
+  donor_acceptance_modal_message: "By accepting this request, you're indicating that you intend to donate if medically eligible and able to reach the specified location.",
+  donor_acceptance_modal_question: "Are you sure you can fulfill this request?",
+  donor_acceptance_cancel_btn: "Cancel",
+  donor_acceptance_confirm_btn: "I Can Donate",
 
   // ── Notifications Panel ───────────────────────────────────────────────────────
   notifications_title: "Notifications",

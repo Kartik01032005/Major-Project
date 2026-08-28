@@ -242,18 +242,32 @@ export interface Translations {
 
   // ── Active Requests Card ──────────────────────────────────────────────────────
   requests_title: string;
+  requests_tab_my_requests: string;
+  requests_tab_donate_requests: string;
   requests_new: string;
   requests_empty_title: string;
   requests_empty_sub: string;
+  requests_donate_empty_title: string;
+  requests_donate_empty_sub: string;
   requests_create_btn: string;
   requests_cancel: string;
   requests_cancelling: string;
   requests_confirm_cancel: string;
+  requests_accept_btn: string;
+  requests_accepted_badge: string;
+  requests_accepting: string;
   requests_status_pending: string;
   requests_status_approved: string;
   requests_status_rejected: string;
   requests_status_completed: string;
   requests_status_cancelled: string;
+
+  // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
+  donor_acceptance_modal_title: string;
+  donor_acceptance_modal_message: string;
+  donor_acceptance_modal_question: string;
+  donor_acceptance_cancel_btn: string;
+  donor_acceptance_confirm_btn: string;
 
   // ── Notifications Panel ───────────────────────────────────────────────────────
   notifications_title: string;

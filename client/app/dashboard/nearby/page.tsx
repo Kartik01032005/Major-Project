@@ -128,7 +128,7 @@ export default function NearbyPage() {
 
   const openMaps = (bank: MapBloodBank) => {
     const q = encodeURIComponent(`${bank.name}, ${bank.address}, ${bank.district}`);
-    window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, "_blank");
+    window.open(`https://www.openstreetmap.org/search?query=${q}`, "_blank");
   };
 
   return (
@@ -365,7 +365,7 @@ export default function NearbyPage() {
             height="h-full min-h-[320px] lg:min-h-[calc(100vh-12rem)]"
             bloodBanks={filtered}
             userPosition={isUsingDefault ? null : position}
-            onBloodBankSelect={(bank) => setSelectedId(bank.id)}
+            onBloodBankSelect={(bank: MapBloodBank) => setSelectedId(bank.id)}
           />
         </div>
       </div>

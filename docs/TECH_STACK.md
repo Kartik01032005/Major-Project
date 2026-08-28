@@ -47,8 +47,8 @@
 
 | Technology | Purpose |
 |------------|---------|
-| Google Maps JavaScript API | Maps & Navigation |
-| Google Places API | Nearby Blood Banks & Hospitals |
+| OpenStreetMap & Leaflet | Interactive Maps & Location Display |
+| react-leaflet | React Map Container Components |
 
 ---
 

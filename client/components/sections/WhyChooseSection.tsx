@@ -26,7 +26,7 @@ const points: WhyPoint[] = [
   {
     id: 4,
     title: "Location-aware search",
-    description: "Google Maps auto-detects your location to find the nearest bank.",
+    description: "OpenStreetMap & Leaflet auto-detect your location to find the nearest bank.",
   },
   {
     id: 5,
@@ -91,7 +91,7 @@ export default function WhyChooseSection() {
                 </h3>
                 <p className="text-sm text-red-200 leading-relaxed">
                   Traditional methods take hours. BloodLink takes seconds —
-                  real-time alerts, live inventory, Google Maps navigation,
+                  real-time alerts, live inventory, OpenStreetMap navigation,
                   all in one platform.
                 </p>
 

@@ -3,8 +3,8 @@ import { createRequire } from "module";
 import * as xlsx from "xlsx";
 import { IUploadError, IUploadSummary } from "../types/inventoryUpload.js";
 
-const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
+const nodeRequire = createRequire(import.meta.url);
+const pdfParse = nodeRequire("pdf-parse");
 
 const VALID_BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 

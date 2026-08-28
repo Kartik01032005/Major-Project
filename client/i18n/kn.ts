@@ -220,19 +220,33 @@ const kn: Translations = {
   profile_deleting: "ಅಳಿಸಲಾಗುತ್ತಿದೆ...",
 
   // ── Active Requests Card ──────────────────────────────────────────────────────
-  requests_title: "ನನ್ನ ವಿನಂತಿಗಳು",
+  requests_title: "ತುರ್ತು ವಿನಂತಿಗಳು",
+  requests_tab_my_requests: "ನನ್ನ ವಿನಂತಿಗಳು",
+  requests_tab_donate_requests: "ದಾನ ಮಾಡಲು ವಿನಂತಿಗಳು",
   requests_new: "+ ಹೊಸ ವಿನಂತಿ",
   requests_empty_title: "ಇನ್ನೂ ವಿನಂತಿಗಳಿಲ್ಲ",
   requests_empty_sub: "ಅಗತ್ಯ ಬಿದ್ದಾಗ ನಿಮ್ಮ ಮೊದಲ ತುರ್ತು ರಕ್ತ ವಿನಂತಿ ರಚಿಸಿ.",
+  requests_donate_empty_title: "ಸದ್ಯಕ್ಕೆ ರಕ್ತದಾನಿಗಳ ಅಗತ್ಯವಿರುವ ತುರ್ತು ವಿನಂತಿಗಳಿಲ್ಲ",
+  requests_donate_empty_sub: "ನಿಮ್ಮ ರಕ್ತ ಗುಂಪಿಗೆ ಹೊಂದಿಕೆಯಾಗುವ ತುರ್ತು ವಿನಂತಿ ಬಂದಾಗ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.",
   requests_create_btn: "ವಿನಂತಿ ರಚಿಸಿ",
   requests_cancel: "ವಿನಂತಿ ರದ್ದು ಮಾಡಿ",
   requests_cancelling: "ರದ್ದು ಮಾಡಲಾಗುತ್ತಿದೆ...",
   requests_confirm_cancel: "ಈ ತುರ್ತು ವಿನಂತಿ ರದ್ದು ಮಾಡಲು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ?",
+  requests_accept_btn: "ವಿನಂತಿ ಸ್ವೀಕರಿಸಿ",
+  requests_accepted_badge: "ಸ್ವೀಕರಿಸಲಾಗಿದೆ",
+  requests_accepting: "ಸ್ವೀಕರಿಸಲಾಗುತ್ತಿದೆ...",
   requests_status_pending: "ಬಾಕಿ",
   requests_status_approved: "ಅನುಮೋದಿಸಲಾಗಿದೆ",
   requests_status_rejected: "ತಿರಸ್ಕರಿಸಲಾಗಿದೆ",
   requests_status_completed: "ಪೂರ್ಣಗೊಂಡಿದೆ",
   requests_status_cancelled: "ರದ್ದು ಮಾಡಲಾಗಿದೆ",
+
+  // ── Donor Acceptance Modal ─────────────────────────────────────────────────────
+  donor_acceptance_modal_title: "⚠️ ಸ್ವೀಕರಿಸುವ ಮೊದಲು ದಯವಿಟ್ಟು ಓದಿ",
+  donor_acceptance_modal_message: "ಈ ವಿನಂತಿಯನ್ನು ಸ್ವೀಕರಿಸುವ ಮೂಲಕ, ನೀವು ವೈದ್ಯಕೀಯವಾಗಿ ಅರ್ಹರಾಗಿದ್ದರೆ ಮತ್ತು ನಿಗದಿತ ಸ್ಥಳವನ್ನು ತಲುಪಲು ಸಾಧ್ಯವಾದರೆ ರಕ್ತದಾನ ಮಾಡುವ ಉದ್ದೇಶವನ್ನು ಸೂಚಿಸುತ್ತಿದ್ದೀರಿ.",
+  donor_acceptance_modal_question: "ಈ ವಿನಂತಿಯನ್ನು ನೀವು ಖಚಿತವಾಗಿ ಪೂರೈಸಬಲ್ಲಿರಾ?",
+  donor_acceptance_cancel_btn: "ರದ್ದುಮಾಡಿ",
+  donor_acceptance_confirm_btn: "ನಾನು ದಾನ ಮಾಡಬಲ್ಲೆ",
 
   // ── Notifications Panel ───────────────────────────────────────────────────────
   notifications_title: "ಅಧಿಸೂಚನೆಗಳು",

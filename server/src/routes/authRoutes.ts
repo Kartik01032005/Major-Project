@@ -20,6 +20,10 @@ const registerValidation = [
     .optional()
     .isIn(["user", "admin"])
     .withMessage("Invalid user role."),
+  body("bloodGroup")
+    .optional()
+    .isIn(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"])
+    .withMessage("Invalid blood group."),
   body("location.state").notEmpty().withMessage("State is required."),
   body("location.district").notEmpty().withMessage("District is required."),
 ];

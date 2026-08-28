@@ -6,6 +6,7 @@ import {
   getRequestById,
   approveRequest,
   rejectRequest,
+  acceptRequest,
   cancelRequest
 } from "../controllers/emergencyController.js";
 import { authGuard, adminGuard } from "../middleware/auth.js";
@@ -37,6 +38,7 @@ const createRequestValidation = [
 router.post("/", authGuard, createRequestValidation, createRequest);
 router.get("/", getAllRequests);
 router.get("/:id", getRequestById);
+router.put("/:id/accept", authGuard, acceptRequest);
 router.put("/:id/approve", authGuard, adminGuard, approveRequest);
 router.put("/:id/reject", authGuard, adminGuard, rejectRequest);
 router.delete("/:id", authGuard, cancelRequest);

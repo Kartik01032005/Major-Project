@@ -38,7 +38,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { name, email, password, phone, role, location, organizationName } = req.body;
+  const { name, email, password, phone, role, bloodGroup, location, organizationName } = req.body;
   const normalizedEmail = email ? email.toLowerCase().trim() : "";
 
   try {
@@ -71,6 +71,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       email: normalizedEmail,
       password,
       phone: phone?.trim(),
+      bloodGroup: role === "admin" ? undefined : bloodGroup,
       role: role ?? "user",
       location: userLocation,
     });

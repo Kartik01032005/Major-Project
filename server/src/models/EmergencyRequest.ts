@@ -23,7 +23,8 @@ const EmergencyRequestSchema = new Schema<IEmergencyRequest>({
     enum: ["Pending", "Approved", "Rejected", "Completed", "Cancelled"],
     default: "Pending"
   },
-  approvedBy: { type: Schema.Types.ObjectId, ref: "User", default: null }
+  approvedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+  acceptedBy: [{ type: Schema.Types.ObjectId, ref: "User" }]
 }, {
   timestamps: true
 });
