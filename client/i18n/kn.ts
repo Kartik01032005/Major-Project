@@ -245,8 +245,20 @@ const kn: Translations = {
   donor_acceptance_modal_title: "⚠️ ಸ್ವೀಕರಿಸುವ ಮೊದಲು ದಯವಿಟ್ಟು ಓದಿ",
   donor_acceptance_modal_message: "ಈ ವಿನಂತಿಯನ್ನು ಸ್ವೀಕರಿಸುವ ಮೂಲಕ, ನೀವು ವೈದ್ಯಕೀಯವಾಗಿ ಅರ್ಹರಾಗಿದ್ದರೆ ಮತ್ತು ನಿಗದಿತ ಸ್ಥಳವನ್ನು ತಲುಪಲು ಸಾಧ್ಯವಾದರೆ ರಕ್ತದಾನ ಮಾಡುವ ಉದ್ದೇಶವನ್ನು ಸೂಚಿಸುತ್ತಿದ್ದೀರಿ.",
   donor_acceptance_modal_question: "ಈ ವಿನಂತಿಯನ್ನು ನೀವು ಖಚಿತವಾಗಿ ಪೂರೈಸಬಲ್ಲಿರಾ?",
-  donor_acceptance_cancel_btn: "ರದ್ದುಮಾಡಿ",
+  donor_acceptance_cancel_btn: "ರದ್ದುಗೊಳಿಸಿ",
   donor_acceptance_confirm_btn: "ನಾನು ದಾನ ಮಾಡಬಲ್ಲೆ",
+
+  // ── Donor Navigation UI ────────────────────────────────────────────────────────
+  donor_nav_title: "ಮನವಿಗೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಿ",
+  donor_nav_sub: "ಮನವಿದಾರ ತಲುಪಲು ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಸ್ಥಳವನ್ನು ಪಡೆಯಿರಿ.",
+  donor_nav_btn: "ಸ್ಥಳವನ್ನು ಪಡೆಯಿರಿ",
+  donor_nav_loading: "ಸ್ಥಳವನ್ನು ಪಡೆಯಲಾಗುತ್ತಿದೆ...",
+  donor_nav_err_unsupported: "ನಿಮ್ಮ ಬ್ರೌಸರ್ ಜಿಯೋಲೋಕೇಶನ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.",
+  donor_nav_err_denied: "ಸ್ಥಳ ಅನುಮತಿ ನಿರಾಕರಿಸಲಾಗಿದೆ. ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು ಸ್ಥಳ ಪ್ರವೇಶವನ್ನು ಅನುಮತಿಸಿ.",
+  donor_nav_err_unavailable: "ಸ್ಥಳದ ಮಾಹಿತಿ ಪ್ರಸ್ತುತ ಲಭ್ಯವಿಲ್ಲ.",
+  donor_nav_err_timeout: "ಸ್ಥಳದ ವಿನಂತಿ ಸಮಯ ಮೀರಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+  donor_nav_err_invalid_dest: "ಅಮಾನ್ಯ ಅಥವಾ ಕಾಣೆಯಾದ ಗಮ್ಯಸ್ಥಾನ ನಿರ್ದೇಶಾಂಕಗಳು.",
+  donor_nav_err_generic: "ಸ್ಥಳ ಪಡೆಯುವಾಗ ನಿರೀಕ್ಷಿತ ದೋಷ ಸಂಭವಿಸಿದೆ.",
 
   // ── Notifications Panel ───────────────────────────────────────────────────────
   notifications_title: "ಅಧಿಸೂಚನೆಗಳು",

@@ -269,6 +269,18 @@ export interface Translations {
   donor_acceptance_cancel_btn: string;
   donor_acceptance_confirm_btn: string;
 
+  // ── Donor Navigation UI ────────────────────────────────────────────────────────
+  donor_nav_title: string;
+  donor_nav_sub: string;
+  donor_nav_btn: string;
+  donor_nav_loading: string;
+  donor_nav_err_unsupported: string;
+  donor_nav_err_denied: string;
+  donor_nav_err_unavailable: string;
+  donor_nav_err_timeout: string;
+  donor_nav_err_invalid_dest: string;
+  donor_nav_err_generic: string;
+
   // ── Notifications Panel ───────────────────────────────────────────────────────
   notifications_title: string;
   notifications_new: string;

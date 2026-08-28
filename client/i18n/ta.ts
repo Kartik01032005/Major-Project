@@ -214,8 +214,21 @@ const ta: Translations = {
   donor_acceptance_modal_title: "⚠️ ஏற்பதற்கு முன் படிக்கவும்",
   donor_acceptance_modal_message: "இந்த கோரிக்கையை ஏற்றுக்கொள்வதன் மூலம், மருத்துவ தகுதி இருந்தால் மற்றும் குறிப்பிட்ட இடத்திற்கு செல்ல முடிந்தால் ரத்த தானம் செய்ய உத்தேசித்துள்ளீர்கள் என்பதை தெரிவிக்கிறீர்கள்.",
   donor_acceptance_modal_question: "இந்த கோரிக்கையை உங்களால் நிச்சயம் நிறைவேற்ற முடியுமா?",
-  donor_acceptance_cancel_btn: "ரத்து செய்க",
-  donor_acceptance_confirm_btn: "நான் தானம் செய்ய முடியும்",
+  donor_acceptance_cancel_btn: "ரத்து செய்",
+  donor_acceptance_confirm_btn: "என்னால் தானம் செய்ய முடியும்",
+
+  // ── Donor Navigation UI ────────────────────────────────────────────────────────
+  donor_nav_title: "கோரிக்கைக்கு வழிசெலுத்தவும்",
+  donor_nav_sub: "கோரியவரைச் சென்றடைய உங்கள் தற்போதைய இருப்பிடத்தைப் பெறுங்கள்.",
+  donor_nav_btn: "இருப்பிடத்தைப் பெறுங்கள்",
+  donor_nav_loading: "இருப்பிடம் பெறப்படுகிறது...",
+  donor_nav_err_unsupported: "உங்கள் உலாவி புவிஇருப்பிடத்தை ஆதரிக்கவில்லை.",
+  donor_nav_err_denied: "இருப்பிட அனுமதி மறுக்கப்பட்டது. வழிசெலுத்த இருப்பிட அணுகலை அனுமதிக்கவும்.",
+  donor_nav_err_unavailable: "இருப்பிடத் தகவல் தற்போது கிடைக்கவில்லை.",
+  donor_nav_err_timeout: "இருப்பிடக் கோரிக்கை நேரம் முடிந்தது. மீண்டும் முயற்சிக்கவும்.",
+  donor_nav_err_invalid_dest: "செல்லுபடியாகாத அல்லது இல்லாத இலக்கு ஆயத்தொலைவுகள்.",
+  donor_nav_err_generic: "இருப்பிடத்தைப் பெறும்போது எதிர்பாராத பிழை ஏற்பட்டது.",
+
   notifications_title: "அறிவிப்புகள்",
   notifications_new: "புதியது",
   notifications_mark_all: "அனைத்தையும் படித்ததாக குறியிட",

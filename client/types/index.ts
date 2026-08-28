@@ -120,6 +120,10 @@ export interface EmergencyRequest {
   district: string;
   address: string;
   contactNumber: string;
+  location?: {
+    latitude?: number;
+    longitude?: number;
+  };
   status: RequestStatus;
   approvedBy?: string | null;
   acceptedBy?: string[];

@@ -216,6 +216,18 @@ const ml: Translations = {
   donor_acceptance_modal_question: "ഈ അഭ്യർത്ഥന നിറവേറ്റാൻ നിങ്ങൾക്ക് ഉറപ്പായും കഴിയുമോ?",
   donor_acceptance_cancel_btn: "റദ്ദാക്കുക",
   donor_acceptance_confirm_btn: "എനിക്ക് ദാനം ചെയ്യാം",
+
+  // ── Donor Navigation UI ────────────────────────────────────────────────────────
+  donor_nav_title: "അഭ്യർത്ഥനയിലേക്ക് നാവിഗേറ്റ് ചെയ്യുക",
+  donor_nav_sub: "അഭ്യർത്ഥിച്ചയാളിലേക്ക് എത്താൻ നിങ്ങളുടെ നിലവിലെ സ്ഥാനം നേടുക.",
+  donor_nav_btn: "ലൊക്കേഷൻ നേടുക",
+  donor_nav_loading: "ലൊക്കേഷൻ ലഭിക്കുന്നു...",
+  donor_nav_err_unsupported: "നിങ്ങളുടെ ബ്രൗസർ ജിയോലൊക്കേഷൻ പിന്തുണയ്ക്കുന്നില്ല.",
+  donor_nav_err_denied: "ലൊക്കേഷൻ അനുമതി നിരസിച്ചു. നാവിഗേറ്റ് ചെയ്യാൻ ലൊക്കേഷൻ ആക്സസ് അനുവദിക്കുക.",
+  donor_nav_err_unavailable: "ലൊക്കേഷൻ വിവരങ്ങൾ നിലവിൽ ലഭ്യമല്ല.",
+  donor_nav_err_timeout: "ലൊക്കേഷൻ അഭ്യർത്ഥന സമയം കഴിഞ്ഞു. ദയവായി വീണ്ടും ശ്രമിക്കുക.",
+  donor_nav_err_invalid_dest: "അസാധുവായ അല്ലെങ്കിൽ കാണാത്ത ലക്ഷ്യസ്ഥാന കോർഡിനേറ്റുകൾ.",
+  donor_nav_err_generic: "ലൊക്കേഷൻ ലഭിക്കുമ്പോൾ ഒരു അപ്രതീക്ഷിത പിശക് സംഭവിച്ചു.",
   notifications_title: "അറിയിപ്പുകൾ",
   notifications_new: "പുതിയത്",
   notifications_mark_all: "എല്ലാം വായിച്ചതായി അടയാളപ്പെടുത്തുക",

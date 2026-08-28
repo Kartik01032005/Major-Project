@@ -216,6 +216,18 @@ const hi: Translations = {
   donor_acceptance_modal_question: "क्या आप वाकई इस अनुरोध को पूरा करने में सक्षम हैं?",
   donor_acceptance_cancel_btn: "रद्द करें",
   donor_acceptance_confirm_btn: "मैं रक्तदान कर सकता/सकती हूँ",
+
+  // ── Donor Navigation UI ────────────────────────────────────────────────────────
+  donor_nav_title: "अनुरोध तक नेविगेट करें",
+  donor_nav_sub: "अनुरोधकर्ता तक पहुँचने के लिए अपना वर्तमान स्थान प्राप्त करें।",
+  donor_nav_btn: "स्थान प्राप्त करें",
+  donor_nav_loading: "स्थान प्राप्त किया जा रहा है...",
+  donor_nav_err_unsupported: "आपका ब्राउज़र जियोलोकेशन का समर्थन नहीं करता है।",
+  donor_nav_err_denied: "स्थान अनुमति अस्वीकृत। नेविगेट करने के लिए स्थान तक पहुंच की अनुमति दें।",
+  donor_nav_err_unavailable: "स्थान की जानकारी वर्तमान में अनुपलब्ध है।",
+  donor_nav_err_timeout: "स्थान अनुरोध का समय समाप्त हो गया। कृपया पुनः प्रयास करें।",
+  donor_nav_err_invalid_dest: "अमान्य या गायब गंतव्य निर्देशांक।",
+  donor_nav_err_generic: "स्थान प्राप्त करते समय एक अप्रत्याशित त्रुटि हुई।",
   notifications_title: "सूचनाएं",
   notifications_new: "नया",
   notifications_mark_all: "सभी को पढ़ा हुआ चिह्नित करें",

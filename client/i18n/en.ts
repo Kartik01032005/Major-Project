@@ -248,6 +248,18 @@ const en: Translations = {
   donor_acceptance_cancel_btn: "Cancel",
   donor_acceptance_confirm_btn: "I Can Donate",
 
+  // ── Donor Navigation UI ────────────────────────────────────────────────────────
+  donor_nav_title: "Navigate to Request",
+  donor_nav_sub: "Get your current location to navigate to the requester.",
+  donor_nav_btn: "Get Location",
+  donor_nav_loading: "Getting Location...",
+  donor_nav_err_unsupported: "Geolocation is not supported by your browser.",
+  donor_nav_err_denied: "Location permission denied. Please allow location access to navigate.",
+  donor_nav_err_unavailable: "Location information is currently unavailable.",
+  donor_nav_err_timeout: "Location request timed out. Please try again.",
+  donor_nav_err_invalid_dest: "Invalid or missing destination coordinates.",
+  donor_nav_err_generic: "An unexpected error occurred while getting location.",
+
   // ── Notifications Panel ───────────────────────────────────────────────────────
   notifications_title: "Notifications",
   notifications_new: "new",

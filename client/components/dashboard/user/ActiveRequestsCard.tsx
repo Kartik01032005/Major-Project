@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck } from "react-icons/fi";
+import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck, FiNavigation } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useDashboard, useTranslation } from "@/context";
 import { RequestStatus, EmergencyRequest } from "@/types";
@@ -49,6 +49,68 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   const [selectedRequestForAcceptance, setSelectedRequestForAcceptance] = useState<EmergencyRequest | null>(null);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [acceptError, setAcceptError] = useState<string | null>(null);
+  const [navLoadingId, setNavLoadingId] = useState<string | null>(null);
+  const [navErrorId, setNavErrorId] = useState<{ id: string; message: string } | null>(null);
+
+  const handleGetLocation = (req: EmergencyRequest) => {
+    setNavErrorId(null);
+
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setNavErrorId({ id: req._id, message: t("donor_nav_err_unsupported") });
+      return;
+    }
+
+    setNavLoadingId(req._id);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setNavLoadingId(null);
+        const { latitude: userLat, longitude: userLng } = pos.coords;
+
+        let destParam = "";
+        if (
+          req.location &&
+          typeof req.location.latitude === "number" &&
+          typeof req.location.longitude === "number" &&
+          (req.location.latitude !== 0 || req.location.longitude !== 0)
+        ) {
+          destParam = `${req.location.latitude},${req.location.longitude}`;
+        } else if (req.hospital || req.address) {
+          const parts = [req.hospital, req.address, req.district, req.state].filter(Boolean);
+          destParam = encodeURIComponent(parts.join(", "));
+        }
+
+        if (!destParam) {
+          setNavErrorId({ id: req._id, message: t("donor_nav_err_invalid_dest") });
+          return;
+        }
+
+        const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${destParam}`;
+        window.open(mapsUrl, "_blank", "noopener,noreferrer");
+      },
+      (geoErr) => {
+        setNavLoadingId(null);
+        let msg = t("donor_nav_err_generic");
+        switch (geoErr.code) {
+          case geoErr.PERMISSION_DENIED:
+            msg = t("donor_nav_err_denied");
+            break;
+          case geoErr.POSITION_UNAVAILABLE:
+            msg = t("donor_nav_err_unavailable");
+            break;
+          case geoErr.TIMEOUT:
+            msg = t("donor_nav_err_timeout");
+            break;
+        }
+        setNavErrorId({ id: req._id, message: msg });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
 
   useEffect(() => {
     refreshRequests();
@@ -299,26 +361,75 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
 
                   {/* Actions for donate requests */}
                   {activeTab === "donate" && (
-                    <div className="mt-3 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-3">
-                      <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                        <FaDroplet size={10} className="text-red-500" />
-                        {req.unitsRequired ? `${req.unitsRequired} ${t("admin_stat_units")}` : req.bloodGroup}
-                      </span>
-
-                      {hasAccepted ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                          <FiCheck size={13} /> {t("requests_accepted_badge")}
+                    <div className="mt-3 space-y-3 border-t border-slate-100 dark:border-slate-800/80 pt-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                          <FaDroplet size={10} className="text-red-500" />
+                          {req.unitsRequired ? `${req.unitsRequired} ${t("admin_stat_units")}` : req.bloodGroup}
                         </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setSelectedRequestForAcceptance(req)}
-                          disabled={acceptingId === req._id}
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors shadow-sm"
-                        >
-                          {acceptingId === req._id && <FiLoader size={12} className="animate-spin" />}
-                          {acceptingId === req._id ? t("requests_accepting") : t("requests_accept_btn")}
-                        </button>
+
+                        {hasAccepted ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                            <FiCheck size={13} /> {t("requests_accepted_badge")}
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedRequestForAcceptance(req)}
+                            disabled={acceptingId === req._id}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors shadow-sm"
+                          >
+                            {acceptingId === req._id && <FiLoader size={12} className="animate-spin" />}
+                            {acceptingId === req._id ? t("requests_accepting") : t("requests_accept_btn")}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Navigation Control for Accepted Requests */}
+                      {hasAccepted && (
+                        <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="w-6 h-6 rounded-lg bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center flex-shrink-0">
+                                <FiNavigation size={13} />
+                              </span>
+                              <div>
+                                <p className="font-semibold text-slate-900 dark:text-white leading-tight truncate">
+                                  {t("donor_nav_title")}
+                                </p>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                                  {t("donor_nav_sub")}
+                                </p>
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleGetLocation(req)}
+                              disabled={navLoadingId === req._id}
+                              className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors shadow-sm"
+                            >
+                              {navLoadingId === req._id ? (
+                                <>
+                                  <FiLoader size={12} className="animate-spin" />
+                                  {t("donor_nav_loading")}
+                                </>
+                              ) : (
+                                <>
+                                  <FiNavigation size={12} />
+                                  {t("donor_nav_btn")}
+                                </>
+                              )}
+                            </button>
+                          </div>
+
+                          {navErrorId?.id === req._id && (
+                            <div className="flex items-start gap-1.5 text-[11px] text-red-600 dark:text-red-400 pt-1">
+                              <FiAlertCircle size={13} className="flex-shrink-0 mt-0.5" />
+                              <span>{navErrorId.message}</span>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   )}
