@@ -24,7 +24,14 @@ const EmergencyRequestSchema = new Schema<IEmergencyRequest>({
     default: "Pending"
   },
   approvedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
-  acceptedBy: [{ type: Schema.Types.ObjectId, ref: "User" }]
+  acceptedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  withdrawnBy: [
+    {
+      donor: { type: Schema.Types.ObjectId, ref: "User", required: true },
+      reason: { type: String, required: true, trim: true },
+      withdrawnAt: { type: Date, default: Date.now }
+    }
+  ]
 }, {
   timestamps: true
 });

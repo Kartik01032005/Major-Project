@@ -439,3 +439,68 @@ describe("PUT /api/emergency/:id/accept", () => {
   });
 });
 
+// ─── Withdraw Acceptance ───────────────────────────────────────────────────
+describe("POST /api/emergency/:id/withdraw", () => {
+  let donorToken: string;
+  let donorUser: InstanceType<typeof User>;
+  let requestId: string;
+
+  beforeAll(async () => {
+    const donorLogin = await request(app).post("/api/auth/login").send({
+      email: "donor.matching@bloodlink.dev",
+      password: "Test@1234",
+    });
+    donorToken = donorLogin.body.data.token;
+    donorUser = donorLogin.body.data.user;
+
+    const reqRes = await request(app)
+      .post("/api/emergency")
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({ ...emergencyPayload, bloodGroup: "O+" });
+    requestId = reqRes.body.data._id;
+
+    // Accept request first
+    await request(app)
+      .put(`/api/emergency/${requestId}/accept`)
+      .set("Authorization", `Bearer ${donorToken}`);
+  });
+
+  it("should reject withdrawal if reason is missing", async () => {
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/withdraw`)
+      .set("Authorization", `Bearer ${donorToken}`)
+      .send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  it("should successfully withdraw acceptance with a reason", async () => {
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/withdraw`)
+      .set("Authorization", `Bearer ${donorToken}`)
+      .send({ reason: "Medical / Health Reasons" });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe("Withdrawal recorded successfully.");
+
+    // Verify DB state
+    const updated = await EmergencyRequest.findById(requestId);
+    expect(updated?.acceptedBy.map((id) => id.toString())).not.toContain(donorUser._id.toString());
+    expect(updated?.withdrawnBy?.length).toBe(1);
+    expect(updated?.withdrawnBy?.[0].reason).toBe("Medical / Health Reasons");
+  });
+
+  it("should reject withdrawal if user is not an accepted donor", async () => {
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/withdraw`)
+      .set("Authorization", `Bearer ${donorToken}`)
+      .send({ reason: "Personal Emergency" });
+
+    expect(res.status).toBe(403);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe("You have not accepted this request");
+  });
+});
+
