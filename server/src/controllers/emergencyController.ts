@@ -5,6 +5,7 @@ import EmergencyRequest from "../models/EmergencyRequest.js";
 import User from "../models/User.js";
 import { broadcast } from "../socket/socket.js";
 import { enqueueNotification } from "../services/notificationQueue.js";
+import { isBloodGroupCompatible, getCompatibleDonorGroups } from "../utils/bloodGroupUtils.js";
 
 // @desc    Create emergency blood request
 // @route   POST /api/emergency
@@ -52,9 +53,10 @@ export const createRequest = async (req: Request, res: Response): Promise<void> 
       }
     });
 
-    // Find donors matching the blood group who are available (excluding the creator)
+    // Find donors matching/compatible with the blood group who are available (excluding the creator)
+    const compatibleDonorGroups = getCompatibleDonorGroups(bloodGroup);
     const matchingDonors = await User.find({
-      bloodGroup,
+      bloodGroup: { $in: compatibleDonorGroups.length > 0 ? compatibleDonorGroups : [bloodGroup] },
       isAvailableDonor: true,
       role: "user",
       _id: { $ne: req.user._id }
@@ -264,7 +266,7 @@ export const acceptRequest = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    if (req.user.bloodGroup && request.bloodGroup !== req.user.bloodGroup) {
+    if (req.user.bloodGroup && !isBloodGroupCompatible(req.user.bloodGroup, request.bloodGroup)) {
       res.status(403).json({ success: false, message: "Blood group does not match this request" });
       return;
     }

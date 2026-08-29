@@ -127,6 +127,11 @@ export interface EmergencyRequest {
   status: RequestStatus;
   approvedBy?: string | null;
   acceptedBy?: string[];
+  withdrawnBy?: Array<{
+    donor: string | { _id: string };
+    reason: string;
+    withdrawnAt: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }

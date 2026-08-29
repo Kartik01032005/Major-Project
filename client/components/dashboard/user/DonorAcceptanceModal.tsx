@@ -10,6 +10,7 @@ interface DonorAcceptanceModalProps {
   open: boolean;
   request: EmergencyRequest | null;
   loading?: boolean;
+  error?: string | null;
   onClose: () => void;
   onConfirm: () => void;
 }
@@ -18,6 +19,7 @@ export default function DonorAcceptanceModal({
   open,
   request,
   loading = false,
+  error = null,
   onClose,
   onConfirm,
 }: DonorAcceptanceModalProps) {
@@ -100,6 +102,17 @@ export default function DonorAcceptanceModal({
                 <p className="text-sm font-semibold text-slate-900 dark:text-white">
                   {t("donor_acceptance_modal_question")}
                 </p>
+
+                {/* Error Banner */}
+                {error && (
+                  <div
+                    className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-400 flex items-start gap-2"
+                    role="alert"
+                  >
+                    <FiAlertTriangle size={15} className="flex-shrink-0 mt-0.5" />
+                    <span>{error}</span>
+                  </div>
+                )}
               </div>
 
               {/* Footer Actions */}

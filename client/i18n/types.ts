@@ -256,6 +256,18 @@ export interface Translations {
   requests_accept_btn: string;
   requests_accepted_badge: string;
   requests_accepting: string;
+  requests_unable_to_donate: string;
+  requests_previously_approached_badge: string;
+  requests_withdraw_modal_title: string;
+  requests_withdraw_modal_msg: string;
+  requests_withdraw_reason_medical: string;
+  requests_withdraw_reason_distance: string;
+  requests_withdraw_reason_schedule: string;
+  requests_withdraw_reason_emergency: string;
+  requests_withdraw_reason_other: string;
+  requests_withdraw_reason_custom_placeholder: string;
+  requests_withdraw_confirm_btn: string;
+  requests_withdraw_submitting: string;
   requests_status_pending: string;
   requests_status_approved: string;
   requests_status_rejected: string;

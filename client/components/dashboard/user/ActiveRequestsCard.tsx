@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck, FiNavigation } from "react-icons/fi";
+import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck, FiNavigation, FiAlertTriangle, FiX } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useDashboard, useTranslation } from "@/context";
 import { RequestStatus, EmergencyRequest } from "@/types";
@@ -41,7 +41,7 @@ interface ActiveRequestsCardProps {
 
 export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardProps) {
   const { user } = useAuth();
-  const { requests, refreshRequests, loadingRequests, cancelRequest, acceptRequest } = useDashboard();
+  const { requests, refreshRequests, loadingRequests, cancelRequest, acceptRequest, withdrawAcceptance } = useDashboard();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"my" | "donate">("my");
   const [cancelLoading, setCancelLoading] = useState<string | null>(null);
@@ -49,6 +49,11 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   const [selectedRequestForAcceptance, setSelectedRequestForAcceptance] = useState<EmergencyRequest | null>(null);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [acceptError, setAcceptError] = useState<string | null>(null);
+  const [selectedRequestForWithdrawal, setSelectedRequestForWithdrawal] = useState<EmergencyRequest | null>(null);
+  const [withdrawReason, setWithdrawReason] = useState<string>("Medical / Health Reasons");
+  const [customWithdrawReason, setCustomWithdrawReason] = useState<string>("");
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
+  const [withdrawError, setWithdrawError] = useState<string | null>(null);
   const [navLoadingId, setNavLoadingId] = useState<string | null>(null);
   const [navErrorId, setNavErrorId] = useState<{ id: string; message: string } | null>(null);
 
@@ -156,6 +161,28 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
       setAcceptError(errorObj.response?.data?.message || errorObj.message || "Failed to accept request");
     } finally {
       setAcceptingId(null);
+    }
+  };
+
+  const handleConfirmWithdrawal = async () => {
+    if (!selectedRequestForWithdrawal) return;
+    const targetId = selectedRequestForWithdrawal._id;
+    const finalReason = withdrawReason === "Other Reason" ? customWithdrawReason.trim() : withdrawReason;
+    if (!finalReason) {
+      setWithdrawError("Please select or enter a reason for withdrawal.");
+      return;
+    }
+
+    setWithdrawError(null);
+    setWithdrawingId(targetId);
+    try {
+      await withdrawAcceptance(targetId, finalReason);
+      setSelectedRequestForWithdrawal(null);
+    } catch (error: unknown) {
+      const errorObj = error as { response?: { data?: { message?: string } }; message?: string };
+      setWithdrawError(errorObj.response?.data?.message || errorObj.message || "Failed to withdraw acceptance");
+    } finally {
+      setWithdrawingId(null);
     }
   };
 
@@ -293,7 +320,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                 {cancelError}
               </li>
             )}
-            {acceptError && (
+            {acceptError && !selectedRequestForAcceptance && (
               <li className="px-5 py-3 text-xs text-red-600 dark:text-red-400" role="alert">
                 {acceptError}
               </li>
@@ -306,6 +333,10 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
               const hasAccepted = (req.acceptedBy ?? []).some(
                 (id) => String(id) === String(currentUserId)
               );
+              const hasWithdrawn = (req.withdrawnBy ?? []).some((entry) => {
+                const donorId = typeof entry.donor === "object" && entry.donor ? entry.donor._id : entry.donor;
+                return String(donorId) === String(currentUserId);
+              });
 
               return (
                 <motion.li
@@ -369,13 +400,36 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                         </span>
 
                         {hasAccepted ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                            <FiCheck size={13} /> {t("requests_accepted_badge")}
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                              <FiCheck size={13} /> {t("requests_accepted_badge")}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setWithdrawError(null);
+                                setWithdrawReason("Medical / Health Reasons");
+                                setCustomWithdrawReason("");
+                                setSelectedRequestForWithdrawal(req);
+                              }}
+                              disabled={withdrawingId === req._id}
+                              className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400 border border-slate-200 dark:border-slate-700 transition-colors disabled:opacity-50"
+                            >
+                              <FiXCircle size={13} />
+                              <span>{t("requests_unable_to_donate")}</span>
+                            </button>
+                          </div>
+                        ) : hasWithdrawn ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                            <FiAlertCircle size={13} /> {t("requests_previously_approached_badge")}
                           </span>
                         ) : (
                           <button
                             type="button"
-                            onClick={() => setSelectedRequestForAcceptance(req)}
+                            onClick={() => {
+                              setAcceptError(null);
+                              setSelectedRequestForAcceptance(req);
+                            }}
                             disabled={acceptingId === req._id}
                             className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors shadow-sm"
                           >
@@ -445,10 +499,135 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
         open={Boolean(selectedRequestForAcceptance)}
         request={selectedRequestForAcceptance}
         loading={Boolean(selectedRequestForAcceptance && acceptingId === selectedRequestForAcceptance._id)}
-        onClose={() => setSelectedRequestForAcceptance(null)}
+        error={acceptError}
+        onClose={() => {
+          setAcceptError(null);
+          setSelectedRequestForAcceptance(null);
+        }}
         onConfirm={handleConfirmAccept}
       />
+
+      {/* Donor Withdrawal Modal */}
+      {selectedRequestForWithdrawal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm pointer-events-auto">
+          <div
+            className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                  <FiAlertTriangle size={18} />
+                </span>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {t("requests_withdraw_modal_title")}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setWithdrawError(null);
+                  setSelectedRequestForWithdrawal(null);
+                }}
+                disabled={Boolean(withdrawingId)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+              >
+                <FiX size={16} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                {t("requests_withdraw_modal_msg")}
+              </p>
+
+              <div className="space-y-2.5">
+                {[
+                  { key: "Medical / Health Reasons", label: t("requests_withdraw_reason_medical") },
+                  { key: "Distance / Location Issue", label: t("requests_withdraw_reason_distance") },
+                  { key: "Schedule Conflict / Time Limit", label: t("requests_withdraw_reason_schedule") },
+                  { key: "Personal Emergency", label: t("requests_withdraw_reason_emergency") },
+                  { key: "Other Reason", label: t("requests_withdraw_reason_other") },
+                ].map((item) => (
+                  <label
+                    key={item.key}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-colors cursor-pointer text-xs font-medium ${
+                      withdrawReason === item.key
+                        ? "border-red-500 bg-red-50/50 dark:bg-red-950/20 text-slate-900 dark:text-white"
+                        : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="withdrawReason"
+                      value={item.key}
+                      checked={withdrawReason === item.key}
+                      onChange={(e) => setWithdrawReason(e.target.value)}
+                      disabled={Boolean(withdrawingId)}
+                      className="text-red-600 focus:ring-red-500"
+                    />
+                    <span>{item.label}</span>
+                  </label>
+                ))}
+              </div>
+
+              {withdrawReason === "Other Reason" && (
+                <textarea
+                  value={customWithdrawReason}
+                  onChange={(e) => setCustomWithdrawReason(e.target.value)}
+                  placeholder={t("requests_withdraw_reason_custom_placeholder")}
+                  disabled={Boolean(withdrawingId)}
+                  className="w-full p-3 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                  rows={3}
+                />
+              )}
+
+              {withdrawError && (
+                <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-400 flex items-start gap-2" role="alert">
+                  <FiAlertTriangle size={15} className="flex-shrink-0 mt-0.5" />
+                  <span>{withdrawError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setWithdrawError(null);
+                  setSelectedRequestForWithdrawal(null);
+                }}
+                disabled={Boolean(withdrawingId)}
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+              >
+                {t("donor_acceptance_cancel_btn")}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmWithdrawal}
+                disabled={Boolean(withdrawingId)}
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-60 shadow-sm"
+              >
+                {withdrawingId ? (
+                  <>
+                    <FiLoader size={13} className="animate-spin" />
+                    {t("requests_withdraw_submitting")}
+                  </>
+                ) : (
+                  <>
+                    {t("requests_withdraw_confirm_btn")}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
+
 

@@ -51,6 +51,11 @@ export const dashboardService = {
     return response.data.data;
   },
 
+  withdrawAcceptance: async (id: string, reason: string): Promise<EmergencyRequest> => {
+    const response = await api.post<{ success: boolean; data: EmergencyRequest }>(`/emergency/${id}/withdraw`, { reason });
+    return response.data.data;
+  },
+
   // Inventory
   getInventory: async (): Promise<BloodInventoryItem[]> => {
     const response = await api.get<{ success: boolean; data: BloodInventoryItem[] }>("/inventory");
