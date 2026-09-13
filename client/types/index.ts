@@ -190,6 +190,32 @@ export interface LatLng {
   lng: number;
 }
 
+export interface UserLocationState {
+  latitude: number;
+  longitude: number;
+  accuracy?: number; // in meters
+  timestamp?: number;
+  isFallback?: boolean;
+}
+
+export interface SearchLocationState {
+  latitude: number;
+  longitude: number;
+  displayName: string;
+  type?: string;
+}
+
+export interface SelectedPlaceState {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  type: "hospital" | "blood_bank";
+  address?: string;
+  phone?: string;
+  distance?: string;
+}
+
 export interface MapBloodBank {
   id: string;
   name: string;

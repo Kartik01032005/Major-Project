@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMenu, FiX, FiArrowRight } from "react-icons/fi";
+import { FiMenu, FiX, FiArrowRight, FiMapPin } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import Button from "@/components/ui/Button";
 import { useAuth, useTranslation } from "@/context";
@@ -28,6 +28,11 @@ export default function Navbar() {
   const navLinks = [
     { label: t("nav_home"), href: "/" },
     { label: t("nav_features"), href: "/#features" },
+    {
+      label: t("nav_nearby"),
+      href: "/nearby",
+      icon: <FiMapPin size={15} className="text-red-600 shrink-0" aria-hidden="true" />,
+    },
     { label: t("nav_how_it_works"), href: "/#how-it-works" },
     { label: t("nav_about"), href: "/#about" },
   ];
@@ -91,14 +96,15 @@ export default function Navbar() {
                     <Link
                       href={link.href}
                       className={[
-                        "relative inline-flex whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 outline-none",
+                        "relative inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-150 outline-none",
                         "focus-visible:ring-2 focus-visible:ring-red-500",
                         active
                           ? "text-red-600 dark:text-red-400"
                           : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/70 dark:hover:bg-slate-800/70",
                       ].join(" ")}
                     >
-                      {link.label}
+                      {link.icon}
+                      <span>{link.label}</span>
                       {active && (
                         <motion.span
                           layoutId="nav-pill"
@@ -254,14 +260,15 @@ export default function Navbar() {
                     <Link
                       href={link.href}
                       className={[
-                        "flex items-center px-4 py-3 rounded-xl text-sm font-medium mb-1 transition-colors",
+                        "flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium mb-1 transition-colors",
                         pathname === link.href
                           ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
                           : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white",
                       ].join(" ")}
                       onClick={() => setMobileOpen(false)}
                     >
-                      {link.label}
+                      {link.icon}
+                      <span>{link.label}</span>
                     </Link>
                   </motion.div>
                 ))}

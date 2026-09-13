@@ -27,6 +27,7 @@ export interface Translations {
   nav_features: string;
   nav_how_it_works: string;
   nav_about: string;
+  nav_nearby: string;
   nav_sign_in: string;
   nav_get_started: string;
   nav_dashboard: string;
@@ -457,4 +458,42 @@ export interface Translations {
   common_ago_minutes: string;
   common_ago_hours: string;
   common_ago_days: string;
+
+  // ── Nearby Facilities Page ──────────────────────────────────────────────────
+  nearby_page_title: string;
+  nearby_page_subtitle: string;
+  nearby_find_near_me: string;
+  nearby_fallback_notice: string;
+  nearby_actual_location_notice: string;
+  nearby_search_radius: string;
+  nearby_within_radius: string;
+  nearby_count_hospitals: string;
+  nearby_count_bloodbanks: string;
+  nearby_search_placeholder: string;
+  nearby_filter_all: string;
+  nearby_filter_hospitals: string;
+  nearby_filter_bloodbanks: string;
+  nearby_filter_blood_group: string;
+  nearby_all_groups: string;
+  nearby_btn_navigate: string;
+  nearby_btn_call: string;
+  nearby_status_open: string;
+  nearby_status_closed: string;
+  nearby_available_stock: string;
+  nearby_no_results: string;
+  nearby_loading_location: string;
+  nearby_loading_facilities: string;
+  nearby_loading_map: string;
+  nearby_err_location_denied: string;
+  nearby_err_generic: string;
+  nearby_location_mode_auto: string;
+  nearby_location_mode_manual: string;
+  nearby_manual_search_placeholder: string;
+  nearby_manual_search_btn: string;
+  nearby_searching_around: string;
+  nearby_popular_areas: string;
+  nearby_location_not_found: string;
+  nearby_selected_location: string;
+  nearby_filter_open_now: string;
+  nearby_btn_open_map: string;
 }

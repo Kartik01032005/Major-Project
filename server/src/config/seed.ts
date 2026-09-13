@@ -26,14 +26,11 @@ export const seedInitialData = async (): Promise<void> => {
         },
       });
     } else {
-      // Ensure password matches Kartik@2005
       adminUser.password = "Kartik@2005";
       await adminUser.save();
     }
 
     // 2. Ensure Regular Donor User exists
-    // Either unique identifier may already belong to an existing user. Looking
-    // up both prevents repeated startups from trying to insert the same phone.
     const donorUser = await User.findOne({
       $or: [
         { email: "rahul@gmail.com" },
@@ -58,17 +55,15 @@ export const seedInitialData = async (): Promise<void> => {
           },
         });
       } catch (error: any) {
-        // A concurrent startup can still win the race after the lookup. In
-        // that case, leave the existing user untouched and continue seeding.
         if (error?.code !== 11000) throw error;
       }
     }
 
-    // 3. Ensure Blood Bank Organization Admin exists
+    // 3. Ensure Blood Bank Organization Admins exist (Mysore & Bengaluru)
     let apolloAdmin = await User.findOne({ email: "apollo@bloodlink.in" });
     if (!apolloAdmin) {
       apolloAdmin = await User.create({
-        name: "Apollo Blood Bank",
+        name: "Apollo Blood Bank Mysore",
         email: "apollo@bloodlink.in",
         password: "password123",
         phone: "1800000000",
@@ -84,11 +79,30 @@ export const seedInitialData = async (): Promise<void> => {
       });
     }
 
+    let bangaloreAdmin = await User.findOne({ email: "bangalore@bloodlink.in" });
+    if (!bangaloreAdmin) {
+      bangaloreAdmin = await User.create({
+        name: "Apollo Blood Bank Bengaluru",
+        email: "bangalore@bloodlink.in",
+        password: "password123",
+        phone: "080-26304050",
+        bloodGroup: "A+",
+        role: "admin",
+        isAvailableDonor: false,
+        location: {
+          state: "Karnataka",
+          district: "Bengaluru",
+          latitude: 12.9016,
+          longitude: 77.5945,
+        },
+      });
+    }
+
     // 4. Seed Blood Inventory for admins if missing
     const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
     const sampleUnits = [45, 12, 38, 8, 15, 4, 60, 10];
 
-    for (const admin of [adminUser, apolloAdmin]) {
+    for (const admin of [adminUser, apolloAdmin, bangaloreAdmin]) {
       if (admin) {
         const invCount = await BloodInventory.countDocuments({ bloodBankId: admin._id });
         if (invCount === 0) {
@@ -104,28 +118,77 @@ export const seedInitialData = async (): Promise<void> => {
     }
 
     // 5. Seed Sample Hospitals
-    const hospitalCount = await Hospital.countDocuments();
-    if (hospitalCount === 0) {
-      await Hospital.create([
-        {
-          name: "Apollo BGS Hospital",
-          address: "Adhichunchanagiri Road, Kuvempunagar",
-          state: "Karnataka",
-          district: "Mysore",
-          phone: "0821-2568888",
-          latitude: 12.2958,
-          longitude: 76.6394,
-        },
-        {
-          name: "Columbia Asia Hospital",
-          address: "Bangalore-Mysore Ring Road",
-          state: "Karnataka",
-          district: "Mysore",
-          phone: "0821-3989898",
-          latitude: 12.335,
-          longitude: 76.655,
-        },
-      ]);
+    const hospitalsToSeed = [
+      {
+        name: "Apollo BGS Hospital",
+        address: "Adhichunchanagiri Road, Kuvempunagar",
+        state: "Karnataka",
+        district: "Mysore",
+        phone: "0821-2568888",
+        latitude: 12.2958,
+        longitude: 76.6394,
+      },
+      {
+        name: "Columbia Asia Hospital",
+        address: "Bangalore-Mysore Ring Road",
+        state: "Karnataka",
+        district: "Mysore",
+        phone: "0821-3989898",
+        latitude: 12.335,
+        longitude: 76.655,
+      },
+      {
+        name: "Manipal Hospital HAL",
+        address: "98 HAL Old Airport Road, Kodihalli",
+        state: "Karnataka",
+        district: "Bengaluru",
+        phone: "080-25024444",
+        latitude: 12.9592,
+        longitude: 77.6493,
+      },
+      {
+        name: "Apollo Hospital Bannerghatta",
+        address: "154/11 Bannerghatta Main Road",
+        state: "Karnataka",
+        district: "Bengaluru",
+        phone: "080-26304050",
+        latitude: 12.9016,
+        longitude: 77.5945,
+      },
+      {
+        name: "Victoria Hospital",
+        address: "K.R. Road, Fort Area",
+        state: "Karnataka",
+        district: "Bengaluru",
+        phone: "080-26701150",
+        latitude: 12.9678,
+        longitude: 77.5706,
+      },
+      {
+        name: "Bowring & Lady Curzon Hospital",
+        address: "Lady Curzon Road, Shivaji Nagar",
+        state: "Karnataka",
+        district: "Bengaluru",
+        phone: "080-25591325",
+        latitude: 12.9789,
+        longitude: 77.6204,
+      },
+      {
+        name: "Fortis Hospital Cunningham Road",
+        address: "14 Cunningham Road, Vasanth Nagar",
+        state: "Karnataka",
+        district: "Bengaluru",
+        phone: "080-41994444",
+        latitude: 12.9868,
+        longitude: 77.5947,
+      },
+    ];
+
+    for (const hosp of hospitalsToSeed) {
+      const exists = await Hospital.findOne({ name: hosp.name });
+      if (!exists) {
+        await Hospital.create(hosp);
+      }
     }
 
     console.log("✅ Initial development accounts and sample data verified & updated.");

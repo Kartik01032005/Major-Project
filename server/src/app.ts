@@ -8,6 +8,7 @@ import emergencyRoutes from "./routes/emergencyRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import inventoryRoutes from "./routes/inventoryRoutes.js";
 import hospitalRoutes from "./routes/hospitalRoutes.js";
+import nearbyRoutes from "./routes/nearbyRoutes.js";
 
 import { generalLimiter, strictLimiter } from "./middleware/rateLimiter.js";
 
@@ -59,6 +60,7 @@ app.use("/api/emergency", strictLimiter, emergencyRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/hospitals", hospitalRoutes);
+app.use("/api/nearby", nearbyRoutes);
 
 
 // Page Not Found route
