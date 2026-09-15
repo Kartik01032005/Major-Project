@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiAlertCircle, FiMapPin, FiPhone, FiCheck } from "react-icons/fi";
+import { FiAlertCircle, FiPhone, FiCheck, FiNavigation } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth } from "@/context";
 import { useDashboard } from "@/context";
-import { BloodGroup } from "@/types";
+import { BloodGroup, UserGpsLocation, SelectedHospital } from "@/types";
 import ProtectedRoute from "@/components/dashboard/ProtectedRoute";
+import HospitalAutocomplete from "@/components/emergency/HospitalAutocomplete";
 
 const BLOOD_GROUPS: BloodGroup[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -25,6 +26,13 @@ export default function EmergencyRequestPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // User's browser GPS coordinates (kept completely separate from hospital location)
+  const [userLocation, setUserLocation] = useState<UserGpsLocation | null>(null);
+
+  // Selected hospital location metadata
+  const [selectedHospital, setSelectedHospital] = useState<SelectedHospital | null>(null);
+  const [isAddressUserModified, setIsAddressUserModified] = useState(false);
+
   const validate = () => {
     const e: Record<string, string> = {};
     if (!state.trim()) e.state = "State is required";
@@ -37,12 +45,49 @@ export default function EmergencyRequestPage() {
     return Object.keys(e).length === 0;
   };
 
+  const handleHospitalSelect = (hosp: SelectedHospital) => {
+    setHospitalName(hosp.name);
+    setSelectedHospital(hosp);
+
+    // If user has not typed an address or address is blank, populate with hospital address
+    if (!isAddressUserModified || !address.trim()) {
+      if (hosp.address) {
+        setAddress(hosp.address);
+      }
+    }
+
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.hospitalName;
+      return next;
+    });
+  };
+
+  const handleHospitalChange = (name: string) => {
+    setHospitalName(name);
+    if (selectedHospital && selectedHospital.name !== name) {
+      // User typed a custom hospital name
+      setSelectedHospital(null);
+    }
+  };
+
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!validate()) return;
     setLoading(true);
     try {
-      await createRequest({ bloodGroup, state, district, hospitalName, address, contactNumber });
+      await createRequest({
+        bloodGroup,
+        state,
+        district,
+        hospitalName,
+        address,
+        contactNumber,
+        hospitalLatitude: selectedHospital?.latitude,
+        hospitalLongitude: selectedHospital?.longitude,
+        hospitalAddress: selectedHospital?.address,
+        hospitalOsmId: selectedHospital?.osmId,
+      });
       setSubmitted(true);
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } } };
@@ -58,6 +103,8 @@ export default function EmergencyRequestPage() {
     setState(user?.location?.state ?? "");
     setDistrict(user?.location?.district ?? "");
     setHospitalName("");
+    setSelectedHospital(null);
+    setIsAddressUserModified(false);
     setAddress("");
     setContactNumber(user?.phone ?? "");
     setErrors({});
@@ -79,10 +126,18 @@ export default function EmergencyRequestPage() {
     <ProtectedRoute requiredRole="user">
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <FiAlertCircle className="text-red-600 animate-pulse" size={24} />
-            Emergency Blood Request
-          </h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <FiAlertCircle className="text-red-600 animate-pulse" size={24} />
+              Emergency Blood Request
+            </h1>
+            {userLocation && (
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800">
+                <FiNavigation size={12} className="text-emerald-500 animate-pulse" />
+                GPS Active (10 km radius)
+              </span>
+            )}
+          </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Submit an emergency request to alert nearby donors and blood banks instantly.
           </p>
@@ -184,30 +239,45 @@ export default function EmergencyRequestPage() {
 
                 {/* Hospital */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Hospital Name *
-                  </label>
-                  <div className="relative">
-                    <FiMapPin size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      value={hospitalName}
-                      onChange={(e) => setHospitalName(e.target.value)}
-                      placeholder="City General Hospital"
-                      className={[inputCls("hospitalName"), "pl-9"].join(" ")}
-                    />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Hospital Name *
+                    </label>
+                    {selectedHospital?.distanceKm !== undefined && (
+                      <span className="text-[11px] text-red-600 dark:text-red-400 font-medium truncate max-w-[240px]">
+                        {selectedHospital.distanceKm < 10 ? "Nearby: " : ""}{selectedHospital.name} ({selectedHospital.distanceKm.toFixed(1)} km)
+                      </span>
+                    )}
                   </div>
+                  <HospitalAutocomplete
+                    value={hospitalName}
+                    onChange={handleHospitalChange}
+                    onSelectHospital={handleHospitalSelect}
+                    onUserLocationDetected={(loc) => setUserLocation(loc)}
+                    error={errors.hospitalName}
+                    placeholder="Search hospital or enter name..."
+                  />
                   {errors.hospitalName && <p className="text-[11px] text-red-500 mt-1">{errors.hospitalName}</p>}
                 </div>
 
                 {/* Address */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Exact Address *
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Exact Address *
+                    </label>
+                    {selectedHospital?.address && !isAddressUserModified && (
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                        Auto-filled from OpenStreetMap
+                      </span>
+                    )}
+                  </div>
                   <textarea
                     value={address}
-                    onChange={(e) => setAddress(e.target.value)}
+                    onChange={(e) => {
+                      setAddress(e.target.value);
+                      setIsAddressUserModified(true);
+                    }}
                     placeholder="Ward no. 4, Main Road..."
                     rows={3}
                     className={[

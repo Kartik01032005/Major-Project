@@ -5,6 +5,10 @@ export interface IEmergencyRequest extends Document {
   bloodGroup: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
   unitsRequired: number;
   hospital: string;
+  hospitalLatitude?: number;
+  hospitalLongitude?: number;
+  hospitalAddress?: string;
+  hospitalOsmId?: string;
   state: string;
   district: string;
   address: string;

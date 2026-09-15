@@ -27,6 +27,10 @@ interface DashboardContextType {
     address: string;
     contactNumber: string;
     unitsRequired?: number;
+    hospitalLatitude?: number;
+    hospitalLongitude?: number;
+    hospitalAddress?: string;
+    hospitalOsmId?: string;
   }) => Promise<void>;
   updateRequestStatus: (id: string, status: "approved" | "rejected") => Promise<void>;
   cancelRequest: (id: string) => Promise<void>;
@@ -229,6 +233,10 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       address: string;
       contactNumber: string;
       unitsRequired?: number;
+      hospitalLatitude?: number;
+      hospitalLongitude?: number;
+      hospitalAddress?: string;
+      hospitalOsmId?: string;
     }) => {
       // Map frontend field `hospitalName` to backend field `hospitalName` (both supported)
       await dashboardService.createRequest({

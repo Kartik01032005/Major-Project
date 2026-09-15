@@ -28,6 +28,10 @@ export const createRequest = async (req: Request, res: Response): Promise<void> 
       unitsRequired,
       hospital,
       hospitalName, // Support both fields
+      hospitalLatitude,
+      hospitalLongitude,
+      hospitalAddress,
+      hospitalOsmId,
       state,
       district,
       address,
@@ -38,18 +42,25 @@ export const createRequest = async (req: Request, res: Response): Promise<void> 
 
     const hosp = (hospitalName && hospitalName.trim()) || (hospital && hospital.trim()) || "General Hospital";
 
+    const parsedHospLat = typeof hospitalLatitude === "number" ? hospitalLatitude : (hospitalLatitude ? parseFloat(hospitalLatitude) : undefined);
+    const parsedHospLng = typeof hospitalLongitude === "number" ? hospitalLongitude : (hospitalLongitude ? parseFloat(hospitalLongitude) : undefined);
+
     const newRequest = await EmergencyRequest.create({
       requestBy: req.user._id,
       bloodGroup,
       unitsRequired: unitsRequired ?? 1,
       hospital: hosp,
+      hospitalLatitude: typeof parsedHospLat === "number" && !isNaN(parsedHospLat) ? parsedHospLat : undefined,
+      hospitalLongitude: typeof parsedHospLng === "number" && !isNaN(parsedHospLng) ? parsedHospLng : undefined,
+      hospitalAddress: hospitalAddress ? String(hospitalAddress).trim() : undefined,
+      hospitalOsmId: hospitalOsmId ? String(hospitalOsmId).trim() : undefined,
       state,
       district,
       address,
       contactNumber,
       location: {
-        latitude: latitude ?? 0,
-        longitude: longitude ?? 0
+        latitude: (typeof parsedHospLat === "number" && !isNaN(parsedHospLat) ? parsedHospLat : latitude) ?? 0,
+        longitude: (typeof parsedHospLng === "number" && !isNaN(parsedHospLng) ? parsedHospLng : longitude) ?? 0
       }
     });
 

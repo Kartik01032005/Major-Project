@@ -119,6 +119,54 @@ describe("POST /api/emergency", () => {
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);
   });
+
+  it("should create an emergency request with hospital location metadata and populate coordinates", async () => {
+    const res = await request(app)
+      .post("/api/emergency")
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({
+        ...emergencyPayload,
+        hospitalName: "Father Muller Hospital",
+        hospitalLatitude: 12.868,
+        hospitalLongitude: 74.858,
+        hospitalAddress: "Father Muller Rd, Kankanady, Mangaluru",
+        hospitalOsmId: "osm-way-987654",
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.hospital).toBe("Father Muller Hospital");
+    expect(res.body.data.hospitalLatitude).toBe(12.868);
+    expect(res.body.data.hospitalLongitude).toBe(74.858);
+    expect(res.body.data.hospitalAddress).toBe("Father Muller Rd, Kankanady, Mangaluru");
+    expect(res.body.data.hospitalOsmId).toBe("osm-way-987654");
+    expect(res.body.data.location.latitude).toBe(12.868);
+    expect(res.body.data.location.longitude).toBe(74.858);
+  });
+
+  it("should reject invalid hospital latitude or longitude", async () => {
+    const resBadLat = await request(app)
+      .post("/api/emergency")
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({
+        ...emergencyPayload,
+        hospitalLatitude: 120,
+      });
+
+    expect(resBadLat.status).toBe(400);
+    expect(resBadLat.body.success).toBe(false);
+
+    const resBadLng = await request(app)
+      .post("/api/emergency")
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({
+        ...emergencyPayload,
+        hospitalLongitude: -200,
+      });
+
+    expect(resBadLng.status).toBe(400);
+    expect(resBadLng.body.success).toBe(false);
+  });
 });
 
 // ─── Get Emergency Requests ──────────────────────────────────────────────────

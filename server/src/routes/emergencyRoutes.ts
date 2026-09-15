@@ -28,6 +28,20 @@ const createRequestValidation = [
     .optional()
     .notEmpty()
     .withMessage("Hospital name is required"),
+  body("hospitalLatitude")
+    .optional({ nullable: true })
+    .isFloat({ min: -90, max: 90 })
+    .withMessage("Invalid hospital latitude (-90 to 90)"),
+  body("hospitalLongitude")
+    .optional({ nullable: true })
+    .isFloat({ min: -180, max: 180 })
+    .withMessage("Invalid hospital longitude (-180 to 180)"),
+  body("hospitalAddress")
+    .optional({ nullable: true })
+    .isString(),
+  body("hospitalOsmId")
+    .optional({ nullable: true })
+    .isString(),
   body("state").notEmpty().withMessage("State is required"),
   body("district").notEmpty().withMessage("District is required"),
   body("address").notEmpty().withMessage("Exact address is required"),

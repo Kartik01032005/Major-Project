@@ -116,6 +116,10 @@ export interface EmergencyRequest {
   bloodGroup: BloodGroup;
   unitsRequired?: number;
   hospital: string;
+  hospitalLatitude?: number;
+  hospitalLongitude?: number;
+  hospitalAddress?: string;
+  hospitalOsmId?: string;
   state: string;
   district: string;
   address: string;
@@ -138,6 +142,22 @@ export interface EmergencyRequest {
   }>;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface UserGpsLocation {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
+}
+
+export interface SelectedHospital {
+  name: string;
+  latitude: number;
+  longitude: number;
+  address?: string;
+  osmId?: string;
+  distanceKm?: number;
+  cityOrArea?: string;
 }
 
 // ─── Blood Inventory ──────────────────────────────────────────────────────────

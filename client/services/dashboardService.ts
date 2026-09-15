@@ -26,6 +26,10 @@ export const dashboardService = {
     contactNumber: string;
     unitsRequired?: number;
     hospital?: string;
+    hospitalLatitude?: number;
+    hospitalLongitude?: number;
+    hospitalAddress?: string;
+    hospitalOsmId?: string;
   }): Promise<EmergencyRequest> => {
     const response = await api.post<{ success: boolean; data: EmergencyRequest }>("/emergency", data);
     return response.data.data;
