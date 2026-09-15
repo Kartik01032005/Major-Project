@@ -284,7 +284,6 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     },
     [refreshRequests]
   );
-
   const withdrawAcceptance = useCallback(
     async (id: string, reason: string) => {
       await dashboardService.withdrawAcceptance(id, reason);

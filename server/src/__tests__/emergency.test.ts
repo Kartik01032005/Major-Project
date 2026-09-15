@@ -41,6 +41,7 @@ let adminToken: string;
 let donorToken: string;
 let donorUser: InstanceType<typeof User>;
 let mismatchDonorToken: string;
+let universalDonorToken: string;
 
 // ─── Setup / Teardown ────────────────────────────────────────────────────────
 beforeAll(async () => {
@@ -279,6 +280,7 @@ describe("DELETE /api/emergency/:id", () => {
 
 // ─── Accept Emergency Request (Intent to Donate) ────────────────────────────
 describe("PUT /api/emergency/:id/accept", () => {
+
   let requestId: string;
 
   beforeAll(async () => {
@@ -314,6 +316,22 @@ describe("PUT /api/emergency/:id/accept", () => {
       password: "Test@1234",
     });
     mismatchDonorToken = mismatchLogin.body.data.token;
+
+    // Register a universal donor (bloodGroup: O-)
+    await request(app).post("/api/auth/register").send({
+      name: "Universal Donor User",
+      email: "donor.universal@bloodlink.dev",
+      password: "Test@1234",
+      phone: "8888888885",
+      role: "user",
+      bloodGroup: "O-",
+      location: { state: "Karnataka", district: "Mysore" },
+    });
+    const universalLogin = await request(app).post("/api/auth/login").send({
+      email: "donor.universal@bloodlink.dev",
+      password: "Test@1234",
+    });
+    universalDonorToken = universalLogin.body.data.token;
   });
 
   beforeEach(async () => {
@@ -393,6 +411,22 @@ describe("PUT /api/emergency/:id/accept", () => {
     expect(res.status).toBe(403);
     expect(res.body.success).toBe(false);
     expect(res.body.message).toBe("Blood group does not match this request");
+  });
+
+  it("should allow a medically compatible donor (e.g. O- universal donor) to accept an A+ request", async () => {
+    const aPlusRequest = await request(app)
+      .post("/api/emergency")
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({ ...emergencyPayload, bloodGroup: "A+" });
+    const reqId = aPlusRequest.body.data._id;
+
+    const res = await request(app)
+      .put(`/api/emergency/${reqId}/accept`)
+      .set("Authorization", `Bearer ${universalDonorToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe("Request accepted successfully");
   });
 
   it("should reject acceptance if request is not found", async () => {
@@ -514,6 +548,26 @@ describe("POST /api/emergency/:id/donation-report, donation-confirm & withdraw",
       .send({ reason: "   " });
 
     expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  it("should reject withdrawal if reason is missing", async () => {
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/withdraw`)
+      .set("Authorization", `Bearer ${donorToken}`)
+      .send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  it("should reject withdrawal if user is not an accepted donor", async () => {
+    const res = await request(app)
+      .post(`/api/emergency/${requestId}/withdraw`)
+      .set("Authorization", `Bearer ${mismatchDonorToken}`)
+      .send({ reason: "Personal Emergency" });
+
+    expect(res.status).toBe(403);
     expect(res.body.success).toBe(false);
   });
 

@@ -183,10 +183,12 @@ const CONVERSATIONAL_INTENTS: ConversationalIntent[] = [
   },
   {
     patterns: [
-      /^(i need|need|looking for|require|मुझे|ನನಗೆ|എനിക്ക്|मला|எனக்கு|నాకు)\s+([a-o]|ab)[\s\-\+]*(blood|ब्लड|रक्त|ರಕ್ತ|രക്തം|ரத்தம்|రక్తం)?$/i
+      /^(i need|need|looking for|require|मुझे|ನನಗೆ|എനിക്ക്|मला|எனக்கு|నాకు)\s+([a-o]|ab)[\s\-\+]*(blood|ब्लड|रक्त|ರಕ್ತ|രക്തം|ரத்தம்|రక్తం)?(\s*(चाहिए|ಬೇಕು|വേണം|हवे|வேண்டும்|కావాలి|urgent|urgently))?$/i,
+      /(मुझे|ನನಗೆ|എനിക്ക്|मला|எனக்கு|నాకు).*(o\+|o\-|a\+|a\-|b\+|b\-|ab\+|ab\-).*(blood|ब्लड|रक्त|ರಕ್ತ|രക്തം|ரத்தம்|రక్తం|चाहिए|ಬೇಕು|വേണം|हवे|வேண்டும்|కావాలి)/i,
+      /(o\+|o\-|a\+|a\-|b\+|b\-|ab\+|ab\-).*(blood|ब्लड|रक्त|ರಕ್ತ|രക്തം|ரத்தம்|రక్తం).*(चाहिए|ಬೇಕು|വേണം|हवे|வேண்டும்|కావాలి|need)/i
     ],
     reply: (query: string, locale: Locale) => {
-      const match = query.match(/([a-o]|ab)[\s\-\+]*/i);
+      const match = query.match(/(o\+|o\-|a\+|a\-|b\+|b\-|ab\+|ab\-|[a-o]|ab)/i);
       const bg = match ? match[0].trim().toUpperCase() : "blood";
       switch (locale) {
         case "hi": return `ज़रूर! मैं आपको ${bg} ब्लड डोनर या ब्लड बैंक खोजने में मदद कर सकता हूँ। आप डोनर्स को सूचित करने के लिए अपने डैशबोर्ड पर इमरजेंसी रिक्वेस्ट बना सकते हैं।`;
@@ -254,7 +256,11 @@ const CONVERSATIONAL_INTENTS: ConversationalIntent[] = [
     category: "features",
   },
   {
-    patterns: ["how to request blood", "create request", "अनुरोध कैसे करें", "ವಿನಂತಿ ಮಾಡುವುದು ಹೇಗೆ", "അഭ്യർത്ഥിക്കുന്നത് എങ്ങനെ", "विनंती कशी करावी", "கோரிக்கை விடுப்பது எப்படி", "అభ్యర్థించడం ఎలా"],
+    patterns: [
+      "how to request blood", "create request", "how to create an emergency request", "emergency request", "create emergency request", "how to create an emergency blood request",
+      /how to (create|make) (an )?emergency request/i, /create (an )?emergency request/i,
+      "अनुरोध कैसे करें", "इमरजेंसी रिक्वेस्ट", "ವಿನಂತಿ ಮಾಡುವುದು ಹೇಗೆ", "ಅಭ್ಯರ್ത്ഥിക്കുന്നത് എങ്ങനെ", "विनंती कशी करावी", "கோரிக்கை விடுப்பது எப்படி", "అభ్యర్థించడం ఎలా"
+    ],
     reply: {
       en: "Go to your User Dashboard and click 'Create Emergency Request'. Fill in patient details and hospital to notify nearby donors.",
       hi: "अपने यूजर डैशबोर्ड पर जाएं और 'क्रिएट इमरजेंसी रिक्वेस्ट' पर क्लिक करें। डोनर्स को सूचित करने के लिए विवरण भरें।",

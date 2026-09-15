@@ -132,7 +132,7 @@ export interface EmergencyRequest {
   donationConfirmedBy?: string | null;
   donationConfirmedAt?: string | null;
   withdrawnBy?: Array<{
-    donor: string;
+    donor: string | { _id: string };
     reason: string;
     withdrawnAt: string;
   }>;
@@ -192,6 +192,32 @@ export interface DashboardNavItem {
 export interface LatLng {
   lat: number;
   lng: number;
+}
+
+export interface UserLocationState {
+  latitude: number;
+  longitude: number;
+  accuracy?: number; // in meters
+  timestamp?: number;
+  isFallback?: boolean;
+}
+
+export interface SearchLocationState {
+  latitude: number;
+  longitude: number;
+  displayName: string;
+  type?: string;
+}
+
+export interface SelectedPlaceState {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  type: "hospital" | "blood_bank";
+  address?: string;
+  phone?: string;
+  distance?: string;
 }
 
 export interface MapBloodBank {

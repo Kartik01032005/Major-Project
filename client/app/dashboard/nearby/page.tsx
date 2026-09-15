@@ -4,10 +4,10 @@ import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiMap, FiNavigation, FiPhone, FiMapPin, FiSearch,
-  FiFilter, FiAlertCircle,
+  FiFilter, FiAlertCircle, FiLoader,
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
-import { useGeolocation } from "@/hooks";
+import { useGeolocation, useHospitalNavigation } from "@/hooks";
 import MapContainer from "@/components/map/MapContainer";
 import { MapBloodBank, BloodGroup } from "@/types";
 
@@ -105,6 +105,7 @@ const ALL_BLOOD_GROUPS: BloodGroup[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O
 
 export default function NearbyPage() {
   const { position, isUsingDefault, loading: geoLoading, error: geoError, refetch } = useGeolocation();
+  const { navLoadingId, navError, navigateToHospital } = useHospitalNavigation();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [bgFilter, setBgFilter] = useState<BloodGroup | "all">("all");
@@ -125,11 +126,6 @@ export default function NearbyPage() {
   const mapCenter = selectedId
     ? BLOOD_BANKS.find((b) => b.id === selectedId)?.position ?? position
     : position;
-
-  const openMaps = (bank: MapBloodBank) => {
-    const q = encodeURIComponent(`${bank.name}, ${bank.address}, ${bank.district}`);
-    window.open(`https://www.openstreetmap.org/search?query=${q}`, "_blank");
-  };
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -279,80 +275,105 @@ export default function NearbyPage() {
                 <p className="text-sm text-slate-500 dark:text-slate-400">No blood banks match your filters</p>
               </div>
             ) : (
-              filtered.map((bank, i) => (
-                <motion.div
-                  key={bank.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  onClick={() => setSelectedId(bank.id === selectedId ? null : bank.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      setSelectedId(bank.id === selectedId ? null : bank.id);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  className={[
-                    "w-full text-left rounded-2xl border p-4 transition-all cursor-pointer",
-                    selectedId === bank.id
-                      ? "border-red-500 bg-red-50/60 dark:bg-red-950/20 shadow-md"
-                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-red-300 dark:hover:border-red-700 hover:shadow-sm",
-                  ].join(" ")}
-                  aria-pressed={selectedId === bank.id}
-                  aria-label={`Select ${bank.name}`}
-                >
-                  {/* Name + status */}
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{bank.name}</p>
-                    <span className={[
-                      "text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0",
-                      bank.open
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                        : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
-                    ].join(" ")}>
-                      {bank.open ? "Open" : "Closed"}
-                    </span>
-                  </div>
+              filtered.map((bank, i) => {
+                const isLoading = navLoadingId === bank.id;
+                const isError = navError?.id === bank.id;
 
-                  {/* Address + distance */}
-                  <div className="flex items-center gap-1 text-xs text-slate-400 mb-2">
-                    <FiMapPin size={11} className="flex-shrink-0" />
-                    <span className="truncate">{bank.address} · <strong>{bank.distance}</strong></span>
-                  </div>
-
-                  {/* Blood group badges */}
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {bank.available.map((bg) => (
-                      <span
-                        key={bg}
-                        className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${BLOOD_GROUP_COLORS[bg]}`}
-                      >
-                        <FaDroplet size={8} /> {bg}
+                return (
+                  <motion.div
+                    key={bank.id}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    onClick={() => setSelectedId(bank.id === selectedId ? null : bank.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        setSelectedId(bank.id === selectedId ? null : bank.id);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    className={[
+                      "w-full text-left rounded-2xl border p-4 transition-all cursor-pointer",
+                      selectedId === bank.id
+                        ? "border-red-500 bg-red-50/60 dark:bg-red-950/20 shadow-md"
+                        : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-red-300 dark:hover:border-red-700 hover:shadow-sm",
+                    ].join(" ")}
+                    aria-pressed={selectedId === bank.id}
+                    aria-label={`Select ${bank.name}`}
+                  >
+                    {/* Name + status */}
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{bank.name}</p>
+                      <span className={[
+                        "text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0",
+                        bank.open
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                          : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400",
+                      ].join(" ")}>
+                        {bank.open ? "Open" : "Closed"}
                       </span>
-                    ))}
-                  </div>
+                    </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); openMaps(bank); }}
-                      className="flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
-                      aria-label={`Navigate to ${bank.name}`}
-                    >
-                      <FiNavigation size={11} /> Navigate
-                    </button>
-                    <a
-                      href={`tel:${bank.phone}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                      aria-label={`Call ${bank.name}`}
-                    >
-                      <FiPhone size={11} /> Call
-                    </a>
-                  </div>
-                </motion.div>
-              ))
+                    {/* Address + distance */}
+                    <div className="flex items-center gap-1 text-xs text-slate-400 mb-2">
+                      <FiMapPin size={11} className="flex-shrink-0" />
+                      <span className="truncate">{bank.address} · <strong>{bank.distance}</strong></span>
+                    </div>
+
+                    {/* Blood group badges */}
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {bank.available.map((bg) => (
+                        <span
+                          key={bg}
+                          className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${BLOOD_GROUP_COLORS[bg]}`}
+                        >
+                          <FaDroplet size={8} /> {bg}
+                        </span>
+                      ))}
+                    </div>
+
+                    {isError && (
+                      <p className="text-[11px] text-red-600 dark:text-red-400 font-medium mb-2">
+                        {navError.message}
+                      </p>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); navigateToHospital(bank); }}
+                        disabled={isLoading}
+                        className={[
+                          "flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-lg text-white transition-colors",
+                          isLoading
+                            ? "bg-red-400 cursor-not-allowed"
+                            : "bg-red-600 hover:bg-red-700 cursor-pointer",
+                        ].join(" ")}
+                        aria-label={`Navigate to ${bank.name}`}
+                      >
+                        {isLoading ? (
+                          <>
+                            <FiLoader size={11} className="animate-spin" /> Getting Location...
+                          </>
+                        ) : (
+                          <>
+                            <FiNavigation size={11} /> Navigate
+                          </>
+                        )}
+                      </button>
+                      <a
+                        href={`tel:${bank.phone}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        aria-label={`Call ${bank.name}`}
+                      >
+                        <FiPhone size={11} /> Call
+                      </a>
+                    </div>
+                  </motion.div>
+                );
+              })
             )}
           </div>
         </div>
