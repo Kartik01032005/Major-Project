@@ -18,6 +18,8 @@ export interface IUser extends Document {
   location: ILocation;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
+  resetPasswordTokenHash?: string;
+  resetPasswordExpiresAt?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword: (enteredPassword: string) => Promise<boolean>;

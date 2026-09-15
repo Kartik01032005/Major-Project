@@ -126,8 +126,18 @@ function ResetPasswordFormContent() {
 
             {/* General Error Banner */}
             {generalError && (
-              <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 text-xs font-medium text-red-700 dark:text-red-400">
-                {generalError}
+              <div className="mb-4 p-3.5 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 text-xs text-red-700 dark:text-red-400">
+                <p className="font-medium">{generalError}</p>
+                {(generalError.toLowerCase().includes("invalid") || generalError.toLowerCase().includes("expired")) && (
+                  <div className="mt-2 pt-2 border-t border-red-200/60 dark:border-red-800/60">
+                    <Link
+                      href="/forgot-password"
+                      className="font-semibold text-red-700 hover:text-red-800 dark:text-red-300 dark:hover:text-red-200 underline"
+                    >
+                      Request a new reset link &rarr;
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 

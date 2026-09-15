@@ -13,7 +13,6 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [generalError, setGeneralError] = useState("");
-  const [devResetUrl, setDevResetUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -39,9 +38,6 @@ export default function ForgotPasswordPage() {
     try {
       const res = await authService.forgotPassword(email);
       if (res.success) {
-        if (res.data?.resetUrl) {
-          setDevResetUrl(res.data.resetUrl);
-        }
         setSubmitted(true);
       } else {
         setGeneralError(res.message || "Failed to process password reset request.");
@@ -149,24 +145,13 @@ export default function ForgotPasswordPage() {
                 <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                   Check your inbox
                 </h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-3 leading-relaxed">
-                  If an account exists for <span className="font-semibold text-slate-800 dark:text-slate-200">{email}</span>,
+                <p className="text-sm text-slate-600 dark:text-slate-300 mt-3 leading-relaxed">
+                  If an account exists for <span className="font-semibold text-slate-900 dark:text-white">{email}</span>,
                   we have sent password reset instructions with your reset link.
                 </p>
-
-                {devResetUrl && (
-                  <div className="mt-5 p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 text-left">
-                    <p className="text-xs font-bold text-blue-900 dark:text-blue-200 mb-1">
-                      🛠️ Development Quick Link:
-                    </p>
-                    <Link
-                      href={devResetUrl}
-                      className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 underline break-all font-mono"
-                    >
-                      {devResetUrl}
-                    </Link>
-                  </div>
-                )}
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  Please check your spam folder if you don&apos;t see the email.
+                </p>
 
                 <div className="mt-8 pt-5 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-3 items-center justify-center">
                   <Link

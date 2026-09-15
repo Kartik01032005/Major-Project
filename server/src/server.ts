@@ -18,9 +18,15 @@ const startServer = async () => {
 
   // Connect to MongoDB Atlas or local/in-memory MongoDB instance
   await connectDB();
+
+  // Verify Email Transporter configuration
+  const { verifyTransporter } = await import("./services/emailService.js");
+  await verifyTransporter();
 };
 
+// Server initialization
 startServer().catch((err) => {
   console.error("❌ Failed to launch Express server:", err);
   process.exit(1);
 });
+

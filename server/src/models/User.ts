@@ -22,7 +22,9 @@ const UserSchema = new Schema<IUser>({
   isAvailableDonor: { type: Boolean, default: true },
   location: { type: LocationSchema, required: true },
   resetPasswordToken: { type: String },
-  resetPasswordExpires: { type: Date }
+  resetPasswordExpires: { type: Date },
+  resetPasswordTokenHash: { type: String },
+  resetPasswordExpiresAt: { type: Date }
 }, {
   timestamps: true
 });
