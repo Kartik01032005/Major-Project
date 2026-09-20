@@ -279,6 +279,8 @@ const te: Translations = {
   notifications_empty_title: "ఇంకా నోటిఫికేషన్లు లేవు",
   notifications_empty_sub: "అభ్యర్థన నవీకరణలు ఇక్కడ తెలియజేస్తాం.",
   notifications_unread: "చదవలేదు",
+
+
   emergency_title: "అత్యవసర రక్త అభ్యర్థన",
   emergency_subtitle: "సమీప దాతలకు తక్షణంగా తెలియజేస్తుంది",
   emergency_blood_group_label: "అవసరమైన రక్త గ్రూప్ *",

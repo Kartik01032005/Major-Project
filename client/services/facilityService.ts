@@ -151,7 +151,7 @@ export const facilityService = {
   getNearbyFacilities: async (
     params: FetchFacilitiesParams
   ): Promise<NearbyFacilityResponse> => {
-    const radius = params.radiusKm ?? 30;
+    const radius = params.radiusKm ?? 5;
     const type = params.type ?? "all";
     const bloodGroup = params.bloodGroup && params.bloodGroup !== "all" ? params.bloodGroup : "";
     const openNow = params.openNow ? "1" : "0";

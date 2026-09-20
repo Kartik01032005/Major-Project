@@ -21,7 +21,14 @@ import {
   NearbyFacilityResponse,
   GeocodedLocation,
   CLIENT_PRESET_LOCATIONS,
+  calculateClientDistanceKm,
 } from "@/services/facilityService";
+import {
+  getCurrentDevicePosition,
+  checkDevicePermission,
+  requestDevicePermission,
+  isNativePlatform,
+} from "@/services/locationService";
 import { useTranslation } from "@/context";
 import {
   LatLng,
@@ -33,8 +40,8 @@ import {
   SelectedPlaceState,
 } from "@/types";
 
-// Bengaluru fallback coordinates
-const BENGALURU_FALLBACK: LatLng = { lat: 12.9716, lng: 77.5946 };
+// Default neutral center of India when no device location or search location is available yet
+const INDIA_DEFAULT_CENTER: LatLng = { lat: 20.5937, lng: 78.9629 };
 
 const RADIUS_OPTIONS = [5, 10, 20, 30, 50] as const;
 type RadiusOption = (typeof RADIUS_OPTIONS)[number];
@@ -75,6 +82,9 @@ export default function NearbyFacilitiesPage() {
   const [userLocation, setUserLocation] = useState<UserLocationState | null>(null);
   const [geoLoading, setGeoLoading] = useState(true);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [permissionState, setPermissionState] = useState<
+    "loading" | "prompt" | "granted" | "denied" | "unsupported"
+  >("loading");
 
   // B. SEARCH LOCATION: Selected search location (e.g. Sirsi, Karnataka)
   const [searchLocation, setSearchLocation] = useState<SearchLocationState | null>(null);
@@ -95,8 +105,8 @@ export default function NearbyFacilitiesPage() {
     error?: string | null;
   }>({ isAcquiring: false });
 
-  // Filters & Controls
-  const [radius, setRadius] = useState<RadiusOption>(30);
+  // Filters & Controls: Default radius is 5 KM
+  const [radius, setRadius] = useState<RadiusOption>(5);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "hospitals" | "bloodbanks">("all");
   const [bloodGroupFilter, setBloodGroupFilter] = useState<BloodGroup | "all">("all");
@@ -107,103 +117,135 @@ export default function NearbyFacilitiesPage() {
   const [facilityData, setFacilityData] = useState<NearbyFacilityResponse | null>(null);
   const [loadingFacilities, setLoadingFacilities] = useState(false);
 
+  // Ref to track last searched coordinates & radius to suppress GPS jitter (< 25m)
+  const lastFetchedRef = useRef<{ lat: number; lng: number; radius: number } | null>(null);
+
   // ─── 1. Geolocation Logic (Auto GPS) ───────────────────────────────────────
-  const requestLocation = useCallback((forceFresh = false) => {
+  const requestLocation = useCallback(async (forceFresh = false) => {
     setGeoLoading(true);
     setGeoError(null);
 
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      setUserLocation({
-        latitude: BENGALURU_FALLBACK.lat,
-        longitude: BENGALURU_FALLBACK.lng,
-        isFallback: true,
-        timestamp: Date.now(),
-      });
-      setGeoLoading(false);
-      setGeoError("Geolocation is not supported by your browser.");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserLocation({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          accuracy: pos.coords.accuracy,
-          timestamp: Date.now(),
-          isFallback: false,
-        });
-        setGeoLoading(false);
-        setGeoError(null);
-      },
-      (err) => {
-        let msg = "Location unavailable. Showing default fallback.";
-        if (err.code === err.PERMISSION_DENIED) {
-          msg = t("nearby_err_location_denied") || "Location access was denied. Showing Bengaluru as default.";
-        }
-        setUserLocation({
-          latitude: BENGALURU_FALLBACK.lat,
-          longitude: BENGALURU_FALLBACK.lng,
-          isFallback: true,
-          timestamp: Date.now(),
-        });
-        setGeoLoading(false);
-        setGeoError(msg);
-      },
-      {
+    try {
+      const pos = await getCurrentDevicePosition({
         enableHighAccuracy: true,
-        timeout: forceFresh ? 10000 : 8000,
-        maximumAge: forceFresh ? 0 : 30000,
+        timeout: forceFresh ? 12000 : 8000,
+        maximumAge: forceFresh ? 0 : 15000,
+      });
+
+      setUserLocation({
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+        accuracy: pos.accuracy,
+        timestamp: pos.timestamp || Date.now(),
+        isFallback: false,
+      });
+      setPermissionState("granted");
+      setGeoLoading(false);
+      setGeoError(null);
+    } catch (err: unknown) {
+      setUserLocation(null);
+      setGeoLoading(false);
+      const locErr = err as { code?: string; message?: string };
+      if (
+        locErr?.code === "PERMISSION_DENIED" ||
+        locErr?.message?.toLowerCase().includes("denied")
+      ) {
+        setPermissionState("denied");
+        setGeoError(
+          isNativePlatform()
+            ? "Location permission was denied. Please allow location access in Android Settings to see nearby facilities."
+            : (t("nearby_err_location_denied") ||
+                "Location access was denied. Please enable location permissions to find facilities near you.")
+        );
+      } else if (locErr?.code === "TIMEOUT") {
+        setGeoError("Location request timed out. Please tap Find Near Me to try again.");
+      } else if (locErr?.code === "UNSUPPORTED") {
+        setPermissionState("unsupported");
+        setGeoError("Geolocation is not supported by your browser or device.");
+      } else {
+        setGeoError(
+          locErr?.message ||
+            "Unable to acquire device location. Please check GPS settings or search manually."
+        );
       }
-    );
+    }
   }, [t]);
 
-  // Request user GPS on mount asynchronously
+  // Request user GPS on mount: check permission status first, then auto-acquire
   useEffect(() => {
     let isMounted = true;
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      return;
+
+    async function initLocation() {
+      try {
+        const perm = await checkDevicePermission();
+        if (!isMounted) return;
+
+        if (perm === "unsupported") {
+          setPermissionState("unsupported");
+          setGeoLoading(false);
+          setGeoError("Geolocation is not supported by your browser or device.");
+          return;
+        }
+
+        if (perm === "denied") {
+          setPermissionState("denied");
+          setGeoLoading(false);
+          setGeoError(
+            isNativePlatform()
+              ? "Location permission was denied. Please allow location access in Android Settings to see nearby facilities."
+              : (t("nearby_err_location_denied") ||
+                  "Location access was denied. Please enable location permissions to find facilities near you.")
+          );
+          return;
+        }
+
+        setPermissionState(perm);
+
+        // If granted or prompt: immediately request position
+        await requestLocation(true);
+      } catch {
+        if (isMounted) {
+          await requestLocation(true);
+        }
+      }
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        if (!isMounted) return;
-        setUserLocation({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
-          accuracy: pos.coords.accuracy,
-          timestamp: Date.now(),
-          isFallback: false,
-        });
-        setGeoLoading(false);
-        setGeoError(null);
-      },
-      (err) => {
-        if (!isMounted) return;
-        let msg = "Location unavailable. Showing default fallback.";
-        if (err.code === err.PERMISSION_DENIED) {
-          msg = t("nearby_err_location_denied") || "Location access was denied. Showing Bengaluru as default.";
-        }
-        setUserLocation({
-          latitude: BENGALURU_FALLBACK.lat,
-          longitude: BENGALURU_FALLBACK.lng,
-          isFallback: true,
-          timestamp: Date.now(),
-        });
-        setGeoLoading(false);
-        setGeoError(msg);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 8000,
-        maximumAge: 30000,
-      }
-    );
+    initLocation();
+
+    // Listen for web permissions change if available and on web
+    let permStatusObj: PermissionStatus | null = null;
+    if (typeof window !== "undefined" && !isNativePlatform() && navigator?.permissions?.query) {
+      navigator.permissions
+        .query({ name: "geolocation" as PermissionName })
+        .then((status) => {
+          if (!isMounted) return;
+          permStatusObj = status;
+          status.onchange = () => {
+            if (!isMounted) return;
+            const updated = status.state as "granted" | "prompt" | "denied";
+            setPermissionState(updated);
+            if (updated === "granted") {
+              requestLocation(true);
+            } else if (updated === "denied") {
+              setUserLocation(null);
+              setGeoLoading(false);
+              setGeoError(
+                t("nearby_err_location_denied") ||
+                  "Location access was denied. Please enable location permissions to find facilities near you."
+              );
+            }
+          };
+        })
+        .catch(() => {});
+    }
 
     return () => {
       isMounted = false;
+      if (permStatusObj) {
+        permStatusObj.onchange = null;
+      }
     };
-  }, [t]);
+  }, [requestLocation, t]);
 
   // Ref to prevent re-triggering geocoding effect immediately after selecting a suggestion
   const skipGeocodeRef = useRef(false);
@@ -238,30 +280,19 @@ export default function NearbyFacilitiesPage() {
         return;
       }
 
-      // 2. Request fresh GPS coordinates from browser
-      if (typeof window === "undefined" || !navigator.geolocation) {
-        setNavigatingState({
-          isAcquiring: false,
-          error: "Geolocation is not supported by your browser. Current location is required for navigation origin.",
-        });
-        return;
-      }
-
+      // 2. Request fresh GPS coordinates for navigation origin
       setNavigatingState({
         isAcquiring: true,
         facilityName: place.name,
         error: null,
       });
 
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const freshUserLoc: UserLocationState = {
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-            accuracy: pos.coords.accuracy,
-            timestamp: Date.now(),
-            isFallback: false,
-          };
+      getCurrentDevicePosition({
+        enableHighAccuracy: true,
+        timeout: 9000,
+        maximumAge: 0,
+      })
+        .then((freshUserLoc) => {
           setUserLocation(freshUserLoc);
           setNavigatingState({ isAcquiring: false });
 
@@ -269,20 +300,14 @@ export default function NearbyFacilitiesPage() {
           const destination = `${place.lat},${place.lng}`;
           const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`;
           openNavigationUrl(url);
-        },
-        () => {
+        })
+        .catch(() => {
           setNavigatingState({
             isAcquiring: false,
             error:
               "Your current location is required for accurate navigation. Please allow location access.",
           });
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 9000,
-          maximumAge: 0,
-        }
-      );
+        });
     },
     [userLocation]
   );
@@ -370,26 +395,25 @@ export default function NearbyFacilitiesPage() {
   };
 
   // ─── 4. Active Search Coordinates & Center ─────────────────────────────────
-  const activeCenter: LatLng = useMemo(() => {
+  const activeCenter: LatLng | null = useMemo(() => {
     if (locationMode === "manual" && searchLocation) {
       return { lat: searchLocation.latitude, lng: searchLocation.longitude };
     }
     if (userLocation) {
       return { lat: userLocation.latitude, lng: userLocation.longitude };
     }
-    return BENGALURU_FALLBACK;
+    return null;
   }, [locationMode, searchLocation, userLocation]);
-
-  const isUsingFallback = Boolean(userLocation?.isFallback);
 
   const centerLabel = useMemo(() => {
     if (locationMode === "manual" && searchLocation) {
       return `📍 ${searchLocation.displayName}`;
     }
-    return isUsingFallback
-      ? "📍 Bengaluru (Fallback Location)"
-      : "📍 Your Current Location (GPS)";
-  }, [locationMode, searchLocation, isUsingFallback]);
+    if (userLocation) {
+      return "📍 Your Current Location (GPS)";
+    }
+    return "📍 Location Access Required";
+  }, [locationMode, searchLocation, userLocation]);
 
   const centerSub = useMemo(() => {
     return `${t("nearby_within_radius")?.replace("{radius}", String(radius)) || `Within ${radius} km`}`;
@@ -397,17 +421,34 @@ export default function NearbyFacilitiesPage() {
 
   // ─── 5. Fetch Facilities Data from Active Center (AbortController Protected) ───
   useEffect(() => {
-    // DO NOT fetch places before location is known (Requirement 10)
-    if (!userLocation && !(locationMode === "manual" && searchLocation)) {
-      return;
+    if (!activeCenter) {
+      const timer = setTimeout(() => {
+        setFacilityData(null);
+        setLoadingFacilities(false);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
+    // GPS Jitter suppression: if center moved < 25m and radius is same, keep current facilities
+    if (
+      lastFetchedRef.current &&
+      lastFetchedRef.current.radius === radius
+    ) {
+      const distKm = calculateClientDistanceKm(
+        lastFetchedRef.current.lat,
+        lastFetchedRef.current.lng,
+        activeCenter.lat,
+        activeCenter.lng
+      );
+      if (distKm < 0.025) {
+        return;
+      }
     }
 
     let isSubscribed = true;
     const abortController = new AbortController();
 
-    const startTimer = setTimeout(() => {
-      if (isSubscribed) setLoadingFacilities(true);
-    }, 0);
+    setLoadingFacilities(true);
 
     facilityService
       .getNearbyFacilities({
@@ -422,6 +463,11 @@ export default function NearbyFacilitiesPage() {
       })
       .then((data) => {
         if (isSubscribed) {
+          lastFetchedRef.current = {
+            lat: activeCenter.lat,
+            lng: activeCenter.lng,
+            radius,
+          };
           setFacilityData(data);
           setLoadingFacilities(false);
         }
@@ -434,15 +480,10 @@ export default function NearbyFacilitiesPage() {
 
     return () => {
       isSubscribed = false;
-      clearTimeout(startTimer);
       abortController.abort();
     };
   }, [
-    userLocation,
-    locationMode,
-    searchLocation,
-    activeCenter.lat,
-    activeCenter.lng,
+    activeCenter,
     radius,
     typeFilter,
     bloodGroupFilter,
@@ -535,7 +576,7 @@ export default function NearbyFacilitiesPage() {
                   id="mode-auto-btn"
                   onClick={() => {
                     setLocationMode("auto");
-                    if (isUsingFallback) requestLocation(true);
+                    if (!userLocation) requestLocation(true);
                   }}
                   className={[
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all",
@@ -604,29 +645,44 @@ export default function NearbyFacilitiesPage() {
           {/* Subheader: Auto GPS info vs Manual Search Controls */}
           <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
             {locationMode === "auto" ? (
-              isUsingFallback ? (
+              geoLoading ? (
                 <div
                   role="status"
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 text-amber-800 dark:text-amber-300 text-xs sm:text-sm"
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 text-blue-800 dark:text-blue-300 text-xs sm:text-sm"
                 >
-                  <div className="flex items-center gap-2">
-                    <FiAlertCircle size={16} className="shrink-0 text-amber-600" />
+                  <FiLoader size={16} className="shrink-0 animate-spin text-blue-600" />
+                  <span>{t("nearby_loading_location") || "Detecting your real device GPS coordinates…"}</span>
+                </div>
+              ) : !userLocation ? (
+                <div
+                  role="alert"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 text-amber-900 dark:text-amber-200 text-xs sm:text-sm"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <FiAlertCircle size={18} className="shrink-0 text-amber-600" />
                     <span>
                       {geoError ||
-                        t("nearby_fallback_notice") ||
-                        "Bengaluru is currently being used as a fallback location because your current location could not be determined."}
+                        "Location access is required to show nearby hospitals and blood banks around your physical phone."}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
-                      onClick={() => requestLocation(true)}
-                      className="font-semibold underline hover:text-amber-900 dark:hover:text-amber-200 text-left sm:text-right"
+                      id="allow-location-btn"
+                      onClick={async () => {
+                        if (isNativePlatform()) {
+                          await requestDevicePermission();
+                        }
+                        requestLocation(true);
+                      }}
+                      className="font-semibold px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs shadow-sm transition-all cursor-pointer"
                     >
-                      {t("nearby_find_near_me") || "Enable Location"}
+                      {permissionState === "denied"
+                        ? "Retry / Allow Location"
+                        : t("nearby_find_near_me") || "Find Near Me"}
                     </button>
                     <button
                       onClick={() => setLocationMode("manual")}
-                      className="text-xs px-2.5 py-1 rounded-lg bg-amber-200/60 dark:bg-amber-900/60 font-medium hover:bg-amber-300/60 transition-colors"
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-200/80 dark:bg-amber-900/60 font-medium text-amber-900 dark:text-amber-100 hover:bg-amber-300/80 transition-colors"
                     >
                       {t("nearby_location_mode_manual") || "Search Manually"}
                     </button>
@@ -639,9 +695,9 @@ export default function NearbyFacilitiesPage() {
                       <FiCheckCircle size={14} className="shrink-0" />
                       <span>
                         {t("nearby_actual_location_notice") || "Showing facilities near your actual GPS location"} (
-                        {activeCenter.lat.toFixed(4)}, {activeCenter.lng.toFixed(4)})
-                        {userLocation?.accuracy && (
-                          <span className="ml-1 text-slate-500 font-normal">
+                        {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)})
+                        {userLocation.accuracy && (
+                          <span className="ml-1 text-slate-500 dark:text-slate-400 font-normal">
                             ±{Math.round(userLocation.accuracy)}m accuracy
                           </span>
                         )}
@@ -656,7 +712,7 @@ export default function NearbyFacilitiesPage() {
                   </div>
 
                   {/* Low GPS accuracy warning if > 500 meters */}
-                  {userLocation?.accuracy && userLocation.accuracy > 500 && (
+                  {userLocation.accuracy && userLocation.accuracy > 500 && (
                     <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/50 text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
                       <FiAlertCircle size={14} className="shrink-0 text-amber-600" />
                       <span>Your location accuracy is low (±{Math.round(userLocation.accuracy)}m). Move to an open area for better accuracy.</span>
@@ -797,7 +853,7 @@ export default function NearbyFacilitiesPage() {
                     <button
                       onClick={() => {
                         setLocationMode("auto");
-                        if (isUsingFallback) requestLocation(true);
+                        if (!userLocation) requestLocation(true);
                       }}
                       className="text-[11px] font-semibold text-red-700 dark:text-red-300 underline ml-3 shrink-0"
                     >
@@ -977,8 +1033,61 @@ export default function NearbyFacilitiesPage() {
               )}
             </div>
 
+            {/* When no active location center is available yet */}
+            {!activeCenter && (
+              geoLoading ? (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 text-center border border-slate-200/80 dark:border-slate-800 space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 mx-auto">
+                    <FiLoader size={24} className="animate-spin" />
+                  </div>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                    Detecting Device Location…
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                    Acquiring real-time GPS coordinates to find hospitals and blood banks within 5 km.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 text-center border border-slate-200/80 dark:border-slate-800 space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/50 flex items-center justify-center text-amber-600 mx-auto">
+                    <FiAlertCircle size={24} />
+                  </div>
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                    {permissionState === "denied"
+                      ? "Location Permission Denied"
+                      : "Location Access Required"}
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+                    {geoError ||
+                      "Allow location access on your device to discover real hospitals and blood banks within 5 km, or search an area manually."}
+                  </p>
+                  <div className="flex items-center justify-center gap-2 flex-wrap pt-2">
+                    <button
+                      onClick={async () => {
+                        if (isNativePlatform()) {
+                          await requestDevicePermission();
+                        }
+                        requestLocation(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
+                    >
+                      <FiCrosshair size={13} />
+                      <span>{permissionState === "denied" ? "Retry / Allow Location" : "Find Near Me"}</span>
+                    </button>
+                    <button
+                      onClick={() => setLocationMode("manual")}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-sm transition-all"
+                    >
+                      <FiSearch size={13} />
+                      <span>Search Manually</span>
+                    </button>
+                  </div>
+                </div>
+              )
+            )}
+
             {/* Loading Skeleton */}
-            {loadingFacilities && allFacilities.length === 0 && (
+            {activeCenter && loadingFacilities && allFacilities.length === 0 && (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 animate-pulse space-y-3">
@@ -994,7 +1103,7 @@ export default function NearbyFacilitiesPage() {
             )}
 
             {/* Empty State */}
-            {!loadingFacilities && allFacilities.length === 0 && (
+            {activeCenter && !loadingFacilities && allFacilities.length === 0 && (
               <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 text-center border border-slate-200/80 dark:border-slate-800 space-y-3">
                 <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/50 flex items-center justify-center text-red-500 mx-auto">
                   <FiMapPin size={24} />
@@ -1003,32 +1112,23 @@ export default function NearbyFacilitiesPage() {
                   No hospitals or blood banks found within {radius} km
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                  {t("nearby_no_results") || "Try increasing the search radius to 50 km or clearing filters."}
+                  {t("nearby_no_results") || "Try expanding the search radius or search a different area manually."}
                 </p>
                 <div className="flex items-center justify-center gap-2 flex-wrap">
                   {radius < 50 && (
                     <button
-                      onClick={() => setRadius(50)}
+                      onClick={() => setRadius(radius === 5 ? 10 : radius === 10 ? 20 : 50)}
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm transition-all"
                     >
-                      Increase to 50 km
+                      Expand to {radius === 5 ? 10 : radius === 10 ? 20 : 50} km
                     </button>
                   )}
-                  {locationMode === "auto" && !isUsingFallback && (
-                    <button
-                      onClick={() => {
-                        setUserLocation({
-                          latitude: BENGALURU_FALLBACK.lat,
-                          longitude: BENGALURU_FALLBACK.lng,
-                          isFallback: true,
-                          timestamp: Date.now(),
-                        });
-                      }}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-sm transition-all"
-                    >
-                      View Bengaluru Hub
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setLocationMode("manual")}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-sm transition-all"
+                  >
+                    Search Another Area
+                  </button>
                 </div>
               </div>
             )}
@@ -1201,11 +1301,11 @@ export default function NearbyFacilitiesPage() {
 
           {/* ── Right Column: Interactive Map (Desktop 7 cols, Mobile top) ── */}
           <div className="order-1 lg:order-2 lg:col-span-7">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-3 sm:p-4 shadow-sm border border-slate-200/80 dark:border-slate-800 sticky top-20">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-3 sm:p-4 shadow-sm border border-slate-200/80 dark:border-slate-800 lg:sticky lg:top-20">
               <div className="h-[400px] sm:h-[520px] lg:h-[620px] w-full rounded-2xl overflow-hidden">
                 <MapContainer
-                  center={activeCenter}
-                  zoom={13}
+                  center={activeCenter ?? INDIA_DEFAULT_CENTER}
+                  zoom={activeCenter ? 13 : 5}
                   height="h-full"
                   className="w-full"
                   userLocation={userLocation}

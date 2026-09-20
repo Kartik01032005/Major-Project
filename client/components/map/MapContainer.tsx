@@ -368,7 +368,7 @@ function LeafletMapInner({
   );
 
   return (
-    <div className={`relative ${height} ${className} rounded-2xl overflow-hidden shadow-inner border border-slate-200 dark:border-slate-800`}>
+    <div className={`relative ${height} ${className} isolate z-0 rounded-2xl overflow-hidden shadow-inner border border-slate-200 dark:border-slate-800`}>
       <ReactLeafletMap
         center={[center.lat, center.lng]}
         zoom={zoom}

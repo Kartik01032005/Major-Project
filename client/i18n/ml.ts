@@ -279,6 +279,8 @@ const ml: Translations = {
   notifications_empty_title: "ഇനി അറിയിപ്പുകൾ ഇല്ല",
   notifications_empty_sub: "അഭ്യർഥന അപ്ഡേറ്റുകൾ ഇവിടെ അറിയിക്കും.",
   notifications_unread: "വായിക്കാത്തത്",
+
+
   emergency_title: "അടിയന്തര രക്ത അഭ്യർഥന",
   emergency_subtitle: "സമീപ ദാതാക്കളെ ഉടൻ അറിയിക്കും",
   emergency_blood_group_label: "ആവശ്യമുള്ള രക്ത ഗ്രൂപ്പ് *",

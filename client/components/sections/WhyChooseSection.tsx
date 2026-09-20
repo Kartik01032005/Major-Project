@@ -66,7 +66,7 @@ export default function WhyChooseSection() {
     <section
       id="why-choose"
       aria-label="Why Choose BloodLink"
-      className="section-padding bg-white dark:bg-slate-950"
+      className="section-padding bg-slate-50 dark:bg-slate-900/50"
     >
       <div className="container-custom">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">

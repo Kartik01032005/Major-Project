@@ -313,6 +313,7 @@ const en: Translations = {
   notifications_empty_sub: "You'll be notified about request updates here.",
   notifications_unread: "Unread",
 
+
   // ── Emergency Request Modal ───────────────────────────────────────────────────
   emergency_title: "Emergency Blood Request",
   emergency_subtitle: "Nearby donors will be notified instantly",
@@ -474,7 +475,7 @@ const en: Translations = {
   nearby_page_title: "Nearby Hospitals & Blood Banks",
   nearby_page_subtitle: "Find emergency facilities, blood banks, and live stock near your location",
   nearby_find_near_me: "Find Near Me",
-  nearby_fallback_notice: "Bengaluru is currently being used as a fallback location because your current location could not be determined.",
+  nearby_fallback_notice: "Location could not be determined. Please enable location permissions or search an area manually.",
   nearby_actual_location_notice: "Showing facilities near your actual location",
   nearby_search_radius: "Search Radius",
   nearby_within_radius: "Within {radius} km",
@@ -495,7 +496,7 @@ const en: Translations = {
   nearby_loading_location: "Detecting your location…",
   nearby_loading_facilities: "Finding nearby facilities…",
   nearby_loading_map: "Loading interactive map…",
-  nearby_err_location_denied: "Location access was denied. Showing Bengaluru as default.",
+  nearby_err_location_denied: "Location access was denied. Please enable location permissions to find facilities near you.",
   nearby_err_generic: "Unable to retrieve facilities. Please check your connection and try again.",
   nearby_location_mode_auto: "Automatic Location",
   nearby_location_mode_manual: "Search Location Manually",

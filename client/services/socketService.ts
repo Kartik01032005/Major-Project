@@ -1,14 +1,32 @@
 import { io, Socket } from "socket.io-client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
-const SOCKET_URL = API_URL.replace(/\/api\/?$/, "");
+function getSocketUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (
+    envUrl &&
+    !envUrl.includes("localhost") &&
+    !envUrl.includes("127.0.0.1")
+  ) {
+    return envUrl.replace(/\/api\/?$/, "");
+  }
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+  ) {
+    return `${window.location.protocol}//${window.location.hostname}:5000`;
+  }
+  return (envUrl ?? "http://localhost:5000/api").replace(/\/api\/?$/, "");
+}
 
 let socket: Socket | null = null;
 
 export const socketService = {
   connect: (userId?: string): Socket => {
     if (!socket) {
-      socket = io(SOCKET_URL, {
+      const socketUrl = getSocketUrl();
+      socket = io(socketUrl, {
         transports: ["websocket", "polling"],
         autoConnect: true,
         reconnection: true,

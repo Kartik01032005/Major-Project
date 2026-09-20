@@ -227,7 +227,15 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
     await user.save();
 
     // Construct reset link
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const origin = req.get("origin");
+    const allowed = [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://10.62.127.58:3000",
+      ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",").map((s) => s.trim()) : [])
+    ];
+    const defaultClient = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",")[0].trim() : "http://localhost:3000";
+    const clientUrl = (origin && allowed.includes(origin)) ? origin : defaultClient;
     const resetUrl = `${clientUrl}/reset-password?token=${resetToken}`;
 
     // Send email safely through Nodemailer

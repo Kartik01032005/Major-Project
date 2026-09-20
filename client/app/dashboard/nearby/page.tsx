@@ -123,9 +123,10 @@ export default function NearbyPage() {
     });
   }, [search, bgFilter, showOpenOnly]);
 
-  const mapCenter = selectedId
-    ? BLOOD_BANKS.find((b) => b.id === selectedId)?.position ?? position
-    : position;
+  const mapCenter =
+    (selectedId ? BLOOD_BANKS.find((b) => b.id === selectedId)?.position : null) ??
+    position ??
+    BLOOD_BANKS[0].position;
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -178,7 +179,7 @@ export default function NearbyPage() {
             ].join(" ")}>
               <FiAlertCircle size={14} className="mt-0.5 flex-shrink-0" />
               <span>
-                {geoError ?? "Showing Bengaluru as default location. Click \"Find Near Me\" to use your actual location."}
+                {geoError ?? "Device location not detected yet. Click \"Find Near Me\" to use your actual GPS location."}
               </span>
             </div>
           </motion.div>
@@ -385,7 +386,7 @@ export default function NearbyPage() {
             zoom={selectedId ? 15 : 12}
             height="h-full min-h-[320px] lg:min-h-[calc(100vh-12rem)]"
             bloodBanks={filtered}
-            userPosition={isUsingDefault ? null : position}
+            userPosition={position}
             onBloodBankSelect={(bank: MapBloodBank) => setSelectedId(bank.id)}
           />
         </div>

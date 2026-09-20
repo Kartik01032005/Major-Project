@@ -14,21 +14,53 @@ interface LanguageSelectorProps {
 export default function LanguageSelector({ className = "", isMobileDrawer = false }: LanguageSelectorProps) {
   const { locale, setLocale } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
+  const [openUpward, setOpenUpward] = useState(isMobileDrawer);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const restoreFocusRef = useRef(false);
 
-  // Close dropdown on outside click
+  // Calculate upward or downward placement
+  const determineDirection = () => {
+    if (isMobileDrawer) {
+      setOpenUpward(true);
+      return;
+    }
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      setOpenUpward(spaceBelow < 280 && spaceAbove > spaceBelow);
+    }
+  };
+
+  // Close dropdown on outside click or touch
   useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
+    const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
   }, []);
+
+  // Ensure selected language is visible when dropdown opens
+  useEffect(() => {
+    if (isOpen) {
+      const selectedIndex = LOCALES.findIndex((l) => l.code === locale);
+      if (selectedIndex !== -1) {
+        const el = optionRefs.current[selectedIndex];
+        if (el && typeof el.scrollIntoView === "function") {
+          el.scrollIntoView({ block: "nearest" });
+        }
+      }
+    }
+  }, [isOpen, locale]);
 
   const currentLocaleInfo = LOCALES.find((l) => l.code === locale) || LOCALES[0];
 
@@ -41,9 +73,15 @@ export default function LanguageSelector({ className = "", isMobileDrawer = fals
     optionRefs.current[index]?.focus();
   };
 
+  const toggleDropdown = () => {
+    determineDirection();
+    setIsOpen((prev) => !prev);
+  };
+
   const handleTriggerKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
+      determineDirection();
       setIsOpen(true);
       requestAnimationFrame(() => focusOption(event.key === "ArrowDown" ? 0 : LOCALES.length - 1));
     }
@@ -74,10 +112,10 @@ export default function LanguageSelector({ className = "", isMobileDrawer = fals
     <div className={`relative inline-block text-left ${className}`} ref={dropdownRef}>
       {/* Trigger Button */}
       <button
-        id="language-selector-btn"
+        id={isMobileDrawer ? "mobile-drawer-language-selector-btn" : "language-selector-btn"}
         ref={triggerRef}
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={toggleDropdown}
         onKeyDown={handleTriggerKeyDown}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -115,18 +153,22 @@ export default function LanguageSelector({ className = "", isMobileDrawer = fals
       >
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: isMobileDrawer ? 4 : 8, scale: 0.96 }}
+            initial={{ opacity: 0, y: openUpward ? -4 : (isMobileDrawer ? 4 : 8), scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: isMobileDrawer ? 4 : 8, scale: 0.96 }}
+            exit={{ opacity: 0, y: openUpward ? -4 : (isMobileDrawer ? 4 : 8), scale: 0.97 }}
             transition={{ duration: 0.15 }}
             className={[
-              "absolute z-50 mt-1 py-1 rounded-xl shadow-xl",
+              "absolute z-50 py-1 rounded-xl shadow-xl",
               "bg-white dark:bg-slate-900",
               "border border-slate-200 dark:border-slate-800",
-              isMobileDrawer
-                ? "left-0 right-0 top-full mt-1"
-                : "right-0 top-full w-44",
+              "overflow-y-auto overscroll-contain",
+              openUpward
+                ? "bottom-full mb-2 left-0 right-0 max-h-[min(280px,calc(100dvh-200px))]"
+                : isMobileDrawer
+                ? "top-full mt-1 left-0 right-0 max-h-[min(280px,calc(100dvh-200px))]"
+                : "top-full mt-1 right-0 w-44 max-h-80",
             ].join(" ")}
+            style={{ WebkitOverflowScrolling: "touch" }}
             role="listbox"
             aria-label="Language options"
           >
@@ -143,7 +185,7 @@ export default function LanguageSelector({ className = "", isMobileDrawer = fals
                   onClick={() => handleSelect(loc.code)}
                   onKeyDown={(event) => handleOptionKeyDown(event, index)}
                   className={[
-                    "w-full flex items-center justify-between px-3.5 py-2 text-sm text-left transition-colors",
+                    "w-full flex items-center justify-between px-3.5 py-2.5 text-sm text-left transition-colors",
                     isSelected
                       ? "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 font-semibold"
                       : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800",

@@ -279,6 +279,8 @@ const hi: Translations = {
   notifications_empty_title: "अभी कोई सूचना नहीं है",
   notifications_empty_sub: "अनुरोध अपडेट आपको यहां प्राप्त होंगे।",
   notifications_unread: "अपठित",
+
+
   emergency_title: "आपातकालीन रक्त अनुरोध",
   emergency_subtitle: "आस-पास के रक्तदाताओं को तुरंत सूचित किया जाएगा",
   emergency_blood_group_label: "आवश्यक रक्त समूह *",

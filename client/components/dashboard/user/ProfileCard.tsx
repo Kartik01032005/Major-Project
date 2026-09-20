@@ -222,7 +222,7 @@ export default function ProfileCard() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className={[
                 "fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-                "w-full max-w-md p-6 mx-4",
+                "w-[calc(100vw-2rem)] max-w-md p-6",
                 "bg-white dark:bg-slate-900 rounded-2xl shadow-2xl",
                 "border border-slate-200 dark:border-slate-800",
               ].join(" ")}

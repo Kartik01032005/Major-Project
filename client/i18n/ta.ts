@@ -280,6 +280,8 @@ const ta: Translations = {
   notifications_empty_title: "இன்னும் அறிவிப்புகள் இல்லை",
   notifications_empty_sub: "கோரிக்கை புதுப்பிப்புகளை இங்கே தெரிவிப்போம்.",
   notifications_unread: "படிக்காதது",
+
+
   emergency_title: "அவசர ரத்த கோரிக்கை",
   emergency_subtitle: "அருகிலுள்ள தானிகளுக்கு உடனடியாக அறிவிக்கப்படும்",
   emergency_blood_group_label: "தேவையான ரத்தக் குழு *",

@@ -18,7 +18,7 @@ export default function Footer() {
 
   const quickLinks = [
     { label: t("nav_home"), href: "/" },
-    { label: t("nav_features"), href: "/#features" },
+    { label: t("nav_nearby"), href: "/nearby" },
     { label: t("nav_how_it_works"), href: "/#how-it-works" },
     { label: t("nav_about"), href: "/#about" },
   ];

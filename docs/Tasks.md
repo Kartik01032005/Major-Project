@@ -269,12 +269,9 @@
 
 # Future Enhancements
 
-- [ ] Push Notifications
 - [ ] AI Blood Demand Prediction
 - [ ] SMS Notifications
 - [ ] Email Notifications
-- [ ] Progressive Web App (PWA)
-- [ ] Mobile App
 
 ---
 
@@ -418,8 +415,23 @@ Update TASKS.md and relevant documentation after completion.
 - [ ] Performance testing
 
 
+## Website Quality & Release Readiness
+
+- [x] Custom 404 Page (`client/app/not-found.tsx` with BloodLink branding & return navigation)
+- [x] Page-Specific Meta Titles (configured across all routes via App Router layouts)
+- [x] Page-Specific Meta Descriptions (accurate, non-keyword-stuffed descriptions for public routes)
+- [x] Favicon & Touch Icon Set (`favicon.ico`, `icon.tsx` 32x32 PNG, `apple-icon.tsx` 180x180 PNG)
+- [x] robots.txt (`client/app/robots.ts` with public indexing and dashboard/api protection)
+- [x] sitemap.xml (`client/app/sitemap.ts` with public routes and canonical URL)
+- [x] Open Graph & Twitter Card Metadata (`client/app/opengraph-image.tsx` 1200x630 card)
+- [x] Alt Text & Accessibility Audit (semantic controls, aria labels, no generic 'image' text)
+- [x] Image Optimization Audit (SVG vectors and lightweight assets)
+- [x] Privacy Policy Page (`/privacy` and `/privacy-policy` with genuine project facts)
+- [x] Terms & Conditions Page (`/terms` and `/terms-and-conditions` with emergency medical disclaimer)
+- [x] Genuine Contact Information (`support@bloodlink.in`, `+91 1800-000-0000`, Mysore, Karnataka)
+
 ---
 
 ## Product Scope
 
-gitBloodLink Mobile/React Native development was discontinued. The project now maintains the web application as the primary product.
+BloodLink maintains a modern Next.js web application and Android APK testing bundle powered by Capacitor.

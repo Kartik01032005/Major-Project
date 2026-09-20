@@ -67,3 +67,4 @@ export const markRead = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ success: false, message: "Server error during notification update" });
   }
 };
+

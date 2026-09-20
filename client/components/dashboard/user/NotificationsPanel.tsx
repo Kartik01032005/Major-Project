@@ -42,7 +42,7 @@ export default function NotificationsPanel() {
       className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-4 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <span className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/40 flex items-center justify-center text-red-600">
             <FiBell size={15} />
@@ -54,15 +54,19 @@ export default function NotificationsPanel() {
             </span>
           )}
         </div>
-        {unreadCount > 0 && (
-          <button
-            onClick={markAllRead}
-            className="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:underline"
-          >
-            <FiCheck size={12} /> {t("notifications_mark_all")}
-          </button>
-        )}
+
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          {unreadCount > 0 && (
+            <button
+              onClick={markAllRead}
+              className="flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:underline"
+            >
+              <FiCheck size={12} /> {t("notifications_mark_all")}
+            </button>
+          )}
+        </div>
       </div>
+
 
       {/* List */}
       {notifications.length === 0 ? (

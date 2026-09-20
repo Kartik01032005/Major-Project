@@ -313,6 +313,8 @@ const kn: Translations = {
   notifications_empty_sub: "ವಿನಂತಿ ಅಪ್‌ಡೇಟ್‌ಗಳ ಬಗ್ಗೆ ಇಲ್ಲಿ ತಿಳಿಸಲಾಗುತ್ತದೆ.",
   notifications_unread: "ಓದಿಲ್ಲ",
 
+
+
   // ── Emergency Request Modal ───────────────────────────────────────────────────
   emergency_title: "ತುರ್ತು ರಕ್ತ ವಿನಂತಿ",
   emergency_subtitle: "ಹತ್ತಿರದ ದಾನಿಗಳಿಗೆ ತಕ್ಷಣ ತಿಳಿಸಲಾಗುತ್ತದೆ",

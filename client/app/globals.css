@@ -116,6 +116,7 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
 body {
@@ -126,6 +127,7 @@ body {
   line-height: 1.65;
   letter-spacing: -0.01em;
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  overflow-x: hidden;
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────────────── */

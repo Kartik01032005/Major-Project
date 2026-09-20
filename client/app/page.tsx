@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import HeroSection from "@/components/sections/HeroSection";
 import AboutSection from "@/components/sections/AboutSection";
-import FeaturesSection from "@/components/sections/FeaturesSection";
 import HowItWorksSection from "@/components/sections/HowItWorksSection";
 import WhyChooseSection from "@/components/sections/WhyChooseSection";
 import StatsSection from "@/components/sections/StatsSection";
@@ -18,7 +17,6 @@ export default function HomePage() {
     <main>
       <HeroSection />
       <AboutSection />
-      <FeaturesSection />
       <HowItWorksSection />
       <WhyChooseSection />
       <StatsSection />

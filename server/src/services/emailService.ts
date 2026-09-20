@@ -21,6 +21,9 @@ export function createTransporter(): Transporter | null {
         user,
         pass,
       },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
     });
   }
 
@@ -49,14 +52,23 @@ export async function verifyTransporter(): Promise<boolean> {
     return false;
   }
 
-  try {
-    await transporter.verify();
-    console.log("✅ [Email Service] Gmail SMTP connection established and verified successfully.");
-    return true;
-  } catch (error: any) {
-    console.error("❌ [Email Service] SMTP connection verification failed:", error.message || "Unknown error");
-    return false;
+  const maxAttempts = 2;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      await transporter.verify();
+      console.log("✅ [Email Service] Gmail SMTP connection established and verified successfully.");
+      return true;
+    } catch (error: any) {
+      if (attempt < maxAttempts && (error.message?.includes("Connection closed") || error.code === "ECONNECTION")) {
+        await new Promise((res) => setTimeout(res, 1500));
+        continue;
+      }
+      console.error("❌ [Email Service] SMTP connection verification failed:", error.message || "Unknown error");
+      return false;
+    }
   }
+
+  return false;
 }
 
 export const emailService = {

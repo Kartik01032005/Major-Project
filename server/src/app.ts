@@ -19,8 +19,10 @@ app.set("trust proxy", process.env.TRUST_PROXY === "true" ? 1 : 0);
 const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
+  "http://10.62.127.58:3000",
   "http://localhost:5000",
   "http://127.0.0.1:5000",
+  "http://10.62.127.58:5000",
   ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",").map((s) => s.trim()) : [])
 ];
 

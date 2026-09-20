@@ -5,13 +5,26 @@ let io: SocketIOServer | null = null;
 const userSockets = new Map<string, string>(); // userId -> socketId
 
 export const initSocket = (server: HttpServer): SocketIOServer => {
-  const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:3000")
-    .split(",")
-    .map((origin) => origin.trim());
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://10.62.127.58:3000",
+    ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",").map((s) => s.trim()) : [])
+  ];
+
   io = new SocketIOServer(server, {
     cors: {
-      origin: allowedOrigins,
-      methods: ["GET", "POST", "PUT", "DELETE"]
+      origin: (origin, callback) => {
+        if (!origin || process.env.NODE_ENV !== "production") {
+          return callback(null, true);
+        }
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error("CORS origin not allowed"), false);
+      },
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      credentials: true
     }
   });
 

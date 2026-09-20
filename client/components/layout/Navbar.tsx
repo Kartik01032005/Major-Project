@@ -4,7 +4,15 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMenu, FiX, FiArrowRight, FiMapPin } from "react-icons/fi";
+import {
+  FiMenu,
+  FiX,
+  FiArrowRight,
+  FiMapPin,
+  FiHome,
+  FiMap,
+  FiInfo,
+} from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import Button from "@/components/ui/Button";
 import { useAuth, useTranslation } from "@/context";
@@ -17,36 +25,118 @@ export default function Navbar() {
   const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
+  const dashboardHref = user?.role === "admin" ? "/dashboard/admin" : "/dashboard";
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      return window.location.hash;
+    }
+    return "";
+  });
   const [prevPathname, setPrevPathname] = useState(pathname);
+
   if (prevPathname !== pathname) {
     setPrevPathname(pathname);
     setMobileOpen(false);
   }
 
+  // Synchronize active section with URL hash and homepage scroll position
+  useEffect(() => {
+    if (pathname !== "/") return;
+
+    const syncSectionFromHash = () => {
+      const hash = window.location.hash;
+      if (hash === "#how-it-works" || hash === "#about") {
+        setActiveSection(hash);
+      } else {
+        setActiveSection("");
+      }
+    };
+
+    const onScroll = () => {
+      setScrolled(window.scrollY > 16);
+
+      // Homepage scroll spy for sections
+      if (window.scrollY < 200 && !window.location.hash) {
+        setActiveSection("");
+        return;
+      }
+
+      const sections = ["about", "how-it-works"];
+      const scrollPosition = window.scrollY + 160;
+
+      for (const id of sections) {
+        const el = document.getElementById(id);
+        if (el && scrollPosition >= el.offsetTop) {
+          setActiveSection(`#${id}`);
+          return;
+        }
+      }
+
+      if (window.scrollY < 200) {
+        setActiveSection("");
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("hashchange", syncSectionFromHash);
+    window.addEventListener("popstate", syncSectionFromHash);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("hashchange", syncSectionFromHash);
+      window.removeEventListener("popstate", syncSectionFromHash);
+    };
+  }, [pathname]);
+
+  const isLinkActive = (href: string) => {
+    if (pathname === "/nearby") {
+      return href === "/nearby";
+    }
+    if (pathname === "/") {
+      if (activeSection === "#how-it-works") return href === "/#how-it-works";
+      if (activeSection === "#about") return href === "/#about";
+      return href === "/";
+    }
+    return pathname === href;
+  };
+
   const navLinks = [
-    { label: t("nav_home"), href: "/" },
-    { label: t("nav_features"), href: "/#features" },
+    {
+      label: t("nav_home"),
+      href: "/",
+      mobileIcon: <FiHome size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
     {
       label: t("nav_nearby"),
       href: "/nearby",
-      icon: <FiMapPin size={15} className="text-red-600 shrink-0" aria-hidden="true" />,
+      desktopIcon: <FiMapPin size={15} className="text-red-600 shrink-0" aria-hidden="true" />,
+      mobileIcon: <FiMapPin size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
     },
-    { label: t("nav_how_it_works"), href: "/#how-it-works" },
-    { label: t("nav_about"), href: "/#about" },
+    {
+      label: t("nav_how_it_works"),
+      href: "/#how-it-works",
+      mobileIcon: <FiMap size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("nav_about"),
+      href: "/#about",
+      mobileIcon: <FiInfo size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
   ];
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    if (mobileOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
   }, [mobileOpen]);
+
+  const isHome = pathname === "/";
+  const hasSolidNav = !isHome || scrolled;
 
   return (
     <>
@@ -54,12 +144,12 @@ export default function Navbar() {
         role="banner"
         className={[
           "fixed inset-x-0 top-0 z-50 transition-all duration-300",
-          scrolled
-            ? "bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 shadow-sm"
-            : "bg-transparent",
+          hasSolidNav
+            ? "bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs"
+            : "bg-transparent border-b border-transparent",
         ].join(" ")}
       >
-        <div className="container-custom navbar-container">
+        <div className="container-custom navbar-container max-sm:px-3">
           <nav
             className="flex items-center justify-between h-16"
             aria-label="Main navigation"
@@ -67,7 +157,7 @@ export default function Navbar() {
             {/* ── Logo ─────────────────────────────────────────── */}
             <Link
               href="/"
-              className="flex shrink-0 items-center gap-2.5 group outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg"
+              className="flex shrink-0 items-center gap-2 sm:gap-2.5 group outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg"
               aria-label="BloodLink – Home"
             >
               <motion.div
@@ -75,13 +165,13 @@ export default function Navbar() {
                 transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
                 className="text-red-600 group-hover:text-red-700 transition-colors"
               >
-                <FaDroplet size={20} aria-hidden="true" />
+                <FaDroplet size={18} className="sm:w-5 sm:h-5" aria-hidden="true" />
               </motion.div>
               <div className="flex items-baseline gap-0">
-                <span className="text-[17px] font-bold tracking-tight text-slate-900 dark:text-white">
+                <span className="text-[16px] sm:text-[17px] font-bold tracking-tight text-slate-900 dark:text-white">
                   Blood
                 </span>
-                <span className="text-[17px] font-bold tracking-tight text-red-600">
+                <span className="text-[16px] sm:text-[17px] font-bold tracking-tight text-red-600">
                   Link
                 </span>
               </div>
@@ -90,7 +180,7 @@ export default function Navbar() {
             {/* ── Desktop Links ─────────────────────────────────── */}
             <ul className="hidden md:flex flex-1 min-w-0 items-center justify-center gap-0.5 px-4" role="list">
               {navLinks.map((link) => {
-                const active = pathname === link.href;
+                const active = isLinkActive(link.href);
                 return (
                   <li key={link.href} className="flex-none">
                     <Link
@@ -103,7 +193,7 @@ export default function Navbar() {
                           : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/70 dark:hover:bg-slate-800/70",
                       ].join(" ")}
                     >
-                      {link.icon}
+                      {link.desktopIcon}
                       <span>{link.label}</span>
                       {active && (
                         <motion.span
@@ -128,7 +218,7 @@ export default function Navbar() {
                     {t("nav_hello")}{" "}
                     <span className="font-semibold text-slate-900 dark:text-white">{user.name.split(" ")[0]}</span>
                   </span>
-                  <Button variant="outline" size="sm" href="/dashboard">
+                  <Button variant="outline" size="sm" href={dashboardHref}>
                     {t("nav_dashboard")}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => { logout(); router.push("/"); }}>
@@ -153,14 +243,42 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* ── Hamburger ─────────────────────────────────────── */}
-            <div className="md:hidden flex items-center gap-2">
-              <LanguageSelector />
-              <ThemeToggle />
+            {/* ── Mobile Right Actions & Hamburger ─────────────────── */}
+            <div className="md:hidden flex items-center gap-1.5 sm:gap-2">
+              {user ? (
+                <>
+                  <ThemeToggle />
+                  <span className="hidden min-[360px]:inline-flex items-center text-xs text-slate-500 dark:text-slate-400 font-medium truncate max-w-[80px] min-[390px]:max-w-[110px]">
+                    <span className="truncate">
+                      {t("nav_hello")}{" "}
+                      <strong className="font-semibold text-slate-900 dark:text-white">
+                        {user.name.split(" ")[0]}
+                      </strong>
+                    </span>
+                  </span>
+                  <Link
+                    href={dashboardHref}
+                    id="mobile-nav-dashboard-btn"
+                    className={[
+                      "inline-flex items-center justify-center h-8 px-2.5 sm:px-3 rounded-xl text-xs font-semibold transition-all duration-150 outline-none shrink-0",
+                      "text-red-600 dark:text-red-400 border border-red-600/40 hover:border-red-600 hover:bg-red-50 dark:hover:bg-red-950/40",
+                      "active:scale-95 focus-visible:ring-2 focus-visible:ring-red-500",
+                    ].join(" ")}
+                    aria-label={t("nav_dashboard") || "Dashboard"}
+                  >
+                    <span>{t("nav_dashboard") || "Dashboard"}</span>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <LanguageSelector />
+                  <ThemeToggle />
+                </>
+              )}
               <button
                 id="mobile-menu-toggle"
                 className={[
-                  "w-9 h-9 flex items-center justify-center rounded-lg transition-colors",
+                  "w-9 h-9 flex items-center justify-center rounded-lg transition-colors shrink-0",
                   "text-slate-600 hover:text-slate-900 hover:bg-slate-100",
                   "dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
@@ -225,14 +343,15 @@ export default function Navbar() {
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 350, damping: 32 }}
               className={[
-                "fixed top-0 right-0 bottom-0 z-50 w-[280px]",
+                "fixed top-0 right-0 z-50 w-[280px]",
+                "h-screen h-[100dvh] max-h-[100dvh]",
                 "bg-white dark:bg-slate-950",
                 "border-l border-slate-200 dark:border-slate-800",
                 "flex flex-col shadow-2xl md:hidden",
               ].join(" ")}
             >
               {/* Drawer Header */}
-              <div className="flex items-center justify-between h-16 px-5 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between h-16 px-5 border-b border-slate-100 dark:border-slate-800 shrink-0">
                 <div className="flex items-center gap-2">
                   <FaDroplet size={18} className="text-red-600" aria-hidden="true" />
                   <span className="font-bold text-base text-slate-900 dark:text-white tracking-tight">
@@ -240,7 +359,7 @@ export default function Navbar() {
                   </span>
                 </div>
                 <button
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   onClick={() => setMobileOpen(false)}
                   aria-label={t("nav_close_menu")}
                 >
@@ -249,34 +368,54 @@ export default function Navbar() {
               </div>
 
               {/* Drawer Links */}
-              <nav className="flex-1 overflow-y-auto p-3">
-                {navLinks.map((link, i) => (
-                  <motion.div
-                    key={link.href}
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.06 + 0.1 }}
-                  >
-                    <Link
-                      href={link.href}
-                      className={[
-                        "flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium mb-1 transition-colors",
-                        pathname === link.href
-                          ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
-                          : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white",
-                      ].join(" ")}
-                      onClick={() => setMobileOpen(false)}
+              <nav
+                className="flex-1 overflow-y-auto min-h-0 p-3 overscroll-contain"
+                style={{ WebkitOverflowScrolling: "touch" }}
+              >
+                {navLinks.map((link, i) => {
+                  const active = isLinkActive(link.href);
+                  return (
+                    <motion.div
+                      key={link.href}
+                      initial={{ opacity: 0, x: 16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.06 + 0.1 }}
                     >
-                      {link.icon}
-                      <span>{link.label}</span>
-                    </Link>
-                  </motion.div>
-                ))}
+                      <Link
+                        href={link.href}
+                        className={[
+                          "group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium mb-1 transition-colors",
+                          active
+                            ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400 font-semibold"
+                            : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white",
+                        ].join(" ")}
+                        onClick={() => {
+                          if (link.href.includes("#")) {
+                            setActiveSection(link.href.replace("/", ""));
+                          } else {
+                            setActiveSection("");
+                          }
+                          setMobileOpen(false);
+                        }}
+                      >
+                        <span className="w-5 flex items-center justify-center shrink-0">
+                          {link.mobileIcon}
+                        </span>
+                        <span className="leading-snug">{link.label}</span>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
               </nav>
 
               {/* Drawer Footer CTA */}
-              <div className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                <div className="pb-2">
+              <div
+                className="p-4 border-t border-slate-100 dark:border-slate-800 space-y-2 shrink-0"
+                style={{
+                  paddingBottom: "max(1rem, env(safe-area-inset-bottom, 1rem))",
+                }}
+              >
+                <div className="pb-1">
                   <LanguageSelector isMobileDrawer className="w-full" />
                 </div>
                 {user ? (
@@ -284,7 +423,7 @@ export default function Navbar() {
                     <div className="px-4 py-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
                       {t("nav_logged_in_as")} <span className="font-semibold text-slate-900 dark:text-white">{user.name}</span>
                     </div>
-                    <Button variant="primary" size="md" href="/dashboard" fullWidth onClick={() => setMobileOpen(false)}>
+                    <Button variant="primary" size="md" href={dashboardHref} fullWidth onClick={() => setMobileOpen(false)}>
                       {t("nav_dashboard")}
                     </Button>
                     <Button variant="outline" size="md" onClick={() => { logout(); setMobileOpen(false); router.push("/"); }} fullWidth>

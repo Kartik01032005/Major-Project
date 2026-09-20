@@ -46,7 +46,7 @@ export default function HowItWorksSection() {
     <section
       id="how-it-works"
       aria-label="How BloodLink Works"
-      className="section-padding bg-slate-50 dark:bg-slate-900/50"
+      className="section-padding bg-white dark:bg-slate-950"
     >
       <div className="container-custom">
 

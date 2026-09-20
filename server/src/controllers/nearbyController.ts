@@ -307,9 +307,18 @@ async function fetchRealOSMPlaces(
 // ─── Main Controller: getNearbyFacilities ─────────────────────────────────────
 export const getNearbyFacilities = async (req: Request, res: Response): Promise<void> => {
   try {
-    const lat = parseFloat(req.query.lat as string) || 12.9716;
-    const lng = parseFloat(req.query.lng as string) || 77.5946;
-    const radiusKm = Math.min(Math.max(parseFloat(req.query.radius as string) || 30, 1), 100);
+    const lat = parseFloat(req.query.lat as string);
+    const lng = parseFloat(req.query.lng as string);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      res.status(400).json({
+        success: false,
+        message: "Valid lat and lng query parameters are required for nearby facilities search.",
+      });
+      return;
+    }
+
+    const radiusKm = Math.min(Math.max(parseFloat(req.query.radius as string) || 5, 1), 100);
     const filterType = (req.query.type as string) || "all";
     const bloodGroup = (req.query.bloodGroup as string) || "";
     const openNowOnly = req.query.openNow === "true";

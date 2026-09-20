@@ -4,6 +4,8 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
+import { AuthProvider, LanguageProvider } from "@/context";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -11,6 +13,8 @@ const inter = Inter({
   display: "swap",
   preload: true,
 });
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://bloodlink.vercel.app";
 
 export const metadata: Metadata = {
   title: {
@@ -30,23 +34,44 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Kartik Nilekani" }],
   creator: "Kartik Nilekani",
-  metadataBase: new URL("https://bloodlink.vercel.app"),
+  metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "BloodLink – Smart Blood Donor Finder",
     description:
       "Find blood donors and blood banks in real time. Save lives with BloodLink.",
-    url: "https://bloodlink.vercel.app",
+    url: siteUrl,
     siteName: "BloodLink",
+    locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "BloodLink – Smart Blood Donor Finder",
     description: "Find blood donors and blood banks in real time. Save lives with BloodLink.",
+    creator: "@KartikNilekani",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-icon", sizes: "180x180", type: "image/png" },
+    ],
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
@@ -59,9 +84,6 @@ export const viewport: Viewport = {
   ],
 };
 
-import { AuthProvider, LanguageProvider } from "@/context";
-import Chatbot from "@/components/chatbot/Chatbot";
-
 interface RootLayoutProps {
   children: React.ReactNode;
 }
@@ -69,7 +91,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning data-scroll-behavior="smooth">
-      <body className="min-h-screen flex flex-col antialiased">
+      <body className="min-h-screen flex flex-col antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>

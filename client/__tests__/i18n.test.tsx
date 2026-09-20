@@ -240,7 +240,7 @@ describe("Multilingual i18n Suite", () => {
     for (const locale of LOCALES) {
       fireEvent.click(screen.getByRole("button", { name: locale.code }));
       expect(screen.getByRole("link", { name: translations[locale.code].nav_home })).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: translations[locale.code].nav_features })).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: new RegExp(translations[locale.code].nav_nearby, "i") })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: translations[locale.code].nav_how_it_works })).toBeInTheDocument();
       expect(screen.getByRole("link", { name: translations[locale.code].nav_about })).toBeInTheDocument();
     }

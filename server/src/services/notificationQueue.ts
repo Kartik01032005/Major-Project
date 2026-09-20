@@ -35,7 +35,10 @@ async function processNextJob(): Promise<void> {
       type: job.type,
       isRead: false,
     });
+
+    // In-app real-time notification for active sessions
     emitToUser(job.receiverId, "notification", notification);
+
     queuedKeys.delete(getKey(job));
   } catch (error) {
     if (job.attempts < maxAttempts) {
@@ -58,6 +61,13 @@ export function startNotificationWorker(): void {
     void processNextJob();
   }, 250);
   worker.unref();
+}
+
+export function stopNotificationWorker(): void {
+  if (worker) {
+    clearInterval(worker);
+    worker = undefined;
+  }
 }
 
 export function enqueueNotification(

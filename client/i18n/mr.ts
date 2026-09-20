@@ -279,6 +279,8 @@ const mr: Translations = {
   notifications_empty_title: "अद्याप कोणत्याही सूचना नाहीत",
   notifications_empty_sub: "विनंतीचे अपडेट्स येथे दिले जातील.",
   notifications_unread: "न वाचलेले",
+
+
   emergency_title: "तातडीची रक्त विनंती",
   emergency_subtitle: "जवळच्या रक्तदात्यांना त्वरित सूचित केले जाईल",
   emergency_blood_group_label: "आवश्यक रक्तगट *",
