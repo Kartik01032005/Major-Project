@@ -141,18 +141,78 @@ describe("facilityService & distance calculations", () => {
     expect(hospitalsOnly.bloodBanks).toHaveLength(0);
   });
 
-  it("filters facilities by search term in fallback mode", async () => {
-    (api.get as jest.Mock).mockRejectedValue(new Error("Network connection failed"));
-
-    const searchRes = await facilityService.getNearbyFacilities({
-      lat: 12.9716,
-      lng: 77.5946,
-      radiusKm: 30,
-      search: "Apollo",
+  it("defaults radius to 5 km when radiusKm is omitted", async () => {
+    (api.get as jest.Mock).mockResolvedValueOnce({
+      data: {
+        success: true,
+        data: {
+          userPosition: { lat: 14.6195, lng: 74.8354 },
+          radiusKm: 5,
+          totalVisible: 0,
+          counts: { hospitals: 0, bloodBanks: 0 },
+          hospitals: [],
+          bloodBanks: [],
+        },
+      },
     });
-    expect(searchRes.hospitals.length).toBeGreaterThan(0);
-    for (const item of searchRes.hospitals) {
-      expect(item.name.toLowerCase()).toContain("apollo");
-    }
+
+    await facilityService.getNearbyFacilities({
+      lat: 14.6195,
+      lng: 74.8354,
+    });
+
+    expect(api.get).toHaveBeenCalledWith(
+      "/nearby",
+      expect.objectContaining({
+        params: expect.objectContaining({
+          radius: 5,
+        }),
+      })
+    );
+  });
+
+  it("handles empty results cleanly without fabricating fake data", async () => {
+    (api.get as jest.Mock).mockResolvedValueOnce({
+      data: {
+        success: true,
+        data: {
+          userPosition: { lat: 14.6195, lng: 74.8354 },
+          radiusKm: 5,
+          totalVisible: 0,
+          counts: { hospitals: 0, bloodBanks: 0 },
+          hospitals: [],
+          bloodBanks: [],
+        },
+      },
+    });
+
+    const res = await facilityService.getNearbyFacilities({
+      lat: 14.6195,
+      lng: 74.8354,
+      radiusKm: 5,
+    });
+
+    expect(res.totalVisible).toBe(0);
+    expect(res.hospitals).toEqual([]);
+    expect(res.bloodBanks).toEqual([]);
+  });
+
+  it("respects AbortSignal and propagates cancellation errors", async () => {
+    const controller = new AbortController();
+    controller.abort();
+
+    const cancelError = new Error("Request canceled");
+    cancelError.name = "CanceledError";
+    (api.get as jest.Mock).mockRejectedValueOnce(cancelError);
+
+    await expect(
+      facilityService.getNearbyFacilities({
+        lat: 14.6195,
+        lng: 74.8354,
+        radiusKm: 5,
+        signal: controller.signal,
+      })
+    ).rejects.toThrow();
   });
 });
+

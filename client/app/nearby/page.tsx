@@ -83,7 +83,7 @@ export default function NearbyFacilitiesPage() {
   const [geoLoading, setGeoLoading] = useState(true);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [permissionState, setPermissionState] = useState<
-    "loading" | "prompt" | "granted" | "denied" | "unsupported"
+    "loading" | "prompt" | "granted" | "denied" | "unsupported" | "insecure"
   >("loading");
 
   // B. SEARCH LOCATION: Selected search location (e.g. Sirsi, Karnataka)
@@ -122,6 +122,9 @@ export default function NearbyFacilitiesPage() {
 
   // ─── 1. Geolocation Logic (Auto GPS) ───────────────────────────────────────
   const requestLocation = useCallback(async (forceFresh = false) => {
+    if (forceFresh) {
+      lastFetchedRef.current = null;
+    }
     setGeoLoading(true);
     setGeoError(null);
 
@@ -146,7 +149,12 @@ export default function NearbyFacilitiesPage() {
       setUserLocation(null);
       setGeoLoading(false);
       const locErr = err as { code?: string; message?: string };
-      if (
+      if (locErr?.code === "INSECURE_CONTEXT") {
+        setPermissionState("insecure");
+        setGeoError(
+          "Chrome restricts device geolocation on non-secure origins (HTTP). Please access BloodLink via HTTPS or enable secure origin in Chrome flags."
+        );
+      } else if (
         locErr?.code === "PERMISSION_DENIED" ||
         locErr?.message?.toLowerCase().includes("denied")
       ) {
@@ -187,6 +195,15 @@ export default function NearbyFacilitiesPage() {
           return;
         }
 
+        if (perm === "insecure") {
+          setPermissionState("insecure");
+          setGeoLoading(false);
+          setGeoError(
+            "Chrome restricts device geolocation on non-secure origins (HTTP). Please access BloodLink via HTTPS or enable secure origin in Chrome flags."
+          );
+          return;
+        }
+
         if (perm === "denied") {
           setPermissionState("denied");
           setGeoLoading(false);
@@ -209,6 +226,7 @@ export default function NearbyFacilitiesPage() {
         }
       }
     }
+
 
     initLocation();
 
@@ -656,33 +674,53 @@ export default function NearbyFacilitiesPage() {
               ) : !userLocation ? (
                 <div
                   role="alert"
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 text-amber-900 dark:text-amber-200 text-xs sm:text-sm"
+                  className={[
+                    "flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-xl text-xs sm:text-sm",
+                    permissionState === "insecure"
+                      ? "bg-red-50 dark:bg-red-950/40 border border-red-200/90 dark:border-red-900/60 text-red-900 dark:text-red-200"
+                      : "bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 text-amber-900 dark:text-amber-200",
+                  ].join(" ")}
                 >
                   <div className="flex items-center gap-2.5">
-                    <FiAlertCircle size={18} className="shrink-0 text-amber-600" />
+                    <FiAlertCircle size={18} className={permissionState === "insecure" ? "shrink-0 text-red-600" : "shrink-0 text-amber-600"} />
                     <span>
-                      {geoError ||
-                        "Location access is required to show nearby hospitals and blood banks around your physical phone."}
+                      {permissionState === "insecure"
+                        ? "Android Chrome restricts phone GPS on non-secure origins (HTTP). Open via HTTPS to use your real phone GPS."
+                        : (geoError ||
+                            "Location access is required to show nearby hospitals and blood banks around your physical phone.")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      id="allow-location-btn"
-                      onClick={async () => {
-                        if (isNativePlatform()) {
-                          await requestDevicePermission();
-                        }
-                        requestLocation(true);
-                      }}
-                      className="font-semibold px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs shadow-sm transition-all cursor-pointer"
-                    >
-                      {permissionState === "denied"
-                        ? "Retry / Allow Location"
-                        : t("nearby_find_near_me") || "Find Near Me"}
-                    </button>
+                    {permissionState === "insecure" ? (
+                      <button
+                        onClick={() => {
+                          if (typeof window !== "undefined") {
+                            window.location.href = window.location.href.replace(/^http:/, "https:");
+                          }
+                        }}
+                        className="font-semibold px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs shadow-sm transition-all cursor-pointer"
+                      >
+                        Switch to HTTPS
+                      </button>
+                    ) : (
+                      <button
+                        id="allow-location-btn"
+                        onClick={async () => {
+                          if (isNativePlatform()) {
+                            await requestDevicePermission();
+                          }
+                          requestLocation(true);
+                        }}
+                        className="font-semibold px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs shadow-sm transition-all cursor-pointer"
+                      >
+                        {permissionState === "denied"
+                          ? "Retry / Allow Location"
+                          : t("nearby_find_near_me") || "Find Near Me"}
+                      </button>
+                    )}
                     <button
                       onClick={() => setLocationMode("manual")}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-amber-200/80 dark:bg-amber-900/60 font-medium text-amber-900 dark:text-amber-100 hover:bg-amber-300/80 transition-colors"
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-200/80 dark:bg-slate-800 font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-300/80 transition-colors"
                     >
                       {t("nearby_location_mode_manual") || "Search Manually"}
                     </button>
@@ -710,6 +748,23 @@ export default function NearbyFacilitiesPage() {
                       Want to view another city? {t("nearby_location_mode_manual") || "Search Manually"}
                     </button>
                   </div>
+
+                  {/* Diagnostic bar */}
+                  <div className="flex items-center gap-2 flex-wrap pt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                    <span className="inline-flex items-center gap-1">
+                      <span className={typeof window !== "undefined" && window.isSecureContext ? "w-2 h-2 rounded-full bg-emerald-500" : "w-2 h-2 rounded-full bg-amber-500"} />
+                      <span>Context: {typeof window !== "undefined" && window.isSecureContext ? "Secure (HTTPS)" : "Insecure (HTTP)"}</span>
+                    </span>
+                    <span>•</span>
+                    <span>Status: <strong className="text-slate-700 dark:text-slate-200">{permissionState}</strong></span>
+                    {userLocation?.accuracy && (
+                      <>
+                        <span>•</span>
+                        <span>Accuracy: <strong className="text-emerald-600 dark:text-emerald-400">±{Math.round(userLocation.accuracy)}m</strong></span>
+                      </>
+                    )}
+                  </div>
+
 
                   {/* Low GPS accuracy warning if > 500 meters */}
                   {userLocation.accuracy && userLocation.accuracy > 500 && (
@@ -1049,31 +1104,54 @@ export default function NearbyFacilitiesPage() {
                 </div>
               ) : (
                 <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 text-center border border-slate-200/80 dark:border-slate-800 space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/50 flex items-center justify-center text-amber-600 mx-auto">
+                  <div className={[
+                    "w-12 h-12 rounded-2xl flex items-center justify-center mx-auto",
+                    permissionState === "insecure"
+                      ? "bg-red-50 dark:bg-red-950/50 text-red-600"
+                      : "bg-amber-50 dark:bg-amber-950/50 text-amber-600",
+                  ].join(" ")}>
                     <FiAlertCircle size={24} />
                   </div>
                   <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                    {permissionState === "denied"
+                    {permissionState === "insecure"
+                      ? "HTTPS Required for Real Phone GPS"
+                      : permissionState === "denied"
                       ? "Location Permission Denied"
                       : "Location Access Required"}
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                    {geoError ||
-                      "Allow location access on your device to discover real hospitals and blood banks within 5 km, or search an area manually."}
+                    {permissionState === "insecure"
+                      ? "Android Chrome blocks device GPS on non-secure HTTP connections. Switch to HTTPS to allow real phone GPS, or search an area manually."
+                      : (geoError ||
+                        "Allow location access on your device to discover real hospitals and blood banks within 5 km, or search an area manually.")}
                   </p>
                   <div className="flex items-center justify-center gap-2 flex-wrap pt-2">
-                    <button
-                      onClick={async () => {
-                        if (isNativePlatform()) {
-                          await requestDevicePermission();
-                        }
-                        requestLocation(true);
-                      }}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
-                    >
-                      <FiCrosshair size={13} />
-                      <span>{permissionState === "denied" ? "Retry / Allow Location" : "Find Near Me"}</span>
-                    </button>
+                    {permissionState === "insecure" ? (
+                      <button
+                        onClick={() => {
+                          if (typeof window !== "undefined") {
+                            window.location.href = window.location.href.replace(/^http:/, "https:");
+                          }
+                        }}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
+                      >
+                        <FiNavigation size={13} />
+                        <span>Switch to HTTPS (Enable GPS)</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={async () => {
+                          if (isNativePlatform()) {
+                            await requestDevicePermission();
+                          }
+                          requestLocation(true);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
+                      >
+                        <FiCrosshair size={13} />
+                        <span>{permissionState === "denied" ? "Retry / Allow Location" : "Find Near Me"}</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => setLocationMode("manual")}
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold shadow-sm transition-all"

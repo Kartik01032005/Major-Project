@@ -30,6 +30,10 @@ export const socketService = {
         transports: ["websocket", "polling"],
         autoConnect: true,
         reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 3000,
+        reconnectionDelayMax: 10000,
+        timeout: 8000,
       });
 
       socket.on("connect", () => {
@@ -37,6 +41,10 @@ export const socketService = {
         if (userId) {
           socket?.emit("register_user", userId);
         }
+      });
+
+      socket.on("connect_error", () => {
+        // Graceful handling when backend server is offline; prevent console spam
       });
 
       socket.on("disconnect", () => {

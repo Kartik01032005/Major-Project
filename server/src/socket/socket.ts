@@ -9,8 +9,14 @@ export const initSocket = (server: HttpServer): SocketIOServer => {
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://10.62.127.58:3000",
+    "https://localhost:3000",
+    "https://127.0.0.1:3000",
+    "https://10.62.127.58:3000",
+    "https://localhost",
+    "capacitor://localhost",
     ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(",").map((s) => s.trim()) : [])
   ];
+
 
   io = new SocketIOServer(server, {
     cors: {

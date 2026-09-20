@@ -80,10 +80,14 @@ coverage/
 Thumbs.db
 
 # ==========================
-# Uploads (Optional)
+# Certificates & Dev Keys
 # ==========================
-
-uploads/
+certificates/
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
 
 # Ignore uploaded files if you store them locally.
 # Remove this rule if uploads should be tracked.

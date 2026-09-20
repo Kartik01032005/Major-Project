@@ -151,7 +151,14 @@ export const facilityService = {
   getNearbyFacilities: async (
     params: FetchFacilitiesParams
   ): Promise<NearbyFacilityResponse> => {
+    if (params.signal?.aborted) {
+      const abortErr = new Error("The operation was aborted");
+      abortErr.name = "AbortError";
+      throw abortErr;
+    }
+
     const radius = params.radiusKm ?? 5;
+
     const type = params.type ?? "all";
     const bloodGroup = params.bloodGroup && params.bloodGroup !== "all" ? params.bloodGroup : "";
     const openNow = params.openNow ? "1" : "0";
@@ -218,34 +225,36 @@ export const facilityService = {
       const computedBanks: NearbyFacilityResponse["bloodBanks"] = [];
 
       try {
-        const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&amenity=hospital&viewbox=${viewbox}&bounded=1&limit=50&addressdetails=1`;
-        const res = await fetch(nomUrl, { signal: params.signal });
-        if (res.ok) {
-          interface NominatimHospitalItem {
-            lat: string;
-            lon: string;
-            name?: string;
-            display_name?: string;
-            osm_id?: number | string;
-            place_id?: number | string;
-            address?: {
-              city?: string;
-              town?: string;
-              county?: string;
-              state?: string;
-              phone?: string;
-            };
-          }
-          const items: NominatimHospitalItem[] = await res.json();
+        const [hospRes, bankRes] = await Promise.allSettled([
+          fetch(`https://nominatim.openstreetmap.org/search?format=json&amenity=hospital&viewbox=${viewbox}&bounded=1&limit=40&addressdetails=1`, { signal: params.signal }),
+          fetch(`https://nominatim.openstreetmap.org/search?format=json&q=blood+bank&viewbox=${viewbox}&bounded=1&limit=25&addressdetails=1`, { signal: params.signal }),
+        ]);
+
+        interface NominatimPlaceItem {
+          lat: string;
+          lon: string;
+          name?: string;
+          display_name?: string;
+          osm_id?: number | string;
+          place_id?: number | string;
+          address?: {
+            city?: string;
+            town?: string;
+            county?: string;
+            state?: string;
+            phone?: string;
+          };
+        }
+
+        if (hospRes.status === "fulfilled" && hospRes.value.ok) {
+          const items: NominatimPlaceItem[] = await hospRes.value.json();
           if (Array.isArray(items)) {
             for (const item of items) {
               const pLat = parseFloat(item.lat);
               const pLng = parseFloat(item.lon);
               if (isNaN(pLat) || isNaN(pLng)) continue;
-
               const d = calculateClientDistanceKm(params.lat, params.lng, pLat, pLng);
               if (d > radius) continue;
-
               const rawName = item.name || (item.display_name ? item.display_name.split(",")[0] : "Hospital");
               const addr = item.display_name || "Address available on map";
               const city = item.address?.city || item.address?.town || item.address?.county || "";
@@ -261,6 +270,38 @@ export const facilityService = {
                 position: { lat: pLat, lng: pLng },
                 distanceKm: parseFloat(d.toFixed(1)),
                 distance: formatDistance(d),
+                open: true,
+                isBloodLinkRegistered: false,
+              });
+            }
+          }
+        }
+
+        if (bankRes.status === "fulfilled" && bankRes.value.ok) {
+          const bankItems: NominatimPlaceItem[] = await bankRes.value.json();
+          if (Array.isArray(bankItems)) {
+            for (const item of bankItems) {
+              const pLat = parseFloat(item.lat);
+              const pLng = parseFloat(item.lon);
+              if (isNaN(pLat) || isNaN(pLng)) continue;
+              const d = calculateClientDistanceKm(params.lat, params.lng, pLat, pLng);
+              if (d > radius) continue;
+              const rawName = item.name || (item.display_name ? item.display_name.split(",")[0] : "Blood Bank");
+              const addr = item.display_name || "Address available on map";
+              const city = item.address?.city || item.address?.town || item.address?.county || "";
+              const state = item.address?.state || "Karnataka";
+
+              computedBanks.push({
+                id: `nom-b-${item.osm_id || item.place_id}`,
+                name: rawName,
+                address: addr,
+                district: city,
+                state,
+                phone: item.address?.phone || "",
+                position: { lat: pLat, lng: pLng },
+                distanceKm: parseFloat(d.toFixed(1)),
+                distance: formatDistance(d),
+                available: ["A+", "B+", "O+", "AB+", "O-"] as BloodGroup[],
                 open: true,
                 isBloodLinkRegistered: false,
               });

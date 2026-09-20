@@ -8,12 +8,14 @@ const PORT = process.env.PORT ?? 5000;
 
 const startServer = async () => {
   const server = http.createServer(app);
+
   initSocket(server);
   startNotificationWorker();
 
   server.listen(Number(PORT), "0.0.0.0", () => {
-    console.log(`🚀 Server listening in development mode on port ${PORT}`);
+    console.log(`🚀 Server listening in development mode on port ${PORT} (HTTP)`);
     console.log(`👉 http://localhost:${PORT}`);
+    console.log(`📱 http://10.62.127.58:${PORT}`);
   });
 
   // Connect to MongoDB Atlas or local/in-memory MongoDB instance
@@ -23,6 +25,7 @@ const startServer = async () => {
   const { verifyTransporter } = await import("./services/emailService.js");
   await verifyTransporter();
 };
+
 
 // Server initialization
 startServer().catch((err) => {

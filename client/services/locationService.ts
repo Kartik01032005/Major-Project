@@ -2,7 +2,7 @@ import { Capacitor } from "@capacitor/core";
 import { Geolocation, PermissionStatus as CapPermissionStatus } from "@capacitor/geolocation";
 import { UserLocationState } from "@/types";
 
-export type DevicePermissionState = "prompt" | "granted" | "denied" | "unsupported";
+export type DevicePermissionState = "prompt" | "granted" | "denied" | "unsupported" | "insecure";
 
 export interface GetLocationOptions {
   enableHighAccuracy?: boolean;
@@ -11,17 +11,18 @@ export interface GetLocationOptions {
 }
 
 export class LocationServiceError extends Error {
-  code: "PERMISSION_DENIED" | "POSITION_UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED";
+  code: "PERMISSION_DENIED" | "POSITION_UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED" | "INSECURE_CONTEXT";
 
   constructor(
     message: string,
-    code: "PERMISSION_DENIED" | "POSITION_UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED"
+    code: "PERMISSION_DENIED" | "POSITION_UNAVAILABLE" | "TIMEOUT" | "UNSUPPORTED" | "INSECURE_CONTEXT"
   ) {
     super(message);
     this.name = "LocationServiceError";
     this.code = code;
   }
 }
+
 
 export const isNativePlatform = (): boolean => {
   if (typeof window === "undefined") return false;
@@ -55,6 +56,11 @@ export async function checkDevicePermission(): Promise<DevicePermissionState> {
   }
 
   // 2. Web Browser / WebView Fallback
+  // Check secure context: Geolocation requires HTTPS or localhost
+  if (!isNativePlatform() && typeof window !== "undefined" && window.isSecureContext === false) {
+    return "insecure";
+  }
+
   if (!navigator?.geolocation) {
     return "unsupported";
   }
@@ -179,6 +185,14 @@ export async function getCurrentDevicePosition(
   }
 
   // 2. Web Browser or Native WebView fallback via navigator.geolocation
+  // Check secure context for browser: W3C Geolocation API is strictly prohibited on insecure origins
+  if (!isNativePlatform() && typeof window !== "undefined" && window.isSecureContext === false) {
+    throw new LocationServiceError(
+      "Geolocation requires a secure connection (HTTPS). Please open BloodLink via https://10.62.127.58:3000 to acquire your real phone GPS.",
+      "INSECURE_CONTEXT"
+    );
+  }
+
   if (!navigator?.geolocation) {
     throw new LocationServiceError(
       "Geolocation is not supported by your browser or device.",
@@ -199,12 +213,21 @@ export async function getCurrentDevicePosition(
       },
       (err) => {
         if (err.code === err.PERMISSION_DENIED) {
-          reject(
-            new LocationServiceError(
-              "Location access was denied. Please allow location access to find nearby facilities.",
-              "PERMISSION_DENIED"
-            )
-          );
+          if (!isNativePlatform() && window.isSecureContext === false) {
+            reject(
+              new LocationServiceError(
+                "Browser geolocation was blocked because this page is served over an insecure HTTP origin. Please open via https://10.62.127.58:3000.",
+                "INSECURE_CONTEXT"
+              )
+            );
+          } else {
+            reject(
+              new LocationServiceError(
+                "Location access was denied. Please allow location access in your browser settings to find nearby facilities.",
+                "PERMISSION_DENIED"
+              )
+            );
+          }
         } else if (err.code === err.TIMEOUT) {
           reject(
             new LocationServiceError(
@@ -229,3 +252,4 @@ export async function getCurrentDevicePosition(
     );
   });
 }
+

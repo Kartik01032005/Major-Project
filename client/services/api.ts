@@ -22,6 +22,7 @@ function getApiBaseUrl(): string {
 
 export const api = axios.create({
   baseURL: getApiBaseUrl(),
+  timeout: 12000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -51,4 +52,5 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
 export default api;

@@ -26,10 +26,16 @@ jest.mock("@capacitor/geolocation", () => ({
 describe("Location Service & Geolocation Abstraction", () => {
   const originalGeolocation = navigator.geolocation;
   const originalPermissions = navigator.permissions;
+  const originalSecureContext = window.isSecureContext;
 
   beforeEach(() => {
     jest.clearAllMocks();
     (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+    Object.defineProperty(window, "isSecureContext", {
+      value: true,
+      configurable: true,
+      writable: true,
+    });
   });
 
   afterEach(() => {
@@ -40,6 +46,11 @@ describe("Location Service & Geolocation Abstraction", () => {
     });
     Object.defineProperty(navigator, "permissions", {
       value: originalPermissions,
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(window, "isSecureContext", {
+      value: originalSecureContext ?? true,
       configurable: true,
       writable: true,
     });
@@ -291,7 +302,41 @@ describe("Location Service & Geolocation Abstraction", () => {
         code: "UNSUPPORTED",
       });
     });
+
+    it("detects insecure HTTP context and returns 'insecure' in checkDevicePermission", async () => {
+      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+      Object.defineProperty(window, "isSecureContext", {
+        value: false,
+        configurable: true,
+      });
+
+      const perm = await checkDevicePermission();
+      expect(perm).toBe("insecure");
+
+      Object.defineProperty(window, "isSecureContext", {
+        value: true,
+        configurable: true,
+      });
+    });
+
+    it("rejects with INSECURE_CONTEXT when attempting GPS on non-secure origin", async () => {
+      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+      Object.defineProperty(window, "isSecureContext", {
+        value: false,
+        configurable: true,
+      });
+
+      await expect(getCurrentDevicePosition()).rejects.toMatchObject({
+        code: "INSECURE_CONTEXT",
+      });
+
+      Object.defineProperty(window, "isSecureContext", {
+        value: true,
+        configurable: true,
+      });
+    });
   });
+
 
   describe("5. No Bengaluru Fallback & Default 5 KM Radius", () => {
     it("never returns fake Bengaluru coordinates on failure", async () => {
@@ -344,5 +389,70 @@ describe("Location Service & Geolocation Abstraction", () => {
       expect(userLocation.latitude).not.toBe(searchLocation.latitude);
       expect(userLocation.latitude).not.toBe(selectedPlace.latitude);
     });
+
+    it("ensures navigation origin strictly uses userLocation and not searchLocation", () => {
+      const userLocation: UserLocationState = {
+        latitude: 14.6195,
+        longitude: 74.8354,
+        accuracy: 12,
+        isFallback: false,
+      };
+
+      const searchLocation: SearchLocationState = {
+        displayName: "Bengaluru, Karnataka",
+        latitude: 12.9716,
+        longitude: 77.5946,
+        type: "city",
+      };
+
+      const destination = {
+        name: "TSS Hospital",
+        lat: 14.6250,
+        lng: 74.8420,
+      };
+
+      // Construct navigation URL using userLocation
+      const origin = `${userLocation.latitude},${userLocation.longitude}`;
+      const dest = `${destination.lat},${destination.lng}`;
+      const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}`;
+
+      expect(mapsUrl).toContain(`origin=14.6195,74.8354`);
+      expect(mapsUrl).not.toContain(`origin=${searchLocation.latitude},${searchLocation.longitude}`);
+      expect(mapsUrl).toContain(`destination=14.625,74.842`);
+
+    });
+
+    it("passes maximumAge: 0 when forceFresh is requested for Find Near Me", async () => {
+      (Capacitor.isNativePlatform as jest.Mock).mockReturnValue(false);
+      let passedOptions: PositionOptions | undefined;
+      const mockGetCurrentPosition = jest.fn().mockImplementation((success, _error, options) => {
+        passedOptions = options;
+        success({
+          coords: {
+            latitude: 14.6195,
+            longitude: 74.8354,
+            accuracy: 8,
+          },
+          timestamp: Date.now(),
+        });
+      });
+
+      Object.defineProperty(navigator, "geolocation", {
+        value: { getCurrentPosition: mockGetCurrentPosition },
+        configurable: true,
+        writable: true,
+      });
+
+      await getCurrentDevicePosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      });
+
+      expect(passedOptions).toBeDefined();
+      expect(passedOptions?.maximumAge).toBe(0);
+      expect(passedOptions?.enableHighAccuracy).toBe(true);
+    });
   });
 });
+
