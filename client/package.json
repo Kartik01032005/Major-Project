@@ -3,14 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -H 0.0.0.0",
-    "dev:http": "next dev -H 0.0.0.0",
-    "dev:https": "next dev -H 0.0.0.0 --experimental-https --experimental-https-key ../certificates/dev-key.pem --experimental-https-cert ../certificates/dev-cert.pem",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test": "jest"
-
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
