@@ -1,23 +1,24 @@
 import { io, Socket } from "socket.io-client";
 
 function getSocketUrl(): string {
-  const envUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (
-    envUrl &&
-    !envUrl.includes("localhost") &&
-    !envUrl.includes("127.0.0.1")
-  ) {
-    return envUrl.replace(/\/api\/?$/, "");
+  if (typeof window !== "undefined" && window.location.hostname) {
+    const hostname = window.location.hostname;
+    const envUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (
+      envUrl &&
+      !envUrl.includes("localhost") &&
+      !envUrl.includes("127.0.0.1") &&
+      !/^(?:\d{1,3}\.){3}\d{1,3}/.test(new URL(envUrl).hostname)
+    ) {
+      return envUrl.replace(/\/api\/?$/, "");
+    }
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "http://localhost:5000";
+    }
+    return `${window.location.protocol}//${hostname}:5000`;
   }
-  if (
-    typeof window !== "undefined" &&
-    window.location.hostname &&
-    window.location.hostname !== "localhost" &&
-    window.location.hostname !== "127.0.0.1"
-  ) {
-    return `${window.location.protocol}//${window.location.hostname}:5000`;
-  }
-  return (envUrl ?? "http://localhost:5000/api").replace(/\/api\/?$/, "");
+  const envUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
+  return envUrl.replace(/\/api\/?$/, "");
 }
 
 let socket: Socket | null = null;
@@ -50,6 +51,7 @@ export const socketService = {
       socket.on("disconnect", () => {
         console.log("🔌 Socket.IO disconnected");
       });
+
     } else if (userId && socket.connected) {
       socket.emit("register_user", userId);
     }

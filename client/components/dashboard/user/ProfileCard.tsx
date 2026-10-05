@@ -3,20 +3,8 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiPhone, FiMapPin, FiCalendar, FiEdit3, FiCheck, FiX } from "react-icons/fi";
-import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useTranslation } from "@/context";
 import { authService } from "@/services";
-
-const BLOOD_GROUP_COLORS: Record<string, string> = {
-  "A+": "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-  "A-": "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-  "B+": "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  "B-": "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  "AB+": "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
-  "AB-": "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
-  "O+": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  "O-": "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-};
 
 function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
@@ -66,8 +54,6 @@ export default function ProfileCard() {
     ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : "?";
 
-  const bloodGroupClass = BLOOD_GROUP_COLORS[user?.bloodGroup ?? "O+"] ?? "";
-
   const handleSave = () => {
     // In production this would call an API — for now we just show feedback
     setEditing(false);
@@ -90,9 +76,6 @@ export default function ProfileCard() {
           </div>
         </div>
         <div className="absolute top-3 right-4 flex items-center gap-1.5">
-          <span className={`text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1.5 ${bloodGroupClass}`}>
-            <FaDroplet size={11} /> {user?.bloodGroup}
-          </span>
           <span className="text-[10px] font-semibold px-2 py-1 rounded-lg bg-white/20 text-white capitalize">
             {user?.role}
           </span>

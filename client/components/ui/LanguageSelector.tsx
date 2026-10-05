@@ -115,6 +115,7 @@ export default function LanguageSelector({ className = "", isMobileDrawer = fals
         id={isMobileDrawer ? "mobile-drawer-language-selector-btn" : "language-selector-btn"}
         ref={triggerRef}
         type="button"
+        suppressHydrationWarning
         onClick={toggleDropdown}
         onKeyDown={handleTriggerKeyDown}
         aria-haspopup="listbox"
@@ -180,6 +181,7 @@ export default function LanguageSelector({ className = "", isMobileDrawer = fals
                   key={loc.code}
                   ref={(element) => { optionRefs.current[index] = element; }}
                   type="button"
+                  suppressHydrationWarning
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => handleSelect(loc.code)}

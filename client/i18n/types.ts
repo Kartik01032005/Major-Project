@@ -92,6 +92,31 @@ export interface Translations {
   hiw_title: string;
   hiw_sub: string;
 
+  // ── Blood Donation Eligibility ───────────────────────────────────────────────
+  eligibility_badge: string;
+  eligibility_title: string;
+  eligibility_sub: string;
+  eligibility_desc: string;
+  eligibility_check_age: string;
+  eligibility_check_weight: string;
+  eligibility_check_health: string;
+  eligibility_check_hb: string;
+  eligibility_check_meds: string;
+  eligibility_check_pregnancy: string;
+  eligibility_check_interval: string;
+  eligibility_check_screening: string;
+  eligibility_cta: string;
+  eligibility_disclaimer_title: string;
+  eligibility_disclaimer_text: string;
+  eligibility_sources_title: string;
+  eligibility_sources_text: string;
+  eligibility_modal_title: string;
+  eligibility_tab_core: string;
+  eligibility_tab_deferral: string;
+  eligibility_tab_process: string;
+  eligibility_tab_sources: string;
+  eligibility_close: string;
+
   // ── Why Choose ───────────────────────────────────────────────────────────────
   why_badge: string;
   why_title: string;
@@ -528,4 +553,5 @@ export interface Translations {
   nearby_selected_location: string;
   nearby_filter_open_now: string;
   nearby_btn_open_map: string;
+
 }

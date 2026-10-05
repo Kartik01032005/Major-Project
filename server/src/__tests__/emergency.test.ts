@@ -4,6 +4,7 @@ import app from "../app.js";
 import User from "../models/User.js";
 import EmergencyRequest from "../models/EmergencyRequest.js";
 import Notification from "../models/Notification.js";
+import RequestDismissal from "../models/RequestDismissal.js";
 
 // ─── Test Data ──────────────────────────────────────────────────────────────
 const userData = {
@@ -67,6 +68,7 @@ beforeAll(async () => {
 afterAll(async () => {
   await EmergencyRequest.deleteMany({});
   await Notification.deleteMany({});
+  await RequestDismissal.deleteMany({});
   await User.deleteMany({});
   await mongoose.connection.close();
 });
@@ -637,6 +639,77 @@ describe("POST /api/emergency/:id/donation-report, donation-confirm & withdraw",
 
     expect(res.status).toBe(409);
     expect(res.body.success).toBe(false);
+  });
+});
+
+describe("account-scoped emergency request dismissals", () => {
+  let ownRequestId: string;
+  let otherUsersRequestId: string;
+
+  beforeAll(async () => {
+    const owner = await User.findOne({ email: userData.email });
+    const otherOwner = await User.findOne({ email: adminData.email });
+    if (!owner || !otherOwner) throw new Error("Dismissal test users were not created");
+
+    const requestDefaults = {
+      bloodGroup: "O+",
+      unitsRequired: 1,
+      hospital: "Dismissal Test Hospital",
+      state: "Karnataka",
+      district: "Mysore",
+      address: "Test Road",
+      contactNumber: "9999999999",
+      location: { latitude: 0, longitude: 0 },
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    };
+
+    const ownRequest = await EmergencyRequest.create({ ...requestDefaults, requestBy: owner._id });
+    const otherRequest = await EmergencyRequest.create({ ...requestDefaults, requestBy: otherOwner._id });
+    ownRequestId = ownRequest._id.toString();
+    otherUsersRequestId = otherRequest._id.toString();
+  });
+
+  it("persists a cleared tab for its account without changing another account’s list", async () => {
+    const ownDismissal = await request(app)
+      .post("/api/emergency/dismissals")
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({ view: "my", requestIds: [ownRequestId] });
+
+    expect(ownDismissal.status).toBe(200);
+    expect(ownDismissal.body.data.dismissedIds).toEqual([ownRequestId]);
+
+    const donorDismissal = await request(app)
+      .post("/api/emergency/dismissals")
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({ view: "donate", requestIds: [otherUsersRequestId] });
+    expect(donorDismissal.status).toBe(200);
+
+    const ownerLists = await request(app)
+      .get("/api/emergency/dismissals")
+      .set("Authorization", `Bearer ${userToken}`);
+    expect(ownerLists.status).toBe(200);
+    expect(ownerLists.body.data).toEqual({ my: [ownRequestId], donate: [otherUsersRequestId] });
+
+    const otherAccountLists = await request(app)
+      .get("/api/emergency/dismissals")
+      .set("Authorization", `Bearer ${adminToken}`);
+    expect(otherAccountLists.status).toBe(200);
+    expect(otherAccountLists.body.data).toEqual({ my: [], donate: [] });
+  });
+
+  it("allows dismissal and keeps it private to the signed-in account", async () => {
+    const response = await request(app)
+      .post("/api/emergency/dismissals")
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({ view: "my", requestIds: [otherUsersRequestId] });
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.dismissedIds).toEqual([otherUsersRequestId]);
+
+    const otherAccountLists = await request(app)
+      .get("/api/emergency/dismissals")
+      .set("Authorization", `Bearer ${adminToken}`);
+    expect(otherAccountLists.body.data).toEqual({ my: [], donate: [] });
   });
 });
 

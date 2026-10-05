@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FaDroplet, FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { MdOutlineEmail, MdOutlinePhone, MdOutlineLocationOn } from "react-icons/md";
 import { useTranslation } from "@/context";
@@ -14,6 +15,9 @@ const socialLinks = [
 
 export default function Footer() {
   const { t } = useTranslation();
+  const pathname = usePathname();
+  if (pathname !== "/") return null;
+
   const year = new Date().getFullYear();
 
   const quickLinks = [

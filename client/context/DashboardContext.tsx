@@ -211,12 +211,14 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     socket.on("request_created", handleRequestCreated);
     socket.on("request_updated", handleRequestUpdated);
+    socket.on("request_expired", handleRequestUpdated);
     socket.on("request_deleted", handleRequestDeleted);
     socket.on("notification", handleNotification);
 
     return () => {
       socket.off("request_created", handleRequestCreated);
       socket.off("request_updated", handleRequestUpdated);
+      socket.off("request_expired", handleRequestUpdated);
       socket.off("request_deleted", handleRequestDeleted);
       socket.off("notification", handleNotification);
     };

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { MapBloodBank, MapHospital, LatLng, UserLocationState, SearchLocationState } from "@/types";
+import { getGoogleMapsLocationUrl } from "@/services/locationService";
 
 // ─── Custom SVG Marker Icons for Leaflet ──────────────────────────────────────
 
@@ -74,7 +75,7 @@ function buildBloodBankInfoHTML(
     ? `origin=${userLocation.latitude},${userLocation.longitude}&`
     : "";
   const navUrl = `https://www.google.com/maps/dir/?api=1&${originParam}destination=${bank.position.lat},${bank.position.lng}`;
-  const osmMapUrl = `https://www.openstreetmap.org/?mlat=${bank.position.lat}&mlon=${bank.position.lng}#map=16/${bank.position.lat}/${bank.position.lng}`;
+  const openMapUrl = getGoogleMapsLocationUrl(bank.position.lat, bank.position.lng, bank.name);
 
   const phoneHtml = bank.phone
     ? `<a href="tel:${bank.phone}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:5px;border-radius:8px;background:#F1F5F9;color:#334155;font-size:11px;font-weight:600;text-decoration:none">📞 Call</a>`
@@ -98,7 +99,7 @@ function buildBloodBankInfoHTML(
            style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:6px;border-radius:8px;background:#DC2626;color:white;font-size:11px;font-weight:600;text-decoration:none">
           🧭 Navigate
         </a>
-        <a href="${osmMapUrl}" target="_blank" rel="noopener noreferrer"
+        <a href="${openMapUrl}" target="_blank" rel="noopener noreferrer"
            style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:6px;border-radius:8px;background:#F1F5F9;color:#1E293B;font-size:11px;font-weight:600;text-decoration:none">
           🗺️ Open Map
         </a>
@@ -111,7 +112,7 @@ function buildHospitalInfoHTML(
   h: MapHospital & { distance?: string; open?: boolean; openingHours?: string; isBloodLinkRegistered?: boolean },
   userLocation?: UserLocationState | null
 ): string {
-  const osmMapUrl = `https://www.openstreetmap.org/?mlat=${h.position.lat}&mlon=${h.position.lng}#map=16/${h.position.lat}/${h.position.lng}`;
+  const openMapUrl = getGoogleMapsLocationUrl(h.position.lat, h.position.lng, h.name);
 
   // Navigation URL with exact user GPS origin if available
   const originParam = userLocation && !userLocation.isFallback
@@ -149,7 +150,7 @@ function buildHospitalInfoHTML(
            style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:6px;border-radius:8px;background:#2563EB;color:white;font-size:11px;font-weight:600;text-decoration:none">
           🧭 Navigate
         </a>
-        <a href="${osmMapUrl}" target="_blank" rel="noopener noreferrer"
+        <a href="${openMapUrl}" target="_blank" rel="noopener noreferrer"
            style="flex:1;display:flex;align-items:center;justify-content:center;gap:3px;padding:6px;border-radius:8px;background:#F1F5F9;color:#1E293B;font-size:11px;font-weight:600;text-decoration:none">
           🗺️ Open Map
         </a>

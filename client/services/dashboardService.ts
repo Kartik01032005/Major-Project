@@ -1,6 +1,8 @@
 import api from "./api";
 import {
   EmergencyRequest,
+  EmergencyTrackingStats,
+  DonorResponseStatus,
   BloodInventoryItem,
   Notification,
   Hospital,
@@ -15,6 +17,18 @@ export const dashboardService = {
   getRequests: async (): Promise<EmergencyRequest[]> => {
     const response = await api.get<{ success: boolean; data: EmergencyRequest[] }>("/emergency");
     return response.data.data;
+  },
+
+  getRequestDismissals: async (): Promise<{ my: string[]; donate: string[] }> => {
+    const response = await api.get<{
+      success: boolean;
+      data: { my: string[]; donate: string[] };
+    }>("/emergency/dismissals");
+    return response.data.data;
+  },
+
+  dismissRequests: async (view: "my" | "donate", requestIds: string[]): Promise<void> => {
+    await api.post("/emergency/dismissals", { view, requestIds });
   },
 
   createRequest: async (data: {
@@ -67,6 +81,21 @@ export const dashboardService = {
 
   withdrawAcceptance: async (id: string, reason: string): Promise<EmergencyRequest> => {
     const response = await api.post<{ success: boolean; data: EmergencyRequest }>(`/emergency/${id}/withdraw`, { reason });
+    return response.data.data;
+  },
+
+  declineRequest: async (id: string, reason?: string): Promise<EmergencyRequest> => {
+    const response = await api.post<{ success: boolean; data: EmergencyRequest }>(`/emergency/${id}/decline`, { reason });
+    return response.data.data;
+  },
+
+  getRequestTracking: async (id: string): Promise<EmergencyTrackingStats> => {
+    const response = await api.get<{ success: boolean; data: EmergencyTrackingStats }>(`/emergency/${id}/tracking`);
+    return response.data.data;
+  },
+
+  getDonorStatus: async (id: string): Promise<DonorResponseStatus> => {
+    const response = await api.get<{ success: boolean; data: DonorResponseStatus }>(`/emergency/${id}/donor-status`);
     return response.data.data;
   },
 

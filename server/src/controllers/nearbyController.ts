@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Hospital from "../models/Hospital.js";
 import User from "../models/User.js";
 import BloodInventory from "../models/BloodInventory.js";
+import { nearbyFacilityCache, generateNearbyCacheKey } from "../services/nearbyCache.js";
 
 export interface NearbyPlaceItem {
   id: string;
@@ -49,14 +50,6 @@ export function formatDistanceStr(distKm: number): string {
   return `${distKm.toFixed(1)} km`;
 }
 
-// ─── In-Memory Cache for Real OSM Places ──────────────────────────────────────
-interface CacheEntry {
-  timestamp: number;
-  data: NearbyPlaceItem[];
-}
-const osmCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes cache
-
 // ─── Build Clean Address from OSM Tags ────────────────────────────────────────
 function buildOsmAddress(tags: any, fallbackName?: string): { address: string; district: string; state: string } {
   const street = tags?.["addr:street"] || tags?.road || "";
@@ -98,7 +91,7 @@ async function queryOverpass(
           "Content-Type": "application/x-www-form-urlencoded",
           "User-Agent": "BloodLink-LiveApp/1.0 (bloodlink.finder@gmail.com)",
         },
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(4000),
       });
 
       if (!response.ok) continue;
@@ -275,33 +268,28 @@ async function queryNominatimBoundingBox(
   }
 }
 
-// ─── Fetch Real OSM Facilities (Overpass with Nominatim Fallback) ─────────────
+// ─── Fetch Real OSM Facilities (Overpass with Nominatim Fallback & In-Memory Cache) ──
 async function fetchRealOSMPlaces(
   lat: number,
   lng: number,
   radiusKm: number
-): Promise<NearbyPlaceItem[]> {
-  const cacheKey = `${lat.toFixed(2)},${lng.toFixed(2)},${radiusKm}`;
-  const cached = osmCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-    return cached.data;
-  }
+): Promise<{ places: NearbyPlaceItem[]; isCacheHit: boolean }> {
+  const cacheKey = generateNearbyCacheKey(lat, lng, radiusKm);
+  const { data, isHit } = await nearbyFacilityCache.getOrFetch(cacheKey, async () => {
+    const radiusMeters = Math.min(Math.round(radiusKm * 1000), 50000);
 
-  const radiusMeters = Math.min(Math.round(radiusKm * 1000), 50000);
+    // 1. Try Overpass first
+    let places = await queryOverpass(lat, lng, radiusMeters);
 
-  // 1. Try Overpass first
-  let places = await queryOverpass(lat, lng, radiusMeters);
+    // 2. If Overpass timed out or returned empty, use Nominatim live OSM search
+    if (!places || places.length === 0) {
+      places = await queryNominatimBoundingBox(lat, lng, radiusKm);
+    }
 
-  // 2. If Overpass timed out or returned empty, use Nominatim live OSM search
-  if (!places || places.length === 0) {
-    places = await queryNominatimBoundingBox(lat, lng, radiusKm);
-  }
+    return places || [];
+  });
 
-  if (places && places.length > 0) {
-    osmCache.set(cacheKey, { timestamp: Date.now(), data: places });
-  }
-
-  return places || [];
+  return { places: data || [], isCacheHit: isHit };
 }
 
 // ─── Main Controller: getNearbyFacilities ─────────────────────────────────────
@@ -402,8 +390,11 @@ export const getNearbyFacilities = async (req: Request, res: Response): Promise<
       });
     }
 
-    // 3. Fetch Real OpenStreetMap Hospitals & Blood Banks (Overpass + Nominatim)
-    const osmPlaces = await fetchRealOSMPlaces(lat, lng, radiusKm);
+    // 3. Fetch Real OpenStreetMap Hospitals & Blood Banks (Overpass + Nominatim with In-Memory Cache)
+    const { places: osmPlaces, isCacheHit } = await fetchRealOSMPlaces(lat, lng, radiusKm);
+
+    // Set X-Cache response header for debugging / cache visibility
+    res.setHeader("X-Cache", isCacheHit ? "HIT" : "MISS");
 
     // Merge OSM places and MongoDB places, preventing duplicates
     const combinedHospitals: NearbyPlaceItem[] = [...bloodLinkHospitals];

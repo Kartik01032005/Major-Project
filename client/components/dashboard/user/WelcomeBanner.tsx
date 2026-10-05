@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FiAlertCircle, FiActivity, FiToggleLeft, FiToggleRight } from "react-icons/fi";
+import { FiAlertCircle, FiActivity, FiToggleLeft, FiToggleRight, FiBookOpen } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useTranslation } from "@/context";
 
@@ -55,15 +55,8 @@ export default function WelcomeBanner({ onEmergencyClick }: WelcomeBannerProps) 
             {t("banner_subtitle")}
           </p>
 
-          {/* Blood group + donor toggle */}
+          {/* Donor availability toggle */}
           <div className="flex flex-wrap items-center gap-3 mt-4">
-            {/* Blood group badge */}
-            <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-semibold">
-              <FaDroplet size={13} />
-              {t("banner_blood_group")} {user?.bloodGroup ?? "—"}
-            </div>
-
-            {/* Donor availability toggle */}
             <button
               onClick={() => setIsDonorAvailable((p) => !p)}
               className={[
@@ -81,6 +74,14 @@ export default function WelcomeBanner({ onEmergencyClick }: WelcomeBannerProps) 
                 <><FiToggleLeft size={18} /> {t("banner_not_available")}</>
               )}
             </button>
+            <a
+              href="/#eligibility"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 hover:bg-white/20 text-white transition-colors border border-white/15"
+              title="View official blood donation eligibility requirements"
+            >
+              <FiBookOpen size={13} />
+              <span>{t("eligibility_cta")}</span>
+            </a>
           </div>
         </div>
 

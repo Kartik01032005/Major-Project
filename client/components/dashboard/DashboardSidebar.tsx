@@ -9,7 +9,6 @@ import {
   FiPackage, FiCrosshair, FiList, FiLogOut, FiX,
   FiChevronLeft, FiChevronRight,
 } from "react-icons/fi";
-import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useTranslation } from "@/context";
 
 interface NavItem {
@@ -75,25 +74,6 @@ export default function DashboardSidebar({
 
   const renderSidebarContent = (mobile = false) => (
     <div className="flex flex-col h-full">
-      {/* Logo */}
-      <div className={[
-        "flex items-center h-16 border-b border-slate-200 dark:border-slate-800 flex-shrink-0",
-        collapsed && !mobile ? "justify-center px-4" : "px-5 gap-2.5",
-      ].join(" ")}>
-        <motion.div
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="text-red-600 flex-shrink-0"
-        >
-          <FaDroplet size={20} />
-        </motion.div>
-        {(!collapsed || mobile) && (
-          <span className="text-[16px] font-bold tracking-tight text-slate-900 dark:text-white whitespace-nowrap">
-            Blood<span className="text-red-600">Link</span>
-          </span>
-        )}
-      </div>
-
       {/* Nav Links */}
       <nav className="flex-1 overflow-y-auto py-4 px-2" aria-label="Dashboard navigation">
         {nav.map((item) => {

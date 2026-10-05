@@ -172,6 +172,51 @@
 
 ---
 
+## Sprint 10 – Nearby Facilities Caching & Map Actions
+
+- [x] In-memory server-side cache for OpenStreetMap/Overpass queries (TTL, radius quantization, LRU pruning)
+- [x] Separate "Navigate" (Google Maps directions) and "Open Map" (Google Maps pinned facility location)
+- [x] Implement `getGoogleMapsLocationUrl` using Google Maps Search API (`https://www.google.com/maps/search/?api=1&query=<name>,<lat>,<lng>`)
+- [x] Ensure "Navigate" button preserves origin and destination route generation (`https://www.google.com/maps/dir/...`)
+- [x] Update result cards (`client/app/nearby/page.tsx`) and Leaflet popups (`client/components/map/MapContainer.tsx`) with genuine facility coordinates
+- [x] Graceful edge-case handling for missing/invalid facility coordinates (returns empty string, avoids fake locations)
+- [x] Automated unit test suite in `client/__tests__/locationService.test.ts` (26/26 tests passing)
+
+---
+
+## Sprint 11 – Live Emergency Request Tracking
+
+- [x] Schema & Type Extensions: add `declinedBy` and `notifiedDonorsCount` to `EmergencyRequest` model and types
+- [x] Tracking Statistics Calculator: `computeTrackingStats` calculates genuine database numbers (Notified, Responded, Accepted, Unable to Donate, Withdrawn, Pending) with responder deduplication
+- [x] Backend Endpoints: `GET /api/emergency/:id/tracking`, `GET /api/emergency/:id/donor-status`, `POST /api/emergency/:id/decline`
+- [x] Role-Based Authorization: enforce requester-only full tracking, donor-restricted response status, and admin aggregate monitoring
+- [x] Real-time Socket.IO Integration: emit `request_tracking_updated` on all donor lifecycle actions; handle reconnection and auto-refetch
+- [x] Requester Live Tracking Card: `LiveRequestTrackingCard.tsx` with vertical pipeline stepper, pulse connection indicator, and status badge
+- [x] Requester Request Details Page: `/dashboard/requests/[id]` featuring separate Request Information and Live Request Tracking cards
+- [x] Donor Own Response View: "Your Response: ✅ Accepted / ❌ Unable to Donate / ⏳ Pending" with "Unable to Donate" option in `ActiveRequestsCard.tsx`
+- [x] Admin Aggregate Monitoring: aggregate summary metrics bar and row indicators (`Donors Responded: X`, `Accepted: Y`, `Status: Z`) in `EmergencyRequestsTable.tsx`
+- [x] Comprehensive Test Coverage: 13 backend tests (`server/src/__tests__/emergencyTracking.test.ts`) and 6 frontend component tests (`client/__tests__/emergencyTracking.test.tsx`)
+
+---
+
+## Sprint 12 – Emergency Blood Request Expiry
+
+- [x] Schema & Model Extension: add `expiresAt: Date` field to `EmergencyRequest` model and index `{ expiresAt: 1, status: 1 }` (no TTL deletion)
+- [x] Expiry Configuration: add `EMERGENCY_REQUEST_DEFAULT_EXPIRY_HOURS=24` default with environment variable override in `.env.example` & `.env.production.example`
+- [x] Request Creation Expiry: calculate absolute timestamp `expiresAt = createdAt + duration` on POST `/api/emergency` and persist in MongoDB
+- [x] Safe Backward Compatibility: safely compute/backfill `expiresAt` for older emergency request records without crashing or data loss
+- [x] Active Request Protection: verify expiration on all donor interactions (`accept`, `decline`, `donation-report`, `cancel`); return 409 Conflict `"This emergency request has expired."`
+- [x] Terminal State Preservation: requests in fulfilled (`Completed`), `Cancelled`, or `Rejected` states never transition to `Expired`
+- [x] Server-Side Expiration Sweep: implement `checkAndExpireRequest` (just-in-time) and `expireOverdueRequests` periodic background worker (every 60s)
+- [x] Real-Time Socket.IO Synchronization: broadcast `request_expired` and update `request_tracking_updated` when requests expire
+- [x] Requester UI Expiration Countdown: live "Expires in: HH:MM:SS" countdown timer on `LiveRequestTrackingCard.tsx` and `/dashboard/requests/[id]`
+- [x] Expired Request UI Banner: display "Request Status: ⏰ Expired" and "This emergency blood request is no longer active."
+- [x] Donor UI Expiration Handling: display `⏰ Request Expired` and disable `[ Accept ]` and `[ Unable to Donate ]` actions in `ActiveRequestsCard.tsx`
+- [x] Admin Management Tab: add `⏰ Expired` and `🟢 Fulfilled` filter tabs, count badges, and expiration dates in `EmergencyRequestsTable.tsx`
+- [x] Automated Test Suites: 14 backend expiry tests (`server/src/__tests__/emergencyExpiry.test.ts`) and 3 frontend tests (`client/__tests__/emergencyExpiry.test.tsx`) passing 100%
+
+---
+
 # 📋 Pending
 
 ## Frontend
@@ -286,6 +331,23 @@ Enhance user experience with App Router 404, loading, and error boundary pages, 
 Status:
 
 🟢 Completed
+
+## Feature – In-Memory Caching for Nearby Hospitals & Blood Banks
+
+Status:
+
+🟢 Completed
+
+- [x] In-memory cache service (`NearbyMemoryCache` in `server/src/services/nearbyCache.ts`)
+- [x] Cache only public OpenStreetMap/Overpass facility search results
+- [x] Normalized cache key generation (`nearby:<lat>:<lng>:<radius>`) with coordinate rounding
+- [x] Configurable TTL via `NEARBY_CACHE_TTL_MS` (default 5 minutes / 300000ms)
+- [x] Memory safety with configurable `MAX_NEARBY_CACHE_ENTRIES` (default 100) and LRU eviction
+- [x] In-flight request deduplication (single-flight) to prevent duplicate upstream calls
+- [x] Cache response visibility with `X-Cache: HIT` / `X-Cache: MISS` headers
+- [x] Automated test suite in `server/src/__tests__/nearbyCache.test.ts` (17 tests passing)
+- [x] Architectural and API documentation updated in `docs/Architecture.md` and `docs/API.md`
+- [x] Environment variable placeholders added in `server/.env.example` and `server/.env.production.example`
 
 ## Feature – Bulk Blood Inventory Upload & Smart Stock Analysis
 

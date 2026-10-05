@@ -20,6 +20,8 @@ export const ChatbotButton: React.FC<ChatbotButtonProps> = ({
     <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50">
       <motion.button
         id="bloodlink-chatbot-toggle"
+        type="button"
+        suppressHydrationWarning
         onClick={onClick}
         aria-expanded={isOpen}
         aria-controls="bloodlink-chat-window"

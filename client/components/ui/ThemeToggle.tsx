@@ -28,6 +28,7 @@ export default function ThemeToggle() {
 
   return (
     <button
+      suppressHydrationWarning
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer shrink-0"
       aria-label="Toggle theme"

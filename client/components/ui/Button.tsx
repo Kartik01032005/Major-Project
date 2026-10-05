@@ -131,6 +131,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={classes}
         disabled={isDisabled}
         aria-busy={loading}
+        suppressHydrationWarning
         {...rest}
       >
         {content}

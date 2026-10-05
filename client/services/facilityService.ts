@@ -186,7 +186,7 @@ export const facilityService = {
           openNow: params.openNow ? "true" : undefined,
           search: search || undefined,
         },
-        timeout: 10000,
+        timeout: 18000,
         signal: params.signal,
       });
 
@@ -201,7 +201,10 @@ export const facilityService = {
         };
         data.totalVisible = data.hospitals.length + data.bloodBanks.length;
 
-        facilityCache.set(cacheKey, { data, timestamp: Date.now() });
+        // Only cache non-empty results to avoid poisoning cache during temporary issues
+        if (data.totalVisible > 0) {
+          facilityCache.set(cacheKey, { data, timestamp: Date.now() });
+        }
         return data;
       }
       throw new Error("Invalid response format");
@@ -226,7 +229,7 @@ export const facilityService = {
 
       try {
         const [hospRes, bankRes] = await Promise.allSettled([
-          fetch(`https://nominatim.openstreetmap.org/search?format=json&amenity=hospital&viewbox=${viewbox}&bounded=1&limit=40&addressdetails=1`, { signal: params.signal }),
+          fetch(`https://nominatim.openstreetmap.org/search?format=json&q=hospital&viewbox=${viewbox}&bounded=1&limit=40&addressdetails=1`, { signal: params.signal }),
           fetch(`https://nominatim.openstreetmap.org/search?format=json&q=blood+bank&viewbox=${viewbox}&bounded=1&limit=25&addressdetails=1`, { signal: params.signal }),
         ]);
 
@@ -336,9 +339,15 @@ export const facilityService = {
         bloodBanks: visibleBloodBanks,
       };
 
-      facilityCache.set(cacheKey, { data: fallbackResult, timestamp: Date.now() });
+      if (fallbackResult.totalVisible > 0) {
+        facilityCache.set(cacheKey, { data: fallbackResult, timestamp: Date.now() });
+      }
       return fallbackResult;
     }
+  },
+
+  clearFacilityCache: (): void => {
+    facilityCache.clear();
   },
 
   geocodeLocation: async (query: string): Promise<GeocodedLocation[]> => {

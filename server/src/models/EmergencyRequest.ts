@@ -24,7 +24,7 @@ const EmergencyRequestSchema = new Schema<IEmergencyRequest>({
   },
   status: {
     type: String,
-    enum: ["Pending", "Approved", "Rejected", "Completed", "Cancelled"],
+    enum: ["Pending", "Approved", "Rejected", "Completed", "Cancelled", "Expired"],
     default: "Pending"
   },
   approvedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
@@ -37,13 +37,21 @@ const EmergencyRequestSchema = new Schema<IEmergencyRequest>({
     donor: { type: Schema.Types.ObjectId, ref: "User", required: true },
     reason: { type: String, required: true, trim: true },
     withdrawnAt: { type: Date, default: Date.now }
-  }]
+  }],
+  declinedBy: [{
+    donor: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    reason: { type: String, trim: true, default: "Unable to donate" },
+    declinedAt: { type: Date, default: Date.now }
+  }],
+  notifiedDonorsCount: { type: Number, default: 0 },
+  expiresAt: { type: Date, required: true }
 }, {
   timestamps: true
 });
 
 // For indexing to speed up queries
 EmergencyRequestSchema.index({ bloodGroup: 1, district: 1, status: 1 });
+EmergencyRequestSchema.index({ expiresAt: 1, status: 1 });
 
 export const EmergencyRequest = model<IEmergencyRequest>("EmergencyRequest", EmergencyRequestSchema);
 export default EmergencyRequest;

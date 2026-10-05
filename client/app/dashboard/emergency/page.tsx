@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiAlertCircle, FiPhone, FiCheck, FiNavigation } from "react-icons/fi";
+import { useRouter } from "next/navigation";
+import { FiAlertCircle, FiPhone, FiCheck, FiNavigation, FiRadio } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth } from "@/context";
 import { useDashboard } from "@/context";
@@ -13,6 +14,7 @@ import HospitalAutocomplete from "@/components/emergency/HospitalAutocomplete";
 const BLOOD_GROUPS: BloodGroup[] = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 export default function EmergencyRequestPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const { createRequest } = useDashboard();
 
@@ -160,12 +162,21 @@ export default function EmergencyRequestPage() {
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-md">
                   Your request for <strong>{bloodGroup}</strong> blood has been registered. Nearby matching donors and clinics have been notified.
                 </p>
-                <button
-                  onClick={handleReset}
-                  className="px-6 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm"
-                >
-                  Create Another Request
-                </button>
+                <div className="flex items-center gap-3 flex-wrap justify-center">
+                  <button
+                    onClick={() => router.push("/dashboard/requests")}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                    <span>View Live Request Tracking</span>
+                  </button>
+                  <button
+                    onClick={handleReset}
+                    className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Create Another Request
+                  </button>
+                </div>
               </motion.div>
             ) : (
               <motion.form

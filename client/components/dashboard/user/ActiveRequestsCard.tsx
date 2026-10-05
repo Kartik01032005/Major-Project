@@ -2,11 +2,30 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck, FiNavigation, FiHeart, FiX, FiTrash2 } from "react-icons/fi";
+import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck, FiNavigation, FiHeart, FiX, FiTrash2, FiUser } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useDashboard, useTranslation } from "@/context";
-import { RequestStatus, EmergencyRequest } from "@/types";
+import { RequestStatus, EmergencyRequest, DonorBasic } from "@/types";
+import { dashboardService } from "@/services/dashboardService";
+import Link from "next/link";
 import DonorAcceptanceModal from "./DonorAcceptanceModal";
+import LiveRequestTrackingCard from "./LiveRequestTrackingCard";
+
+// Helper: extract string ID from either a populated object or a plain string
+const extractId = (val: string | DonorBasic): string =>
+  typeof val === "object" && val !== null ? val._id : val;
+
+// Helper: get donor name if populated, else fallback label
+const getDonorName = (val: string | DonorBasic): string =>
+  typeof val === "object" && val !== null ? val.name : "Anonymous Donor";
+
+// Helper: get donor phone if populated
+const getDonorPhone = (val: string | DonorBasic): string | null =>
+  typeof val === "object" && val !== null ? (val.phone ?? null) : null;
+
+// Helper: get donor blood group if populated
+const getDonorBloodGroup = (val: string | DonorBasic): string | null =>
+  typeof val === "object" && val !== null ? (val.bloodGroup ?? null) : null;
 
 const STATUS_ICONS: Record<RequestStatus, React.ReactNode> = {
   Pending:   <FiClock size={12} />,
@@ -14,6 +33,7 @@ const STATUS_ICONS: Record<RequestStatus, React.ReactNode> = {
   Rejected:  <FiXCircle size={12} />,
   Completed: <FiCheckCircle size={12} />,
   Cancelled: <FiXCircle size={12} />,
+  Expired:   <FiClock size={12} />,
 };
 
 const STATUS_COLORS: Record<RequestStatus, string> = {
@@ -22,6 +42,7 @@ const STATUS_COLORS: Record<RequestStatus, string> = {
   Rejected:  "bg-red-100    text-red-700    dark:bg-red-900/30    dark:text-red-400",
   Completed: "bg-slate-100  text-slate-700  dark:bg-slate-800     dark:text-slate-400",
   Cancelled: "bg-slate-100  text-slate-700  dark:bg-slate-800     dark:text-slate-400",
+  Expired:   "bg-amber-100  text-amber-800  dark:bg-amber-900/30  dark:text-amber-300",
 };
 
 const BLOOD_GROUP_COLORS: Record<string, string> = {
@@ -51,20 +72,61 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   const [acceptError, setAcceptError] = useState<string | null>(null);
   const [navLoadingId, setNavLoadingId] = useState<string | null>(null);
   const [navErrorId, setNavErrorId] = useState<{ id: string; message: string } | null>(null);
+  const [expandedTrackingId, setExpandedTrackingId] = useState<string | null>(null);
 
   // Clear Requests View State (Donor/User View Dismissal)
-  const [clearedRequestIds, setClearedRequestIds] = useState<string[]>([]);
+  const [requestDismissalState, setRequestDismissalState] = useState<{
+    userId: string;
+    my: string[];
+    donate: string[];
+    loaded: boolean;
+    error: string | null;
+  } | null>(null);
+  const [clearingRequests, setClearingRequests] = useState(false);
   const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
+  const currentUserId = user?._id;
+  const currentDismissals = requestDismissalState?.userId === currentUserId ? requestDismissalState : null;
+  const clearedRequestIds: { my: string[]; donate: string[] } = currentDismissals ?? { my: [], donate: [] };
+  const dismissalsLoaded = currentDismissals?.loaded ?? false;
+  const clearRequestsError = currentDismissals?.error ?? null;
 
-  const handleConfirmClearRequests = () => {
-    if (activeTab === "donate") {
-      const donateIdsToClear = donateRequests.map((r) => r._id);
-      setClearedRequestIds((prev) => Array.from(new Set([...prev, ...donateIdsToClear])));
-    } else {
-      const myIdsToClear = myRequests.map((r) => r._id);
-      setClearedRequestIds((prev) => Array.from(new Set([...prev, ...myIdsToClear])));
+  const handleConfirmClearRequests = async () => {
+    const requestIds = (activeTab === "donate" ? donateRequests : myRequests).map((request) => request._id);
+    if (requestIds.length === 0) {
+      setShowClearConfirmModal(false);
+      return;
     }
-    setShowClearConfirmModal(false);
+
+    setClearingRequests(true);
+    try {
+      await dashboardService.dismissRequests(activeTab, requestIds);
+      if (currentUserId) {
+        setRequestDismissalState((previous) => {
+          const current = previous?.userId === currentUserId
+            ? previous
+            : { userId: currentUserId, my: [], donate: [], loaded: true, error: null };
+          return {
+            ...current,
+            [activeTab]: Array.from(new Set([...current[activeTab], ...requestIds])),
+            error: null,
+          };
+        });
+      }
+      setShowClearConfirmModal(false);
+    } catch (error: unknown) {
+      const errorObject = error as { response?: { data?: { message?: string } } };
+      if (currentUserId) {
+        setRequestDismissalState((previous) => ({
+          userId: currentUserId,
+          my: previous?.userId === currentUserId ? previous.my : [],
+          donate: previous?.userId === currentUserId ? previous.donate : [],
+          loaded: true,
+          error: errorObject.response?.data?.message || t("donor_nav_err_generic"),
+        }));
+      }
+    } finally {
+      setClearingRequests(false);
+    }
   };
 
   // Fulfillment & Withdrawal Modals State
@@ -121,12 +183,20 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
 
     setWithdrawLoading(true);
     try {
-      await withdrawAcceptance(withdrawModalReq._id, finalReason);
+      const hasAccepted = (withdrawModalReq.acceptedBy ?? []).some(
+        (id) => String(id) === String(currentUserId)
+      );
+      if (hasAccepted) {
+        await withdrawAcceptance(withdrawModalReq._id, finalReason);
+      } else {
+        await dashboardService.declineRequest(withdrawModalReq._id, finalReason);
+        await refreshRequests();
+      }
       setWithdrawModalReq(null);
       setWithdrawReasonOther("");
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } } };
-      console.error("Failed to withdraw acceptance:", err);
+      console.error("Failed to record unable to donate:", err);
       setWithdrawError(errorObj.response?.data?.message || t("donor_nav_err_generic"));
     } finally {
       setWithdrawLoading(false);
@@ -197,7 +267,32 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
     refreshRequests();
   }, [refreshRequests]);
 
-  const currentUserId = user?._id;
+  useEffect(() => {
+    if (!currentUserId) return;
+    let isCurrentAccount = true;
+    dashboardService.getRequestDismissals()
+      .then((dismissals) => {
+        if (isCurrentAccount) {
+          setRequestDismissalState({ userId: currentUserId, ...dismissals, loaded: true, error: null });
+        }
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to load dismissed requests:", error);
+        if (isCurrentAccount) {
+          setRequestDismissalState((previous) => ({
+            userId: currentUserId,
+            my: previous?.userId === currentUserId ? previous.my : [],
+            donate: previous?.userId === currentUserId ? previous.donate : [],
+            loaded: true,
+            error: t("donor_nav_err_generic"),
+          }));
+        }
+      });
+
+    return () => {
+      isCurrentAccount = false;
+    };
+  }, [currentUserId, t]);
 
   const getStatusLabel = (status: RequestStatus) => {
     switch (status) {
@@ -243,7 +338,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   // User's own requests
   const myRequests = requests.filter((r) => {
     if (!currentUserId) return false;
-    if (clearedRequestIds.includes(r._id)) return false;
+    if (clearedRequestIds.my.includes(r._id)) return false;
     let reqUserId = "";
     if (typeof r.requestBy === "object" && r.requestBy !== null) {
       reqUserId = r.requestBy._id || "";
@@ -256,7 +351,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   // Requests from other users available to donate (Pending or Approved)
   const donateRequests = requests.filter((r) => {
     if (!currentUserId) return false;
-    if (clearedRequestIds.includes(r._id)) return false;
+    if (clearedRequestIds.donate.includes(r._id)) return false;
     let reqUserId = "";
     if (typeof r.requestBy === "object" && r.requestBy !== null) {
       reqUserId = r.requestBy._id || "";
@@ -264,7 +359,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
       reqUserId = r.requestBy;
     }
     const isOwnRequest = String(reqUserId) === String(currentUserId);
-    const isOpenStatus = r.status === "Pending" || r.status === "Approved";
+    const isOpenStatus = r.status === "Pending" || r.status === "Approved" || r.status === "Expired";
     return !isOwnRequest && isOpenStatus;
   });
 
@@ -352,6 +447,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
               <button
                 type="button"
                 onClick={() => setShowClearConfirmModal(true)}
+                disabled={!dismissalsLoaded}
                 className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ml-auto"
               >
                 <FiTrash2 size={12} />
@@ -400,11 +496,18 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
               const statusIcon = STATUS_ICONS[req.status];
               const bgColor = BLOOD_GROUP_COLORS[req.bloodGroup] ?? "";
               const hasAccepted = (req.acceptedBy ?? []).some(
-                (id) => String(id) === String(currentUserId)
+                (id) => String(extractId(id as string | DonorBasic)) === String(currentUserId)
               );
               const hasWithdrawn = (req.withdrawnBy ?? []).some(
-                (entry) => String(entry.donor) === String(currentUserId)
+                (entry) => String((entry as any).donor?._id || entry.donor) === String(currentUserId)
               );
+              const hasDeclined = (req.declinedBy ?? []).some(
+                (entry) => String((entry as any).donor?._id || entry.donor) === String(currentUserId)
+              );
+              const isUnable = hasWithdrawn || hasDeclined;
+
+              // For completed requests — donors who reported donation
+              const donorReporters = (req.donationReportedBy ?? []) as (string | DonorBasic)[];
 
               return (
                 <motion.li
@@ -445,34 +548,140 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
 
                   {/* Actions for user's own requests */}
                   {activeTab === "my" && (
-                    <div className="mt-3 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-3">
-                      <div>
-                        {req.status === "Completed" && (
-                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                            {t("requester_fulfilled_badge")}
-                          </span>
-                        )}
-                        {req.donationReportedBy && req.donationReportedBy.length > 0 && req.status !== "Completed" && (
+                    <div className="mt-3 space-y-3 border-t border-slate-100 dark:border-slate-800/80 pt-3">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                          {req.donationReportedBy && req.donationReportedBy.length > 0 && req.status !== "Completed" && (
+                            <button
+                              type="button"
+                              onClick={() => setRequesterConfirmModalReq(req)}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm animate-pulse"
+                            >
+                              <FiCheck size={13} /> {t("requester_confirm_donation_btn")}
+                            </button>
+                          )}
+
+                          {/* Live Request Tracking Toggle Button — hidden for Cancelled / Expired / Completed */}
+                          {req.status !== "Cancelled" && req.status !== "Expired" && req.status !== "Completed" && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setExpandedTrackingId(expandedTrackingId === req._id ? null : req._id)
+                              }
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors border border-red-200 dark:border-red-900/50"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                              <span>
+                                {expandedTrackingId === req._id ? "Hide Live Tracking" : "🔴 Live Tracking"}
+                              </span>
+                            </button>
+                          )}
+
+                          <Link
+                            href={`/dashboard/requests/${req._id}`}
+                            className="text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:underline"
+                          >
+                            Details →
+                          </Link>
+                        </div>
+
+                        {req.status === "Pending" && (
                           <button
                             type="button"
-                            onClick={() => setRequesterConfirmModalReq(req)}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm animate-pulse"
+                            onClick={() => handleCancel(req._id)}
+                            disabled={cancelLoading === req._id}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
                           >
-                            <FiCheck size={13} /> {t("requester_confirm_donation_btn")}
+                            {cancelLoading === req._id && <FiLoader size={12} className="animate-spin" />}
+                            {cancelLoading === req._id ? t("requests_cancelling") : t("requests_cancel")}
                           </button>
                         )}
                       </div>
 
-                      {req.status === "Pending" && (
-                        <button
-                          type="button"
-                          onClick={() => handleCancel(req._id)}
-                          disabled={cancelLoading === req._id}
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {cancelLoading === req._id && <FiLoader size={12} className="animate-spin" />}
-                          {cancelLoading === req._id ? t("requests_cancelling") : t("requests_cancel")}
-                        </button>
+                      {/* Expandable Live Tracking Card — only for active requests */}
+                      {expandedTrackingId === req._id && req.status !== "Cancelled" && req.status !== "Expired" && req.status !== "Completed" && (
+                        <div className="pt-2">
+                          <LiveRequestTrackingCard
+                            requestId={req._id}
+                            onRefreshParent={refreshRequests}
+                            compact
+                          />
+                        </div>
+                      )}
+
+                      {/* ── Donation Completed Summary Card ── */}
+                      {req.status === "Completed" && donorReporters.length > 0 && (
+                        <div className="rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/70 dark:bg-emerald-950/20 overflow-hidden">
+                          {/* Header */}
+                          <div className="flex items-center gap-2 px-3 py-2 border-b border-emerald-100 dark:border-emerald-900/40 bg-emerald-100/60 dark:bg-emerald-950/40">
+                            <FiCheckCircle size={13} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+                              Donation Completed
+                            </span>
+                          </div>
+
+                          <div className="p-3 space-y-2">
+                            {/* Donor(s) who donated */}
+                            {donorReporters.map((donor, di) => (
+                              <div key={di} className="flex items-start gap-2.5">
+                                <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
+                                  <FiUser size={13} className="text-emerald-600 dark:text-emerald-400" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-xs font-semibold text-slate-900 dark:text-white">
+                                      {getDonorName(donor as string | DonorBasic)}
+                                    </span>
+                                    {getDonorBloodGroup(donor as string | DonorBasic) && (
+                                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300">
+                                        {getDonorBloodGroup(donor as string | DonorBasic)}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {getDonorPhone(donor as string | DonorBasic) && (
+                                    <a
+                                      href={`tel:${getDonorPhone(donor as string | DonorBasic)}`}
+                                      className="flex items-center gap-1 text-[11px] text-red-600 dark:text-red-400 hover:underline mt-0.5"
+                                    >
+                                      <FiPhone size={10} />
+                                      <span>{getDonorPhone(donor as string | DonorBasic)}</span>
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+
+                            {/* Hospital / location details */}
+                            <div className="mt-2 pt-2 border-t border-emerald-100 dark:border-emerald-900/40">
+                              <div className="flex items-start gap-2">
+                                <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0">
+                                  <FiMapPin size={13} className="text-slate-500 dark:text-slate-400" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{req.hospital}</p>
+                                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                                    {req.address}, {req.district}, {req.state}
+                                  </p>
+                                  <a
+                                    href={`tel:${req.contactNumber}`}
+                                    className="flex items-center gap-1 text-[11px] text-red-600 dark:text-red-400 hover:underline mt-0.5"
+                                  >
+                                    <FiPhone size={10} />
+                                    <span>{req.contactNumber}</span>
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Confirmed timestamp */}
+                            {req.donationConfirmedAt && (
+                              <p className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1 pt-1">
+                                <FiCheckCircle size={10} className="text-emerald-500" />
+                                Confirmed {new Date(req.donationConfirmedAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}
@@ -480,30 +689,105 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                   {/* Actions for donate requests */}
                   {activeTab === "donate" && (
                     <div className="mt-3 space-y-3 border-t border-slate-100 dark:border-slate-800/80 pt-3">
+                      {/* Section 9: Donor Own Response & Request Status */}
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                            Your Response:
+                          </span>
+                          {hasAccepted ? (
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                              <FiCheckCircle size={12} /> Accepted
+                            </span>
+                          ) : isUnable ? (
+                            <span className="font-bold text-red-600 dark:text-red-400 flex items-center gap-1">
+                              <FiXCircle size={12} /> Unable to Donate
+                            </span>
+                          ) : (
+                            <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                              <FiClock size={12} /> Pending
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-[11px]">
+                          <span className="text-slate-400">Request:</span>
+                          <span className="font-semibold text-slate-700 dark:text-slate-300">
+                            {req.status === "Completed"
+                              ? "✅ Request Fulfilled"
+                              : req.status === "Cancelled"
+                              ? "⚪ Request Cancelled"
+                              : req.status === "Expired" || (req.expiresAt && new Date(req.expiresAt).getTime() <= Date.now())
+                              ? "⏰ Request Expired"
+                              : (req.acceptedBy?.length ?? 0) > 0
+                              ? "🟢 Donor Response Received"
+                              : "🟠 Searching for Donors"}
+                          </span>
+                        </div>
+                      </div>
+
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] text-slate-400 flex items-center gap-1">
                           <FaDroplet size={10} className="text-red-500" />
                           {req.unitsRequired ? `${req.unitsRequired} ${t("admin_stat_units")}` : req.bloodGroup}
                         </span>
 
-                        {hasAccepted ? (
+                        {req.status === "Expired" || (req.expiresAt && new Date(req.expiresAt).getTime() <= Date.now()) ? (
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                              ⏰ Request Expired
+                            </span>
+                            <button
+                              type="button"
+                              disabled
+                              className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-xl text-slate-400 bg-slate-100 dark:bg-slate-800 cursor-not-allowed opacity-50"
+                              title="This emergency request has expired."
+                            >
+                              <FiAlertCircle size={12} />
+                              <span>Unable to Donate</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed opacity-50 shadow-none"
+                              title="This emergency request has expired."
+                            >
+                              Accept
+                            </button>
+                          </div>
+                        ) : hasAccepted ? (
                           <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             <FiCheck size={13} /> {t("requests_accepted_badge")}
                           </span>
-                        ) : hasWithdrawn ? (
+                        ) : isUnable ? (
                           <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                             <FiAlertCircle size={13} /> {t("requests_previously_approached_badge")}
                           </span>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={() => setSelectedRequestForAcceptance(req)}
-                            disabled={acceptingId === req._id}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors shadow-sm"
-                          >
-                            {acceptingId === req._id && <FiLoader size={12} className="animate-spin" />}
-                            {acceptingId === req._id ? t("requests_accepting") : t("requests_accept_btn")}
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setWithdrawModalReq(req);
+                                setWithdrawReasonPreset("Medically unfit");
+                                setWithdrawReasonOther("");
+                                setWithdrawError(null);
+                              }}
+                              className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-xl text-slate-600 dark:text-slate-300 hover:text-red-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            >
+                              <FiAlertCircle size={12} />
+                              <span>Unable to Donate</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedRequestForAcceptance(req)}
+                              disabled={acceptingId === req._id}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors shadow-sm"
+                            >
+                              {acceptingId === req._id && <FiLoader size={12} className="animate-spin" />}
+                              {acceptingId === req._id ? t("requests_accepting") : t("requests_accept_btn")}
+                            </button>
+                          </div>
                         )}
                       </div>
 
@@ -557,7 +841,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
 
                           {/* Fulfillment & Withdrawal Action Buttons */}
                           <div className="flex items-center justify-between gap-2 pt-1">
-                            {req.donationReportedBy && req.donationReportedBy.includes(user?._id || "") ? (
+                            {req.donationReportedBy && (req.donationReportedBy as (string | DonorBasic)[]).some(d => extractId(d as string | DonorBasic) === (user?._id || "")) ? (
                               <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
                                 <FiClock size={12} /> {t("donor_donated_reported_badge")}
                               </span>
@@ -824,6 +1108,11 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
               <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 {t("requests_clear_modal_msg")}
               </p>
+              {clearRequestsError && (
+                <p className="mt-3 text-xs text-red-600 dark:text-red-400" role="alert">
+                  {clearRequestsError}
+                </p>
+              )}
             </div>
             <div className="flex items-center justify-end gap-3 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800">
               <button
@@ -836,9 +1125,10 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
               <button
                 type="button"
                 onClick={handleConfirmClearRequests}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm"
+                disabled={clearingRequests || !dismissalsLoaded}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <FiTrash2 size={12} />
+                {clearingRequests ? <FiLoader size={12} className="animate-spin" /> : <FiTrash2 size={12} />}
                 {t("requests_clear_confirm_btn")}
               </button>
             </div>

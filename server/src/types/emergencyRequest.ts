@@ -17,7 +17,7 @@ export interface IEmergencyRequest extends Document {
     latitude: number;
     longitude: number;
   };
-  status: "Pending" | "Approved" | "Rejected" | "Completed" | "Cancelled";
+  status: "Pending" | "Approved" | "Rejected" | "Completed" | "Cancelled" | "Expired";
   approvedBy?: Types.ObjectId | null;
   acceptedBy: Types.ObjectId[];
   donationReportedBy?: Types.ObjectId[];
@@ -29,6 +29,33 @@ export interface IEmergencyRequest extends Document {
     reason: string;
     withdrawnAt: Date;
   }>;
+  declinedBy?: Array<{
+    donor: Types.ObjectId;
+    reason?: string;
+    declinedAt: Date;
+  }>;
+  notifiedDonorsCount?: number;
+  expiresAt: Date;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface IEmergencyTrackingStats {
+  requestId: string;
+  requestCreated: Date;
+  expiresAt?: Date;
+  notifiedCount: number;
+  respondedCount: number;
+  acceptedCount: number;
+  unableToDonateCount: number;
+  withdrawnCount: number;
+  pendingCount: number;
+  status: "Pending" | "Approved" | "Rejected" | "Completed" | "Cancelled" | "Expired";
+  lifecycleStatus:
+    | "Searching for Donors"
+    | "Donor Response Received"
+    | "Request Fulfilled"
+    | "Request Cancelled"
+    | "Request Rejected"
+    | "Request Expired";
 }

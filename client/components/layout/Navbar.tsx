@@ -277,6 +277,7 @@ export default function Navbar() {
               )}
               <button
                 id="mobile-menu-toggle"
+                suppressHydrationWarning
                 className={[
                   "w-9 h-9 flex items-center justify-center rounded-lg transition-colors shrink-0",
                   "text-slate-600 hover:text-slate-900 hover:bg-slate-100",

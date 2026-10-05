@@ -99,7 +99,14 @@ export interface ApiResponse<T = unknown> {
 
 // ─── Emergency Request ────────────────────────────────────────────────────────
 
-export type RequestStatus = "Pending" | "Approved" | "Rejected" | "Completed" | "Cancelled";
+export type RequestStatus = "Pending" | "Approved" | "Rejected" | "Completed" | "Cancelled" | "Expired";
+
+export interface DonorBasic {
+  _id: string;
+  name: string;
+  phone?: string;
+  bloodGroup?: string;
+}
 
 export interface EmergencyRequest {
   _id: string;
@@ -129,11 +136,18 @@ export interface EmergencyRequest {
     longitude?: number;
   };
   status: RequestStatus;
+  expiresAt?: string;
   approvedBy?: string | null;
-  acceptedBy?: string[];
-  donationReportedBy?: string[];
+  acceptedBy?: (string | DonorBasic)[];
+  declinedBy?: Array<{
+    donor: string | { _id: string };
+    reason?: string;
+    declinedAt: string;
+  }>;
+  notifiedDonorsCount?: number;
+  donationReportedBy?: (string | DonorBasic)[];
   donationReportedAt?: string | null;
-  donationConfirmedBy?: string | null;
+  donationConfirmedBy?: string | DonorBasic | null;
   donationConfirmedAt?: string | null;
   withdrawnBy?: Array<{
     donor: string | { _id: string };
@@ -142,6 +156,36 @@ export interface EmergencyRequest {
   }>;
   createdAt: string;
   updatedAt: string;
+}
+
+export type LifecycleTrackingStatus =
+  | "Searching for Donors"
+  | "Donor Response Received"
+  | "Request Fulfilled"
+  | "Request Cancelled"
+  | "Request Rejected"
+  | "Request Expired";
+
+export interface EmergencyTrackingStats {
+  requestId: string;
+  requestCreated: string;
+  expiresAt?: string;
+  notifiedCount: number;
+  respondedCount: number;
+  acceptedCount: number;
+  unableToDonateCount: number;
+  withdrawnCount: number;
+  pendingCount: number;
+  status: RequestStatus;
+  lifecycleStatus: LifecycleTrackingStatus;
+}
+
+export interface DonorResponseStatus {
+  requestId: string;
+  expiresAt?: string;
+  myResponse: "Accepted" | "Unable to Donate" | "Pending";
+  lifecycleStatus: string;
+  requestStatus: RequestStatus;
 }
 
 export interface UserGpsLocation {

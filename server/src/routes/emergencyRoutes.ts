@@ -10,7 +10,12 @@ import {
   reportDonation,
   confirmDonation,
   withdrawAcceptance,
-  cancelRequest
+  cancelRequest,
+  getRequestTracking,
+  getDonorResponseStatus,
+  declineRequest,
+  getRequestDismissals,
+  dismissRequests
 } from "../controllers/emergencyController.js";
 import { authGuard, adminGuard } from "../middleware/auth.js";
 
@@ -54,8 +59,13 @@ const createRequestValidation = [
 
 router.post("/", authGuard, createRequestValidation, createRequest);
 router.get("/", getAllRequests);
+router.get("/dismissals", authGuard, getRequestDismissals);
+router.post("/dismissals", authGuard, dismissRequests);
 router.get("/:id", getRequestById);
+router.get("/:id/tracking", authGuard, getRequestTracking);
+router.get("/:id/donor-status", authGuard, getDonorResponseStatus);
 router.put("/:id/accept", authGuard, acceptRequest);
+router.post("/:id/decline", authGuard, declineRequest);
 router.post("/:id/donation-report", authGuard, reportDonation);
 router.post("/:id/donation-confirm", authGuard, confirmDonation);
 router.post("/:id/withdraw", authGuard, withdrawAcceptance);

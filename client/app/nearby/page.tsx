@@ -28,6 +28,7 @@ import {
   checkDevicePermission,
   requestDevicePermission,
   isNativePlatform,
+  getGoogleMapsLocationUrl,
 } from "@/services/locationService";
 import { useTranslation } from "@/context";
 import {
@@ -116,6 +117,7 @@ export default function NearbyFacilitiesPage() {
   // Facility Data
   const [facilityData, setFacilityData] = useState<NearbyFacilityResponse | null>(null);
   const [loadingFacilities, setLoadingFacilities] = useState(false);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   // Ref to track last searched coordinates & radius to suppress GPS jitter (< 25m)
   const lastFetchedRef = useRef<{ lat: number; lng: number; radius: number } | null>(null);
@@ -507,6 +509,7 @@ export default function NearbyFacilitiesPage() {
     bloodGroupFilter,
     openNowFilter,
     search,
+    reloadNonce,
   ]);
 
   // ─── Filtered lists ────────────────────────────────────────────────────────
@@ -1193,6 +1196,16 @@ export default function NearbyFacilitiesPage() {
                   {t("nearby_no_results") || "Try expanding the search radius or search a different area manually."}
                 </p>
                 <div className="flex items-center justify-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => {
+                      facilityService.clearFacilityCache();
+                      lastFetchedRef.current = null;
+                      setReloadNonce((n) => n + 1);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all"
+                  >
+                    Retry Search
+                  </button>
                   {radius < 50 && (
                     <button
                       onClick={() => setRadius(radius === 5 ? 10 : radius === 10 ? 20 : 50)}
@@ -1342,13 +1355,18 @@ export default function NearbyFacilitiesPage() {
                           <span>{t("nearby_btn_navigate") || "Navigate"}</span>
                         </button>
 
-                        {/* 🗺️ Open Map on OpenStreetMap (exact coordinates) */}
+                        {/* 🗺️ Open Map on Google Maps (focused only on facility pin, no route) */}
                         <a
-                          href={`https://www.openstreetmap.org/?mlat=${facility.position.lat}&mlon=${facility.position.lng}#map=16/${facility.position.lat}/${facility.position.lng}`}
+                          href={getGoogleMapsLocationUrl(
+                            facility.position.lat,
+                            facility.position.lng,
+                            facility.name
+                          )}
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
                           className="flex-1 min-w-[90px] min-h-[44px] inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                          aria-label={`Open map location for ${facility.name}`}
                         >
                           <FiMapPin size={13} className="text-red-500" />
                           <span>{t("nearby_btn_open_map") || "Open Map"}</span>

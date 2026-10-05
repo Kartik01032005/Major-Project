@@ -186,9 +186,10 @@ export async function getCurrentDevicePosition(
 
   // 2. Web Browser or Native WebView fallback via navigator.geolocation
   // Check secure context for browser: W3C Geolocation API is strictly prohibited on insecure origins
+  const secureHost = typeof window !== "undefined" && window.location.host ? window.location.host : "localhost:3000";
   if (!isNativePlatform() && typeof window !== "undefined" && window.isSecureContext === false) {
     throw new LocationServiceError(
-      "Geolocation requires a secure connection (HTTPS). Please open BloodLink via https://10.62.127.58:3000 to acquire your real phone GPS.",
+      `Geolocation requires a secure connection (HTTPS). Please open BloodLink via https://${secureHost} to acquire your real phone GPS.`,
       "INSECURE_CONTEXT"
     );
   }
@@ -216,7 +217,7 @@ export async function getCurrentDevicePosition(
           if (!isNativePlatform() && window.isSecureContext === false) {
             reject(
               new LocationServiceError(
-                "Browser geolocation was blocked because this page is served over an insecure HTTP origin. Please open via https://10.62.127.58:3000.",
+                `Browser geolocation was blocked because this page is served over an insecure HTTP origin. Please open via https://${secureHost}.`,
                 "INSECURE_CONTEXT"
               )
             );
@@ -252,4 +253,63 @@ export async function getCurrentDevicePosition(
     );
   });
 }
+
+/**
+ * Generates an external Google Maps URL focused ONLY on the specified facility with a location pin.
+ * Uses the official Google Maps Search API format:
+ * https://www.google.com/maps/search/?api=1&query=<name>,<lat>,<lng>
+ *
+ * It explicitly does NOT create a route, start navigation, or calculate directions.
+ * Returns empty string if coordinates are invalid.
+ */
+export function getGoogleMapsLocationUrl(
+  lat?: number,
+  lng?: number,
+  name?: string
+): string {
+  if (
+    typeof lat !== "number" ||
+    typeof lng !== "number" ||
+    isNaN(lat) ||
+    isNaN(lng) ||
+    (lat === 0 && lng === 0)
+  ) {
+    return "";
+  }
+
+  const cleanName = (name || "").trim();
+  const query = cleanName ? `${cleanName},${lat},${lng}` : `${lat},${lng}`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+/**
+ * Generates an external Google Maps Directions URL from user origin to destination.
+ * Preserved specifically for the "Navigate" button.
+ */
+export function getGoogleMapsDirectionsUrl(
+  destLat: number,
+  destLng: number,
+  originLat?: number,
+  originLng?: number
+): string {
+  if (
+    typeof destLat !== "number" ||
+    typeof destLng !== "number" ||
+    isNaN(destLat) ||
+    isNaN(destLng)
+  ) {
+    return "";
+  }
+
+  const hasOrigin =
+    typeof originLat === "number" &&
+    typeof originLng === "number" &&
+    !isNaN(originLat) &&
+    !isNaN(originLng) &&
+    (originLat !== 0 || originLng !== 0);
+
+  const originParam = hasOrigin ? `origin=${originLat},${originLng}&` : "";
+  return `https://www.google.com/maps/dir/?api=1&${originParam}destination=${destLat},${destLng}`;
+}
+
 

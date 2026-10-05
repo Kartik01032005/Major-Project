@@ -6,6 +6,7 @@ import { FiAlertCircle, FiCheckCircle, FiXCircle, FiClock, FiMapPin, FiPhone, Fi
 import { FaDroplet } from "react-icons/fa6";
 import { useDashboard, useTranslation } from "@/context";
 import { RequestStatus, EmergencyRequest } from "@/types";
+import Link from "next/link";
 
 const STATUS_CONFIG: Record<RequestStatus, { badge: string; icon: React.ReactNode }> = {
   Pending:   { badge: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",   icon: <FiClock size={12} /> },
@@ -13,6 +14,7 @@ const STATUS_CONFIG: Record<RequestStatus, { badge: string; icon: React.ReactNod
   Rejected:  { badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400", icon: <FiXCircle size={12} /> },
   Completed: { badge: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400", icon: <FiCheckCircle size={12} /> },
   Cancelled: { badge: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400", icon: <FiXCircle size={12} /> },
+  Expired:   { badge: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-300 dark:border-amber-700", icon: <FiClock size={12} /> },
 };
 
 const BLOOD_GROUP_COLORS: Record<string, string> = {
@@ -62,6 +64,7 @@ export default function EmergencyRequestsTable() {
       case "Rejected": return t("requests_status_rejected");
       case "Completed": return t("requests_status_completed");
       case "Cancelled": return t("requests_status_cancelled");
+      case "Expired": return "Expired";
       default: return status;
     }
   };
@@ -74,14 +77,33 @@ export default function EmergencyRequestsTable() {
     Rejected:  requests.filter((r) => matchesFilter(r.status, "Rejected")).length,
     Completed: requests.filter((r) => matchesFilter(r.status, "Completed")).length,
     Cancelled: requests.filter((r) => matchesFilter(r.status, "Cancelled")).length,
+    Expired:   requests.filter((r) => matchesFilter(r.status, "Expired")).length,
   };
 
+  const aggregateMetrics = requests.reduce(
+    (acc, r) => {
+      const accepted = (r.acceptedBy || []).length;
+      const withdrawnIds = (r.withdrawnBy || []).map((w: any) => String(w.donor?._id || w.donor));
+      const declinedIds = (r.declinedBy || []).map((d: any) => String(d.donor?._id || d.donor));
+      const unableSet = new Set([...withdrawnIds, ...declinedIds]);
+      const respondedSet = new Set([...(r.acceptedBy || []).map(String), ...unableSet]);
+
+      acc.totalResponded += respondedSet.size;
+      acc.totalAccepted += accepted;
+      if (r.status === "Completed") acc.totalFulfilled += 1;
+      return acc;
+    },
+    { totalResponded: 0, totalAccepted: 0, totalFulfilled: 0 }
+  );
+
   const FILTERS: { key: FilterType; label: string }[] = [
-    { key: "all",      label: `${t("admin_requests_all_statuses")} (${counts.all})` },
-    { key: "Pending",  label: `${t("requests_status_pending")} (${counts.Pending})` },
-    { key: "Approved", label: `${t("requests_status_approved")} (${counts.Approved})` },
-    { key: "Rejected", label: `${t("requests_status_rejected")} (${counts.Rejected})` },
-    { key: "Cancelled", label: `${t("requests_status_cancelled")} (${counts.Cancelled})` },
+    { key: "all",       label: `${t("admin_requests_all_statuses")} (${counts.all})` },
+    { key: "Pending",   label: `🟠 ${t("requests_status_pending")} (${counts.Pending})` },
+    { key: "Approved",  label: `${t("requests_status_approved")} (${counts.Approved})` },
+    { key: "Completed", label: `🟢 ${t("requests_status_completed")} (${counts.Completed})` },
+    { key: "Cancelled", label: `⚪ ${t("requests_status_cancelled")} (${counts.Cancelled})` },
+    { key: "Expired",   label: `⏰ Expired (${counts.Expired})` },
+    { key: "Rejected",  label: `${t("requests_status_rejected")} (${counts.Rejected})` },
   ];
 
   const handleAction = async (id: string, action: "approved" | "rejected") => {
@@ -118,22 +140,37 @@ export default function EmergencyRequestsTable() {
           )}
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex flex-wrap gap-1.5">
-          {FILTERS.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              className={[
-                "text-[11px] font-semibold px-3 py-1.5 rounded-full transition-all",
-                filter === f.key
-                  ? "bg-red-600 text-white"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700",
-              ].join(" ")}
-            >
-              {f.label}
-            </button>
-          ))}
+        {/* Filter tabs & Aggregate Monitoring Overview */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-1.5">
+            {FILTERS.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className={[
+                  "text-[11px] font-semibold px-3 py-1.5 rounded-full transition-all",
+                  filter === f.key
+                    ? "bg-red-600 text-white"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700",
+                ].join(" ")}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Aggregate Monitoring Summary Badges */}
+          <div className="flex items-center gap-2 text-xs flex-wrap ml-auto">
+            <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-[11px]">
+              Donors Responded: <strong className="text-slate-900 dark:text-white">{aggregateMetrics.totalResponded}</strong>
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-semibold text-[11px] border border-emerald-200 dark:border-emerald-800">
+              Accepted: <strong>{aggregateMetrics.totalAccepted}</strong>
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-semibold text-[11px] border border-blue-200 dark:border-blue-800">
+              Fulfilled: <strong>{aggregateMetrics.totalFulfilled}</strong>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -161,6 +198,24 @@ export default function EmergencyRequestsTable() {
             const requesterName = getRequesterName(req);
             const location = getLocation(req);
 
+            const acceptedCount = (req.acceptedBy || []).length;
+            const withdrawnIds = (req.withdrawnBy || []).map((w: any) => String(w.donor?._id || w.donor));
+            const declinedIds = (req.declinedBy || []).map((d: any) => String(d.donor?._id || d.donor));
+            const unableSet = new Set([...withdrawnIds, ...declinedIds]);
+            const respondedSet = new Set([...(req.acceptedBy || []).map(String), ...unableSet]);
+            const donorsResponded = respondedSet.size;
+
+            const monitoringStatus =
+              req.status === "Completed"
+                ? "Fulfilled"
+                : req.status === "Cancelled"
+                ? "Cancelled"
+                : req.status === "Rejected"
+                ? "Rejected"
+                : (req.acceptedBy?.length ?? 0) > 0
+                ? "Response Received"
+                : "Searching";
+
             return (
               <motion.li
                 key={req._id}
@@ -186,6 +241,19 @@ export default function EmergencyRequestsTable() {
                         <div className="flex items-center gap-1 text-xs text-slate-400">
                           <FiUser size={11} /> {requesterName} ·
                           <FiMapPin size={11} /> {location}
+                        </div>
+
+                        {/* Section 8: Admin Aggregate Monitoring Info */}
+                        <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                            Donors Responded: <strong className="text-slate-900 dark:text-white">{donorsResponded}</strong>
+                          </span>
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                            Accepted: <strong>{acceptedCount}</strong>
+                          </span>
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                            Status: <strong>{monitoringStatus}</strong>
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -229,6 +297,12 @@ export default function EmergencyRequestsTable() {
                             <FiClock size={13} className="text-slate-400" />
                             <span><strong>{t("admin_requests_date")}:</strong> {new Date(req.createdAt).toLocaleString("en-IN")}</span>
                           </div>
+                          {req.expiresAt && (
+                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                              <FiClock size={13} className="text-amber-500" />
+                              <span><strong>Expires:</strong> {new Date(req.expiresAt).toLocaleString("en-IN")}</span>
+                            </div>
+                          )}
                           {typeof req.requestBy === "object" && req.requestBy?.location && (
                             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
                               <FiUser size={13} className="text-slate-400" />
@@ -238,32 +312,43 @@ export default function EmergencyRequestsTable() {
                         </div>
 
                         {/* Action buttons (only for Pending) */}
-                        {req.status === "Pending" && (
+                        <div className="flex items-center justify-between flex-wrap gap-2">
                           <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleAction(req._id, "approved")}
-                              disabled={actionLoading === req._id + "approved"}
-                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60 transition-colors"
-                            >
-                              {actionLoading === req._id + "approved"
-                                ? <FiLoader size={13} className="animate-spin" />
-                                : <FiCheckCircle size={13} />
-                              }
-                              {t("admin_requests_approve")}
-                            </button>
-                            <button
-                              onClick={() => handleAction(req._id, "rejected")}
-                              disabled={actionLoading === req._id + "rejected"}
-                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-950/60 disabled:opacity-60 transition-colors"
-                            >
-                              {actionLoading === req._id + "rejected"
-                                ? <FiLoader size={13} className="animate-spin" />
-                                : <FiXCircle size={13} />
-                              }
-                              {t("admin_requests_reject")}
-                            </button>
+                            {req.status === "Pending" && (
+                              <>
+                                <button
+                                  onClick={() => handleAction(req._id, "approved")}
+                                  disabled={actionLoading === req._id + "approved"}
+                                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60 transition-colors"
+                                >
+                                  {actionLoading === req._id + "approved"
+                                    ? <FiLoader size={13} className="animate-spin" />
+                                    : <FiCheckCircle size={13} />
+                                  }
+                                  {t("admin_requests_approve")}
+                                </button>
+                                <button
+                                  onClick={() => handleAction(req._id, "rejected")}
+                                  disabled={actionLoading === req._id + "rejected"}
+                                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-950/60 disabled:opacity-60 transition-colors"
+                                >
+                                  {actionLoading === req._id + "rejected"
+                                    ? <FiLoader size={13} className="animate-spin" />
+                                    : <FiXCircle size={13} />
+                                  }
+                                  {t("admin_requests_reject")}
+                                </button>
+                              </>
+                            )}
                           </div>
-                        )}
+
+                          <Link
+                            href={`/dashboard/requests/${req._id}`}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-red-600 transition-colors ml-auto"
+                          >
+                            <span>Live Tracking Details →</span>
+                          </Link>
+                        </div>
                       </div>
                     </motion.div>
                   )}

@@ -260,22 +260,30 @@ Admin Only
 
 ---
 
-# Google Maps APIs
-
-## Nearby Blood Banks
-
-GET /api/maps/nearby
-
-Query Parameters
-
-- latitude
-- longitude
-- radius
-
-Returns
-
-Nearby blood banks with distance.
-
+# Nearby Facilities APIs
+ 
+## Nearby Hospitals & Blood Banks
+ 
+GET /api/nearby
+ 
+Query Parameters:
+ 
+- lat (number, required)
+- lng (number, required)
+- radius (number, optional, default: 5 km)
+- type (string, optional: "all" | "hospitals" | "bloodbanks")
+- bloodGroup (string, optional)
+- openNow (boolean, optional)
+- search (string, optional)
+ 
+Response Headers:
+ 
+- `X-Cache`: `HIT` | `MISS` (indicates whether public OSM data was served from the in-memory cache)
+ 
+Returns:
+ 
+Merged list of nearby hospitals and blood banks (combining real OpenStreetMap data and BloodLink registered institutions) sorted by distance. Public OSM search queries are cached in memory (5-minute TTL, LRU eviction, and request deduplication).
+ 
 ---
 
 # Notification APIs

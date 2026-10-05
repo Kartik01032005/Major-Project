@@ -294,25 +294,33 @@ for push notifications.
 
 ---
 
-# Google Maps Flow
+# Nearby Facilities Search & Caching Flow
 
-User Location
-
-↓
-
-Nearby Blood Banks
+User / Searched Location (lat, lng, radius)
 
 ↓
 
-Hospital Location
+Generate Normalized Cache Key (`nearby:<lat>:<lng>:<radius>`)
 
 ↓
 
-Navigation
+In-Memory Cache Check (`NearbyMemoryCache`)
+├── HIT  → Return cached public OSM facilities immediately (`X-Cache: HIT`)
+└── MISS → Dispatch Overpass API query (`X-Cache: MISS`)
+            ↓ (fallback if unavailable/timeout)
+           Nominatim Bounding Box Query
+            ↓
+           Single-Flight Request Deduplication
+            ↓
+           Store valid facility records in memory with TTL (5 mins) & LRU eviction
 
 ↓
 
-Google Maps
+Merge with MongoDB Registered Hospitals & Blood Banks
+
+↓
+
+Filter, Sort & Deliver Response to Frontend
 
 ---
 

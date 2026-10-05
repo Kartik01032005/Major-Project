@@ -4,6 +4,8 @@ import {
   requestDevicePermission,
   getCurrentDevicePosition,
   LocationServiceError,
+  getGoogleMapsLocationUrl,
+  getGoogleMapsDirectionsUrl,
 } from "@/services/locationService";
 import { Capacitor } from "@capacitor/core";
 import { Geolocation } from "@capacitor/geolocation";
@@ -452,6 +454,68 @@ describe("Location Service & Geolocation Abstraction", () => {
       expect(passedOptions).toBeDefined();
       expect(passedOptions?.maximumAge).toBe(0);
       expect(passedOptions?.enableHighAccuracy).toBe(true);
+    });
+  });
+
+  describe("7. Google Maps External URL Helpers (Navigate vs Open Map)", () => {
+    it("generates correct Google Maps pinned location search URL for Open Map", () => {
+      const url = getGoogleMapsLocationUrl(12.9716, 77.5946, "Sujeer Government Hospital");
+
+      expect(url).toBe(
+        "https://www.google.com/maps/search/?api=1&query=Sujeer%20Government%20Hospital%2C12.9716%2C77.5946"
+      );
+      // Must NOT contain route or direction parameters
+      expect(url).not.toContain("/dir/");
+      expect(url).not.toContain("origin=");
+      expect(url).not.toContain("destination=");
+    });
+
+    it("generates Google Maps pinned search URL without facility name if omitted", () => {
+      const url = getGoogleMapsLocationUrl(12.9716, 77.5946);
+
+      expect(url).toBe("https://www.google.com/maps/search/?api=1&query=12.9716%2C77.5946");
+      expect(url).not.toContain("/dir/");
+    });
+
+    it("uses each facility's exact actual coordinates dynamically", () => {
+      const hospital1 = { name: "City Care", lat: 14.6195, lng: 74.8354 };
+      const hospital2 = { name: "Apollo Centre", lat: 15.3647, lng: 75.1240 };
+
+      const url1 = getGoogleMapsLocationUrl(hospital1.lat, hospital1.lng, hospital1.name);
+      const url2 = getGoogleMapsLocationUrl(hospital2.lat, hospital2.lng, hospital2.name);
+
+      expect(url1).toContain("14.6195");
+      expect(url1).toContain("74.8354");
+      expect(url1).toContain("City%20Care");
+
+      expect(url2).toContain("15.3647");
+      expect(url2).toContain("75.124");
+      expect(url2).toContain("Apollo%20Centre");
+
+      expect(url1).not.toBe(url2);
+    });
+
+    it("returns empty string gracefully for invalid coordinates (edge cases)", () => {
+      expect(getGoogleMapsLocationUrl(NaN, 77.5946, "Bad Hospital")).toBe("");
+      expect(getGoogleMapsLocationUrl(12.9716, NaN, "Bad Hospital")).toBe("");
+      expect(getGoogleMapsLocationUrl(undefined, undefined, "Missing Coords")).toBe("");
+      expect(getGoogleMapsLocationUrl(0, 0, "Null Island")).toBe("");
+    });
+
+    it("keeps Navigate directions URL distinct with origin and destination", () => {
+      const userOrigin = { lat: 14.6195, lng: 74.8354 };
+      const dest = { lat: 14.6250, lng: 74.8420 };
+
+      const navUrl = getGoogleMapsDirectionsUrl(dest.lat, dest.lng, userOrigin.lat, userOrigin.lng);
+
+      expect(navUrl).toContain("https://www.google.com/maps/dir/?api=1");
+      expect(navUrl).toContain(`origin=${userOrigin.lat},${userOrigin.lng}`);
+      expect(navUrl).toContain(`destination=${dest.lat},${dest.lng}`);
+
+      // Contrast with Open Map URL
+      const openMapUrl = getGoogleMapsLocationUrl(dest.lat, dest.lng, "TSS Hospital");
+      expect(openMapUrl).toContain("https://www.google.com/maps/search/?api=1");
+      expect(openMapUrl).not.toContain("origin=");
     });
   });
 });
