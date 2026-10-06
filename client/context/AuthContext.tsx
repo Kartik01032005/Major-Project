@@ -23,6 +23,8 @@ interface AuthContextType {
     };
   }) => Promise<ApiResponse<null>>;
   logout: () => void;
+  updateUser: (updatedData: Partial<User>) => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -190,8 +192,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUser = (updatedData: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const nextUser = { ...prev, ...updatedData };
+      if (typeof window !== "undefined") {
+        localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(nextUser));
+      }
+      return nextUser;
+    });
+  };
+
+  const refreshUser = async () => {
+    try {
+      const res = await authService.getMe();
+      if (res.success && res.data) {
+        setUser(res.data);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(res.data));
+        }
+      }
+    } catch (e) {
+      console.error("Failed to refresh user session", e);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

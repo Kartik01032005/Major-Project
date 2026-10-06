@@ -96,7 +96,7 @@ export default function EligibilitySection() {
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
-              {checklistItems.map((item, index) => (
+              {checklistItems.map((item) => (
                 <div
                   key={item.key}
                   className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"

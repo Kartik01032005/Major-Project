@@ -194,6 +194,7 @@ const kn: Translations = {
   sidebar_expand: "ಸೈಡ್‌ಬಾರ್ ತೆರೆಯಿರಿ",
   sidebar_close_nav: "ನ್ಯಾವಿಗೇಷನ್ ಮುಚ್ಚಿ",
   sidebar_open_nav: "ನ್ಯಾವಿಗೇಷನ್ ತೆರೆಯಿರಿ",
+  sidebar_settings: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
 
   // ── Dashboard Topbar ──────────────────────────────────────────────────────────
   topbar_overview: "ಅವಲೋಕನ",
@@ -212,6 +213,7 @@ const kn: Translations = {
   topbar_administrator: "ನಿರ್ವಾಹಕ",
   topbar_donor_account: "ದಾನಿ ಖಾತೆ",
   topbar_dashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+  topbar_settings: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
 
   // ── Welcome Banner ────────────────────────────────────────────────────────────
   banner_good_morning: "ಶುಭ ಬೆಳಿಗ್ಗೆ",
@@ -534,6 +536,37 @@ const kn: Translations = {
   nearby_selected_location: "ಆಯ್ಕೆಮಾಡಿದ ಸ್ಥಳ",
   nearby_filter_open_now: "ಈಗ ತೆರೆದಿದೆ",
   nearby_btn_open_map: "ನಕ್ಷೆ ತೆರೆಯಿರಿ",
+
+  // ── Donor Profile (Task #6) ────────────────────────────────────────────────
+  donor_profile_title: "ರಕ್ತದಾನಿ ಪ್ರೊಫೈಲ್",
+  donor_profile_subtitle: "ನಿಮ್ಮ ಪರಿಶೀಲಿಸಿದ ರಕ್ತದಾನ ಚಟುವಟಿಕೆ ಮತ್ತು ಸ್ಥಿತಿ",
+  donor_profile_blood_group: "ರಕ್ತದ ಗುಂಪು",
+  donor_profile_not_provided: "ಒದಗಿಸಲಾಗಿಲ್ಲ",
+  donor_profile_availability: "ಲಭ್ಯತೆ",
+  donor_profile_available: "ಲಭ್ಯವಿದೆ",
+  donor_profile_unavailable: "ತಾತ್ಕಾಲಿಕವಾಗಿ ಲಭ್ಯವಿಲ್ಲ",
+  donor_profile_unspecified: "ನಿರ್ದಿಷ್ಟಪಡಿಸಿಲ್ಲ",
+  donor_profile_location: "ಸ್ಥಳ",
+  donor_profile_location_approx: "ಸುಮಾರು {dist} ದೂರ",
+  donor_profile_location_unavailable: "ಸ್ಥಳ ಲಭ್ಯವಿಲ್ಲ",
+  donor_profile_donations: "ರಕ್ತದಾನಗಳು",
+  donor_profile_donations_count_suffix: "ಪರಿಶೀಲಿಸಿದ ರಕ್ತದಾನಗಳು",
+  donor_profile_donations_unavailable: "ರಕ್ತದಾನ ಇತಿಹಾಸ ಲಭ್ಯವಿಲ್ಲ",
+  donor_profile_donations_empty: "ಯಾವುದೇ ರಕ್ತದಾನ ಇತಿಹಾಸ ಲಭ್ಯವಿಲ್ಲ",
+  donor_profile_last_donation: "ಕೊನೆಯ ರಕ್ತದಾನ",
+  donor_profile_last_donation_unavailable: "ಲಭ್ಯವಿಲ್ಲ",
+  donor_profile_response_rate: "ಪ್ರತಿಕ್ರಿಯೆ ದರ",
+  donor_profile_not_enough_data: "ಸಾಕಷ್ಟು ಡೇಟಾ ಇಲ್ಲ",
+  donor_profile_loading: "ರಕ್ತದಾನಿ ಪ್ರೊಫೈಲ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ…",
+  donor_profile_error: "ಪ್ರೊಫೈಲ್ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+  donor_profile_edit: "ಪ್ರೊಫೈಲ್ ಸಂಪಾದಿಸಿ",
+  donor_profile_save: "ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ",
+  donor_profile_cancel: "ರದ್ದುಮಾಡಿ",
+  donor_profile_saving: "ಉಳಿಸಲಾಗುತ್ತಿದೆ…",
+  donor_profile_saved: "ಪ್ರೊಫೈಲ್ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ",
+  donor_profile_eligibility_title: "ರಕ್ತದಾನ ಅರ್ಹತೆ",
+  donor_profile_eligibility_notice: "ಸಾಮಾನ್ಯ ವೈದ್ಯಕೀಯ ಮಾರ್ಗದರ್ಶನ ಮಾತ್ರ. ಪ್ರತಿ ರಕ್ತದಾನಕ್ಕೆ ಮುನ್ನ ವೃತ್ತಿಪರ ಕ್ಲಿನಿಕಲ್ ತಪಾಸಣೆ ಕಡ್ಡಾಯವಾಗಿದೆ.",
+  donor_profile_eligibility_link: "ಅಧಿಕೃತ ಅರ್ಹತಾ ಮಾನದಂಡಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
 };
 
 export default kn;

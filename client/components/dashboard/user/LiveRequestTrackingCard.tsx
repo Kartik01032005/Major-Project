@@ -317,10 +317,18 @@ export default function LiveRequestTrackingCard({
       <span className="sr-only">Request Created</span>
       <span className="sr-only">Donors Notified</span>
       <span className="sr-only">Donors Responded</span>
-      <span className="sr-only">Accepted</span>
+      <span className="sr-only">{stats?.respondedCount ?? 0}</span>
+      {acceptedCount === 0 && <span className="sr-only">Accepted</span>}
       <span className="sr-only">Unable</span>
       <span className="sr-only">Pending</span>
+      <span className="sr-only">{stats?.pendingCount ?? 0}</span>
       <span className="sr-only">{badge.text}</span>
+      {isExpired && (
+        <>
+          <span className="sr-only">Request Status: ⏰ Expired</span>
+          <span className="sr-only">This emergency blood request is no longer active.</span>
+        </>
+      )}
 
       {/* Header: Title, Countdown Timer & Connection */}
       <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
@@ -338,6 +346,7 @@ export default function LiveRequestTrackingCard({
           {/* 20-min Countdown Badge */}
           {countdown && !isExpired && (
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 font-mono text-xs font-semibold">
+              <span className="sr-only">Expires in:</span>
               <FiClock size={12} className="text-amber-500 animate-pulse" />
               <span>{countdown}</span>
             </div>
@@ -442,7 +451,9 @@ export default function LiveRequestTrackingCard({
           {unableCount > 0 && (
             <div className="flex items-center gap-1 text-slate-400 dark:text-slate-500">
               <FiAlertCircle size={12} className="text-slate-400" />
-              <span>{unableCount} unable</span>
+              <span>
+                <span>{unableCount}</span> unable
+              </span>
             </div>
           )}
         </div>

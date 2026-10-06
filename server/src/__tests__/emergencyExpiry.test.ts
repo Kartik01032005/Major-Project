@@ -103,6 +103,7 @@ describe("Task #3 — Emergency Blood Request Expiry Test Suite", () => {
   // 1 & 2. New request receives expiresAt & Default expiration duration works
   it("1 & 2. sets expiresAt on new emergency request with default duration (24h)", async () => {
     delete process.env.EMERGENCY_REQUEST_DEFAULT_EXPIRY_HOURS;
+    delete process.env.EMERGENCY_REQUEST_DEFAULT_EXPIRY_MINUTES;
     const defaultHours = getDefaultExpiryHours();
     expect(defaultHours).toBe(24);
 
@@ -131,6 +132,7 @@ describe("Task #3 — Emergency Blood Request Expiry Test Suite", () => {
 
   // 3. Custom configured duration works
   it("3. respects custom EMERGENCY_REQUEST_DEFAULT_EXPIRY_HOURS configuration", async () => {
+    delete process.env.EMERGENCY_REQUEST_DEFAULT_EXPIRY_MINUTES;
     process.env.EMERGENCY_REQUEST_DEFAULT_EXPIRY_HOURS = "12";
     expect(getDefaultExpiryHours()).toBe(12);
 

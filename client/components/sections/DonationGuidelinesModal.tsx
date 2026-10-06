@@ -11,7 +11,6 @@ import {
   FiExternalLink,
   FiBookOpen,
   FiActivity,
-  FiFileText,
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useTranslation } from "@/context";
@@ -96,54 +95,54 @@ export default function DonationGuidelinesModal({
             </button>
           </div>
 
-          {/* Tab Navigation */}
-          <div className="flex items-center gap-1 px-6 pt-3 border-b border-slate-100 dark:border-slate-800 overflow-x-auto scrollbar-none">
+          {/* Tab Navigation — 4-column grid on mobile so all 4 tabs fit cleanly without cutoff, flex row on sm+ */}
+          <div className="grid grid-cols-4 gap-1 px-2 pt-2 sm:flex sm:items-center sm:gap-1 sm:px-6 sm:pt-3 border-b border-slate-100 dark:border-slate-800">
             <button
               onClick={() => setActiveTab("core")}
-              className={`px-4 py-2.5 text-xs font-semibold rounded-t-xl transition-all border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
+              className={`px-1.5 py-2 sm:px-4 sm:py-2.5 text-[10px] sm:text-xs font-semibold rounded-t-xl transition-all border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 text-center ${
                 activeTab === "core"
                   ? "border-red-600 text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20"
                   : "border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <FiCheckCircle size={14} />
-              <span>{t("eligibility_tab_core")}</span>
+              <FiCheckCircle size={14} className="flex-shrink-0" />
+              <span className="leading-tight line-clamp-2 sm:line-clamp-none">{t("eligibility_tab_core")}</span>
             </button>
 
             <button
               onClick={() => setActiveTab("deferral")}
-              className={`px-4 py-2.5 text-xs font-semibold rounded-t-xl transition-all border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
+              className={`px-1.5 py-2 sm:px-4 sm:py-2.5 text-[10px] sm:text-xs font-semibold rounded-t-xl transition-all border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 text-center ${
                 activeTab === "deferral"
                   ? "border-red-600 text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20"
                   : "border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <FiClock size={14} />
-              <span>{t("eligibility_tab_deferral")}</span>
+              <FiClock size={14} className="flex-shrink-0" />
+              <span className="leading-tight line-clamp-2 sm:line-clamp-none">{t("eligibility_tab_deferral")}</span>
             </button>
 
             <button
               onClick={() => setActiveTab("process")}
-              className={`px-4 py-2.5 text-xs font-semibold rounded-t-xl transition-all border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
+              className={`px-1.5 py-2 sm:px-4 sm:py-2.5 text-[10px] sm:text-xs font-semibold rounded-t-xl transition-all border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 text-center ${
                 activeTab === "process"
                   ? "border-red-600 text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20"
                   : "border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <FiActivity size={14} />
-              <span>{t("eligibility_tab_process")}</span>
+              <FiActivity size={14} className="flex-shrink-0" />
+              <span className="leading-tight line-clamp-2 sm:line-clamp-none">{t("eligibility_tab_process")}</span>
             </button>
 
             <button
               onClick={() => setActiveTab("sources")}
-              className={`px-4 py-2.5 text-xs font-semibold rounded-t-xl transition-all border-b-2 flex items-center gap-1.5 whitespace-nowrap ${
+              className={`px-1.5 py-2 sm:px-4 sm:py-2.5 text-[10px] sm:text-xs font-semibold rounded-t-xl transition-all border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 text-center ${
                 activeTab === "sources"
                   ? "border-red-600 text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/20"
                   : "border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
-              <FiBookOpen size={14} />
-              <span>{t("eligibility_tab_sources")}</span>
+              <FiBookOpen size={14} className="flex-shrink-0" />
+              <span className="leading-tight line-clamp-2 sm:line-clamp-none">{t("eligibility_tab_sources")}</span>
             </button>
           </div>
 

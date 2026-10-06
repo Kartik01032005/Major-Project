@@ -9,6 +9,35 @@ const LocationSchema = new Schema({
   longitude: { type: Number, default: 0 }
 }, { _id: false });
 
+const SettingsSchema = new Schema({
+  donor: {
+    pauseDonorRequests: { type: Boolean, default: false }
+  },
+  notifications: {
+    emergencyAlerts: { type: Boolean, default: true },
+    nearbyRequests: { type: Boolean, default: true },
+    bloodBankUpdates: { type: Boolean, default: true },
+    smsNotifications: { type: Boolean, default: false },
+    whatsappNotifications: { type: Boolean, default: false }
+  },
+  privacy: {
+    locationSharing: { type: Boolean, default: true },
+    profileVisibility: { type: String, enum: ["matching", "hidden"], default: "matching" },
+    phoneNumberPrivacy: { type: String, enum: ["hidden", "on_request", "public"], default: "on_request" }
+  },
+  emergency: {
+    alertRadiusKm: { type: Number, enum: [5, 10, 25, 50], default: 10 },
+    emergencyContact: {
+      name: { type: String, default: "" },
+      phone: { type: String, default: "" },
+      relationship: { type: String, default: "" }
+    }
+  },
+  security: {
+    twoFactorAuth: { type: Boolean, default: false }
+  }
+}, { _id: false });
+
 const UserSchema = new Schema<IUser>({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
@@ -21,6 +50,16 @@ const UserSchema = new Schema<IUser>({
   role: { type: String, required: true, enum: ["user", "admin"], default: "user" },
   isAvailableDonor: { type: Boolean, default: true },
   location: { type: LocationSchema, required: true },
+  settings: {
+    type: SettingsSchema,
+    default: () => ({
+      donor: { pauseDonorRequests: false },
+      notifications: { emergencyAlerts: true, nearbyRequests: true, bloodBankUpdates: true, smsNotifications: false, whatsappNotifications: false },
+      privacy: { locationSharing: true, profileVisibility: "matching", phoneNumberPrivacy: "on_request" },
+      emergency: { alertRadiusKm: 10, emergencyContact: { name: "", phone: "", relationship: "" } },
+      security: { twoFactorAuth: false }
+    })
+  },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
   resetPasswordTokenHash: { type: String },

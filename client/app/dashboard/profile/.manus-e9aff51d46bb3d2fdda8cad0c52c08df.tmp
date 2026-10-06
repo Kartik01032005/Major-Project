@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import ProfileCard from "@/components/dashboard/user/ProfileCard";
+import DonorProfileCard from "@/components/dashboard/user/DonorProfileCard";
 import ProtectedRoute from "@/components/dashboard/ProtectedRoute";
 
 export default function ProfilePage() {
@@ -14,7 +14,7 @@ export default function ProfilePage() {
             Manage your blood donor profile, verified donation activity, and account settings.
           </p>
         </div>
-        <ProfileCard />
+        <DonorProfileCard />
       </div>
     </ProtectedRoute>
   );

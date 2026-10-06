@@ -25,7 +25,7 @@ export const getDefaultExpiryMinutes = (): number => {
       return parsed * 60;
     }
   }
-  return 20; // 20 minutes default
+  return 24 * 60; // 24 hours default
 };
 
 export const getDefaultExpiryHours = (): number => {

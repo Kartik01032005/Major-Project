@@ -194,6 +194,7 @@ const en: Translations = {
   sidebar_expand: "Expand sidebar",
   sidebar_close_nav: "Close navigation",
   sidebar_open_nav: "Open navigation",
+  sidebar_settings: "Settings",
 
   // ── Dashboard Topbar ──────────────────────────────────────────────────────────
   topbar_overview: "Overview",
@@ -212,6 +213,7 @@ const en: Translations = {
   topbar_administrator: "Administrator",
   topbar_donor_account: "Donor Account",
   topbar_dashboard: "Dashboard",
+  topbar_settings: "Settings",
 
   // ── Welcome Banner ────────────────────────────────────────────────────────────
   banner_good_morning: "Good morning",
@@ -533,6 +535,37 @@ const en: Translations = {
   nearby_selected_location: "Selected Location",
   nearby_filter_open_now: "Open Now",
   nearby_btn_open_map: "Open Map",
+
+  // ── Donor Profile (Task #6) ────────────────────────────────────────────────
+  donor_profile_title: "Donor Profile",
+  donor_profile_subtitle: "Your verified blood donation activity and status",
+  donor_profile_blood_group: "Blood Group",
+  donor_profile_not_provided: "Not provided",
+  donor_profile_availability: "Availability",
+  donor_profile_available: "Available",
+  donor_profile_unavailable: "Temporarily unavailable",
+  donor_profile_unspecified: "Not specified",
+  donor_profile_location: "Location",
+  donor_profile_location_approx: "Approx. {dist} away",
+  donor_profile_location_unavailable: "Location unavailable",
+  donor_profile_donations: "Donations",
+  donor_profile_donations_count_suffix: "verified donations",
+  donor_profile_donations_unavailable: "Donation history unavailable",
+  donor_profile_donations_empty: "No donation history available",
+  donor_profile_last_donation: "Last Donation",
+  donor_profile_last_donation_unavailable: "Not available",
+  donor_profile_response_rate: "Response Rate",
+  donor_profile_not_enough_data: "Not enough data",
+  donor_profile_loading: "Loading donor profile…",
+  donor_profile_error: "Unable to load profile. Please try again.",
+  donor_profile_edit: "Edit Profile",
+  donor_profile_save: "Save Changes",
+  donor_profile_cancel: "Cancel",
+  donor_profile_saving: "Saving…",
+  donor_profile_saved: "Profile updated successfully",
+  donor_profile_eligibility_title: "Donation Eligibility",
+  donor_profile_eligibility_notice: "General medical guidance only. Professional clinical screening is required before every blood donation.",
+  donor_profile_eligibility_link: "View Official Eligibility Criteria",
 };
 
 export default en;

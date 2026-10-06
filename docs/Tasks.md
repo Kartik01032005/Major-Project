@@ -455,6 +455,72 @@ Test Excel, CSV, and PDF uploads, inventory calculation, duplicate handling, val
 
 Update TASKS.md and relevant documentation after completion.
 
+## Feature – Task #6: Donor Profile Improvements (Smart Blood Donor Finder)
+
+Status:
+
+🟢 Completed
+
+- [x] Pre-implementation inspection: Analyzed `User`, `EmergencyRequest`, existing controllers, routes, and i18n models
+- [x] Zero fake statistics policy: All metrics derived strictly from authenticated MongoDB records (completed requests, response records, donor locations)
+- [x] Blood Group handling: Displays registered blood group or "Not provided" without guessing
+- [x] Availability status: Real-time status display (🟢 Available / 🟡 Temporarily unavailable) preserved with synchronous context and backend update
+- [x] Location privacy: Exact GPS and street coordinates protected; public profiles only display district/state or approximate distance calculation
+- [x] Verified donation history: Server verifies only emergency requests with `status === "Completed"` and confirmed donor reporting; displays "Donation history unavailable" / "Not available" when none exists
+- [x] Authentic last donation date: Exact ISO timestamp of verified donation; signup, registration, or acceptance timestamps strictly rejected as substitutes
+- [x] Accurate response rate calculation: Computes `responded / eligible * 100` with medical blood group compatibility; returns null ("Not enough data") when 0 eligible requests to avoid misleading 0%
+- [x] Role-based visibility & privacy: Authenticated donor receives full profile; public endpoint `GET /api/users/donor/:id` masks email, exact coordinates, and hides phone unless active request accepted
+- [x] Safe profile editing: Authenticated users can edit blood group, availability, phone, name, and district/state; client edits to server-computed statistics are strictly prohibited
+- [x] Clean separation of Donor Eligibility: Informational medical criteria link maintained separately from profile metrics
+- [x] Full multilingual coverage: Added strings across all 7 supported languages (`en`, `hi`, `kn`, `ml`, `mr`, `ta`, `te`)
+- [x] Responsive mobile UI: Smooth responsive card layout with loading, empty, and error fallback states
+- [x] Automated test suites:
+  - [x] Server suite: `server/src/__tests__/donorProfile.test.ts` (9/9 passing)
+  - [x] Client suite: `client/__tests__/donorProfile.test.tsx` (8/8 passing)
+  - [x] All 11 server test suites pass (143/143 tests)
+  - [x] All 12 client test suites pass (100/100 tests)
+- [x] Production builds & linting: TypeScript & Next.js production builds succeeded with 0 errors; ESLint passed with 0 errors
+
+## Task #7 — Settings Section (Production-Ready Healthcare Controls)
+
+- [x] Complete Settings architecture & grouping:
+  - [x] ACCOUNT: Edit Profile modal, Phone & Email verification view, Change Password modal with validation
+  - [x] DONOR: Donor Availability toggle, Verified Donation History modal (zero fake data), Pause Donor Requests toggle (blood group configuration prompt removed)
+  - [x] NOTIFICATIONS: Emergency Blood Requests toggle (hard-coded mandatory ON with legal justification notice), Nearby Donor Requests toggle, Blood Bank Updates toggle, SMS Notifications toggle, WhatsApp Notifications toggle
+  - [x] PRIVACY & LOCATION: Location Sharing toggle with healthcare rationale, Profile Visibility modal ("matching" vs "hidden"), Phone Number Privacy modal ("on_request" vs "hidden" vs "public")
+  - [x] EMERGENCY: Emergency Alert Radius modal (5, 10, 25, 50 km), Emergency Contact modal (name, 10-digit phone, relationship)
+  - [x] SECURITY: Two-Factor Authentication toggle, Login Activity modal with current session inspector & "Log out of all other devices"
+  - [x] APP: Dark Mode toggle (integrated with `next-themes`), Language modal (7 languages: English, Kannada, Malayalam, Tamil, Telugu, Hindi, Marathi), Help & Support modal (24/7 National Helplines 104/108/112), About BloodLink modal (v2.4.0), Legal modals for Privacy Policy & Terms
+  - [x] ACCOUNT MANAGEMENT: Download My Data (export personal records to JSON), Delete BloodLink Account (destructive modal requiring typing "DELETE" confirmation)
+- [x] Backend Schema & APIs:
+  - [x] User schema extended with embedded `settings` (`IUserSettings` for donor, notifications, privacy, emergency, security)
+  - [x] `GET /api/users/settings`: Returns authenticated user settings with safe defaults
+  - [x] `PUT /api/users/settings`: Securely persists user settings; enforces `emergencyAlerts: true` rule
+  - [x] `PUT /api/users/change-password`: Validates current password via bcrypt and sets new password with length check
+  - [x] `GET /api/users/export-data`: Generates comprehensive personal data archive
+  - [x] `DELETE /api/auth/delete-account`: Irrevocably purges user account, requests, and notifications
+- [x] UI / UX & Mobile Responsiveness:
+  - [x] Reusable component hierarchy: `SettingsSection`, `SettingsRow`, `SettingsToggle`, `SettingsModal`
+  - [x] Framer Motion backdrop and spring-physics animations
+  - [x] Dashboard sidebar and topbar updated with active navigation and route labels
+  - [x] All 7 locale translation files updated with `sidebar_settings` and `topbar_settings`
+- [x] Donor Profile Redesign & Card Consolidation:
+  - [x] Unified `ProfileCard` combining User Account Identity on top with Donor Profile activity metrics below
+  - [x] Removed disconnected standalone top card and eliminated redundant red top stripe
+  - [x] Compact 4-column metrics grid (Availability, Verified Donations, Last Donation, Response Rate) with medical guidance link
+  - [x] Inline profile editing with zero blood group prompts per specifications
+  - [x] Removed redundant LanguageSelector and ThemeToggle from header/Navbar & DashboardTopbar (consolidated inside Settings)
+  - [x] Removed WhatsApp Notifications and SMS Notifications toggles from Settings page per user requirement
+  - [x] Optimized Dark Mode toggle with optimistic local state and hardware-accelerated CSS transition matching other toggles (0ms response)
+  - [x] Restructured Dashboard Overview into balanced 2-column layout: Emergency Requests and Nearby Blood Banks sit side-by-side in Row 2, eliminating empty right-side void and vertical stacking
+- [x] Verification & Automated Tests:
+  - [x] Server test suite: `server/src/__tests__/settings.test.ts` (5/5 passing)
+  - [x] Client test suite: `client/__tests__/settings.test.tsx` (7/7 passing)
+  - [x] Client test suite: `client/__tests__/donorProfile.test.tsx` (7/7 passing)
+  - [x] All 12 server test suites pass (148/148 tests)
+  - [x] Full Next.js production build (`npm run build`) completed with 0 errors
+  - [x] ESLint on Settings components and pages passed with 0 errors
+
 ## DevOps & Deployment
 
 - [x] Create Dockerfile for frontend

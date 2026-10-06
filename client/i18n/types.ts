@@ -215,6 +215,7 @@ export interface Translations {
   sidebar_expand: string;
   sidebar_close_nav: string;
   sidebar_open_nav: string;
+  sidebar_settings: string;
 
   // ── Dashboard Topbar ──────────────────────────────────────────────────────────
   topbar_overview: string;
@@ -233,6 +234,7 @@ export interface Translations {
   topbar_administrator: string;
   topbar_donor_account: string;
   topbar_dashboard: string;
+  topbar_settings: string;
 
   // ── Welcome Banner ────────────────────────────────────────────────────────────
   banner_good_morning: string;
@@ -553,5 +555,36 @@ export interface Translations {
   nearby_selected_location: string;
   nearby_filter_open_now: string;
   nearby_btn_open_map: string;
+
+  // ── Donor Profile (Task #6) ────────────────────────────────────────────────
+  donor_profile_title: string;
+  donor_profile_subtitle: string;
+  donor_profile_blood_group: string;
+  donor_profile_not_provided: string;
+  donor_profile_availability: string;
+  donor_profile_available: string;
+  donor_profile_unavailable: string;
+  donor_profile_unspecified: string;
+  donor_profile_location: string;
+  donor_profile_location_approx: string;
+  donor_profile_location_unavailable: string;
+  donor_profile_donations: string;
+  donor_profile_donations_count_suffix: string;
+  donor_profile_donations_unavailable: string;
+  donor_profile_donations_empty: string;
+  donor_profile_last_donation: string;
+  donor_profile_last_donation_unavailable: string;
+  donor_profile_response_rate: string;
+  donor_profile_not_enough_data: string;
+  donor_profile_loading: string;
+  donor_profile_error: string;
+  donor_profile_edit: string;
+  donor_profile_save: string;
+  donor_profile_cancel: string;
+  donor_profile_saving: string;
+  donor_profile_saved: string;
+  donor_profile_eligibility_title: string;
+  donor_profile_eligibility_notice: string;
+  donor_profile_eligibility_link: string;
 
 }

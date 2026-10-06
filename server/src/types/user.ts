@@ -7,6 +7,37 @@ export interface ILocation {
   longitude?: number;
 }
 
+export interface IEmergencyContact {
+  name: string;
+  phone: string;
+  relationship: string;
+}
+
+export interface IUserSettings {
+  donor?: {
+    pauseDonorRequests?: boolean;
+  };
+  notifications?: {
+    emergencyAlerts?: boolean;
+    nearbyRequests?: boolean;
+    bloodBankUpdates?: boolean;
+    smsNotifications?: boolean;
+    whatsappNotifications?: boolean;
+  };
+  privacy?: {
+    locationSharing?: boolean;
+    profileVisibility?: "matching" | "hidden";
+    phoneNumberPrivacy?: "hidden" | "on_request" | "public";
+  };
+  emergency?: {
+    alertRadiusKm?: 5 | 10 | 25 | 50;
+    emergencyContact?: IEmergencyContact;
+  };
+  security?: {
+    twoFactorAuth?: boolean;
+  };
+}
+
 export interface IUser extends Document {
   name: string;
   email: string;
@@ -16,6 +47,7 @@ export interface IUser extends Document {
   role: "user" | "admin";
   isAvailableDonor: boolean;
   location: ILocation;
+  settings?: IUserSettings;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   resetPasswordTokenHash?: string;

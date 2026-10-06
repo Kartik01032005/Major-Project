@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiBell, FiMenu, FiCheck } from "react-icons/fi";
 import { useAuth, useDashboard, useTranslation } from "@/context";
-import ThemeToggle from "@/components/ui/ThemeToggle";
 
 export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => void }) {
   const { user } = useAuth();
@@ -26,6 +25,7 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
     "/dashboard/admin/inventory":   t("topbar_blood_inventory"),
     "/dashboard/admin/hospitals":   t("topbar_hospital_management"),
     "/dashboard/admin/requests":    t("topbar_emergency_requests"),
+    "/dashboard/settings":          t("topbar_settings"),
   };
 
   const pageTitle = pageTitles[pathname] ?? t("topbar_dashboard");
@@ -72,8 +72,6 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
 
       {/* Actions */}
       <div className="flex items-center gap-2">
-        <ThemeToggle />
-
         {/* Notification Bell */}
         <div className="relative" ref={notifRef}>
           <button

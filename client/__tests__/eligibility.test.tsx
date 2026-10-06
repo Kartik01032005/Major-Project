@@ -19,7 +19,7 @@ describe("Blood Donation Eligibility Feature", () => {
 
     // Section title & subtitle
     expect(screen.getByText(/Blood Donation Eligibility/i)).toBeInTheDocument();
-    expect(screen.getByText(/Thinking about donating blood/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Thinking about donating blood/i)[0]).toBeInTheDocument();
 
     // Checkpoints
     expect(screen.getByText(/Age between 18 and 65 years/i)).toBeInTheDocument();
@@ -71,7 +71,7 @@ describe("Blood Donation Eligibility Feature", () => {
     expect(screen.getByText(/World Health Organization/i)).toBeInTheDocument();
 
     // Close button
-    const closeBtn = screen.getByRole("button", { name: /Close/i });
+    const closeBtn = screen.getAllByRole("button", { name: /Close/i })[0];
     fireEvent.click(closeBtn);
     expect(handleClose).toHaveBeenCalledTimes(1);
   });

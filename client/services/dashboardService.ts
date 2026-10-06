@@ -9,6 +9,11 @@ import {
   UploadSummary,
   InventoryUploadLogItem,
   AvailabilityThresholds,
+  User,
+  BloodGroup,
+  DonorProfileStats,
+  PublicDonorProfile,
+  UserSettings,
 } from "@/types";
 
 
@@ -183,6 +188,66 @@ export const dashboardService = {
 
   deleteHospital: async (id: string): Promise<void> => {
     await api.delete(`/hospitals/${id}`);
+  },
+
+  // User & Donor Profile
+  getProfile: async (): Promise<User & { donorStats?: DonorProfileStats }> => {
+    const response = await api.get<{ success: boolean; data: User & { donorStats?: DonorProfileStats } }>("/users/profile");
+    return response.data.data;
+  },
+
+  getDonorProfile: async (): Promise<User & { donorStats?: DonorProfileStats }> => {
+    const response = await api.get<{ success: boolean; data: User & { donorStats?: DonorProfileStats } }>("/users/donor-profile");
+    return response.data.data;
+  },
+
+  getPublicDonorProfile: async (
+    id: string,
+    coords?: { lat?: number; lng?: number }
+  ): Promise<PublicDonorProfile> => {
+    const params = coords?.lat && coords?.lng ? { lat: coords.lat, lng: coords.lng } : {};
+    const response = await api.get<{ success: boolean; data: PublicDonorProfile }>(`/users/donor/${id}`, { params });
+    return response.data.data;
+  },
+
+  updateProfile: async (data: {
+    name?: string;
+    phone?: string;
+    bloodGroup?: BloodGroup;
+    isAvailableDonor?: boolean;
+    location?: {
+      state?: string;
+      district?: string;
+      latitude?: number;
+      longitude?: number;
+    };
+  }): Promise<User & { donorStats?: DonorProfileStats }> => {
+    const response = await api.put<{ success: boolean; data: User & { donorStats?: DonorProfileStats } }>("/users/profile", data);
+    return response.data.data;
+  },
+  // Settings
+  getSettings: async (): Promise<UserSettings> => {
+    const response = await api.get<{ success: boolean; data: UserSettings }>("/users/settings");
+    return response.data.data;
+  },
+
+  updateSettings: async (settings: Partial<UserSettings>): Promise<UserSettings> => {
+    const response = await api.put<{ success: boolean; data: UserSettings }>("/users/settings", settings);
+    return response.data.data;
+  },
+
+  changePassword: async (data: { currentPassword: string; newPassword: string }): Promise<{ message: string }> => {
+    const response = await api.put<{ success: boolean; message: string }>("/users/change-password", data);
+    return response.data;
+  },
+
+  exportUserData: async (): Promise<Record<string, unknown>> => {
+    const response = await api.get<{ success: boolean; data: Record<string, unknown> }>("/users/export-data");
+    return response.data.data;
+  },
+
+  deleteAccount: async (): Promise<void> => {
+    await api.delete("/auth/delete-account");
   },
 };
 export default dashboardService;

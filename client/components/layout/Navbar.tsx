@@ -17,8 +17,6 @@ import { FaDroplet } from "react-icons/fa6";
 import Button from "@/components/ui/Button";
 import { useAuth, useTranslation } from "@/context";
 import { useRouter } from "next/navigation";
-import ThemeToggle from "@/components/ui/ThemeToggle";
-import LanguageSelector from "@/components/ui/LanguageSelector";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -145,7 +143,7 @@ export default function Navbar() {
         className={[
           "fixed inset-x-0 top-0 z-50 transition-all duration-300",
           hasSolidNav
-            ? "bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs"
+            ? "bg-white/72 dark:bg-slate-950/72 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 shadow-xs"
             : "bg-transparent border-b border-transparent",
         ].join(" ")}
       >
@@ -210,8 +208,6 @@ export default function Navbar() {
 
             {/* ── Desktop CTA ───────────────────────────────────── */}
             <div className="hidden md:flex shrink-0 items-center gap-3 whitespace-nowrap">
-              <LanguageSelector className="shrink-0" />
-              <ThemeToggle />
               {user ? (
                 <>
                   <span className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -247,7 +243,6 @@ export default function Navbar() {
             <div className="md:hidden flex items-center gap-1.5 sm:gap-2">
               {user ? (
                 <>
-                  <ThemeToggle />
                   <span className="hidden min-[360px]:inline-flex items-center text-xs text-slate-500 dark:text-slate-400 font-medium truncate max-w-[80px] min-[390px]:max-w-[110px]">
                     <span className="truncate">
                       {t("nav_hello")}{" "}
@@ -269,12 +264,7 @@ export default function Navbar() {
                     <span>{t("nav_dashboard") || "Dashboard"}</span>
                   </Link>
                 </>
-              ) : (
-                <>
-                  <LanguageSelector />
-                  <ThemeToggle />
-                </>
-              )}
+              ) : null}
               <button
                 id="mobile-menu-toggle"
                 suppressHydrationWarning
@@ -416,9 +406,6 @@ export default function Navbar() {
                   paddingBottom: "max(1rem, env(safe-area-inset-bottom, 1rem))",
                 }}
               >
-                <div className="pb-1">
-                  <LanguageSelector isMobileDrawer className="w-full" />
-                </div>
                 {user ? (
                   <>
                     <div className="px-4 py-1 text-xs text-slate-500 dark:text-slate-400 font-medium">

@@ -72,21 +72,77 @@ export interface WhyPoint {
 export type BloodGroup = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
 export type UserRole = "user" | "admin";
 
+export interface DonorProfileStats {
+  donationsCount: number;
+  lastDonationDate: string | null;
+  responseRate: number | null;
+  eligibleRequestsCount: number;
+  respondedRequestsCount: number;
+}
+
+export interface PublicDonorProfile {
+  _id: string;
+  name: string;
+  bloodGroup: BloodGroup | null;
+  isAvailableDonor: boolean;
+  location: {
+    district: string;
+    state: string;
+  } | null;
+  approxDistanceKm: number | null;
+  approxDistanceStr: string | null;
+  phone?: string;
+  donorStats: DonorProfileStats;
+}
+
+export interface EmergencyContact {
+  name: string;
+  phone: string;
+  relationship: string;
+}
+
+export interface UserSettings {
+  donor?: {
+    pauseDonorRequests?: boolean;
+  };
+  notifications?: {
+    emergencyAlerts?: boolean;
+    nearbyRequests?: boolean;
+    bloodBankUpdates?: boolean;
+    smsNotifications?: boolean;
+    whatsappNotifications?: boolean;
+  };
+  privacy?: {
+    locationSharing?: boolean;
+    profileVisibility?: "matching" | "hidden";
+    phoneNumberPrivacy?: "hidden" | "on_request" | "public";
+  };
+  emergency?: {
+    alertRadiusKm?: 5 | 10 | 25 | 50;
+    emergencyContact?: EmergencyContact;
+  };
+  security?: {
+    twoFactorAuth?: boolean;
+  };
+}
+
 export interface User {
   _id: string;
   name: string;
   email: string;
   phone: string;
-  bloodGroup: BloodGroup;
+  bloodGroup?: BloodGroup;
   role: UserRole;
   isAvailableDonor: boolean;
   location?: {
     state: string;
     district: string;
-    latitude: number;
-    longitude: number;
+    latitude?: number;
+    longitude?: number;
   };
+  settings?: UserSettings;
   createdAt: string;
+  donorStats?: DonorProfileStats;
 }
 
 // ─── API Response ─────────────────────────────────────────────────────────────

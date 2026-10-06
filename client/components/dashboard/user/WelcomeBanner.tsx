@@ -1,19 +1,32 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { FiAlertCircle, FiActivity, FiToggleLeft, FiToggleRight, FiBookOpen } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useTranslation } from "@/context";
+import { dashboardService } from "@/services/dashboardService";
 
 interface WelcomeBannerProps {
   onEmergencyClick: () => void;
 }
 
 export default function WelcomeBanner({ onEmergencyClick }: WelcomeBannerProps) {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { t } = useTranslation();
-  const [isDonorAvailable, setIsDonorAvailable] = useState(user?.isAvailableDonor ?? true);
+  const isDonorAvailable = user?.isAvailableDonor ?? true;
+
+  const handleToggleAvailability = async () => {
+    const nextState = !isDonorAvailable;
+    updateUser({ isAvailableDonor: nextState });
+    try {
+      await dashboardService.updateProfile({ isAvailableDonor: nextState });
+    } catch (e) {
+      console.error("Failed to update donor availability:", e);
+      updateUser({ isAvailableDonor: !nextState });
+    }
+  };
 
   const greetHour = new Date().getHours();
   const greeting =
@@ -58,7 +71,7 @@ export default function WelcomeBanner({ onEmergencyClick }: WelcomeBannerProps) 
           {/* Donor availability toggle */}
           <div className="flex flex-wrap items-center gap-3 mt-4">
             <button
-              onClick={() => setIsDonorAvailable((p) => !p)}
+              onClick={handleToggleAvailability}
               className={[
                 "flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all",
                 isDonorAvailable
@@ -74,14 +87,14 @@ export default function WelcomeBanner({ onEmergencyClick }: WelcomeBannerProps) 
                 <><FiToggleLeft size={18} /> {t("banner_not_available")}</>
               )}
             </button>
-            <a
+            <Link
               href="/#eligibility"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/10 hover:bg-white/20 text-white transition-colors border border-white/15"
               title="View official blood donation eligibility requirements"
             >
               <FiBookOpen size={13} />
               <span>{t("eligibility_cta")}</span>
-            </a>
+            </Link>
           </div>
         </div>
 

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useAuth } from "@/context";
 import ProtectedRoute from "@/components/dashboard/ProtectedRoute";
 import WelcomeBanner from "@/components/dashboard/user/WelcomeBanner";
-import ProfileCard from "@/components/dashboard/user/ProfileCard";
+import DonorProfileCard from "@/components/dashboard/user/DonorProfileCard";
 import ActiveRequestsCard from "@/components/dashboard/user/ActiveRequestsCard";
 import NotificationsPanel from "@/components/dashboard/user/NotificationsPanel";
 import NearbyBloodBanksCard from "@/components/dashboard/user/NearbyBloodBanksCard";
@@ -26,18 +26,18 @@ export default function UserDashboardPage() {
         {/* Welcome Banner (full width) */}
         <WelcomeBanner onEmergencyClick={() => setModalOpen(true)} />
 
-        {/* Two-column grid (lg+) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column — 2/3 width on lg */}
-          <div className="lg:col-span-2 space-y-6">
-            <ProfileCard />
+        {/* Balanced 2-Column Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          {/* Left Column: Donor Activity & Emergency Requests */}
+          <div className="space-y-6">
+            <DonorProfileCard />
             <ActiveRequestsCard onNewRequest={() => setModalOpen(true)} />
-            <NearbyBloodBanksCard />
           </div>
 
-          {/* Right column — 1/3 width on lg */}
+          {/* Right Column: Notifications & Nearby Facilities */}
           <div className="space-y-6">
             <NotificationsPanel />
+            <NearbyBloodBanksCard />
           </div>
         </div>
       </div>
