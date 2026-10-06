@@ -10,6 +10,7 @@ const en: Translations = {
   nav_sign_in: "Sign in",
   nav_get_started: "Get started",
   nav_dashboard: "Dashboard",
+  nav_profile: "Profile",
   nav_sign_out: "Sign out",
   nav_hello: "Hello,",
   nav_open_menu: "Open menu",

@@ -9,6 +9,7 @@ const ta: Translations = {
   nav_sign_in: "உள்நுழைய",
   nav_get_started: "தொடங்குக",
   nav_dashboard: "டாஷ்போர்டு",
+  nav_profile: "சுயவிவரம்",
   nav_sign_out: "வெளியேறு",
   nav_hello: "வணக்கம்,",
   nav_open_menu: "மெனு திறக்க",

@@ -31,6 +31,7 @@ export interface Translations {
   nav_sign_in: string;
   nav_get_started: string;
   nav_dashboard: string;
+  nav_profile: string;
   nav_sign_out: string;
   nav_hello: string;
   nav_open_menu: string;

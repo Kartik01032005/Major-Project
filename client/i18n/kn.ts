@@ -10,6 +10,7 @@ const kn: Translations = {
   nav_sign_in: "ಸೈನ್ ಇನ್",
   nav_get_started: "ಪ್ರಾರಂಭಿಸಿ",
   nav_dashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+  nav_profile: "ಪ್ರೊಫೈಲ್",
   nav_sign_out: "ಸೈನ್ ಔಟ್",
   nav_hello: "ನಮಸ್ಕಾರ,",
   nav_open_menu: "ಮೆನು ತೆರೆಯಿರಿ",

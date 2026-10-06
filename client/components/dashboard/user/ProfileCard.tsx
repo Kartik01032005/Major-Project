@@ -137,12 +137,12 @@ export default function ProfileCard() {
   };
 
   const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase()
+    ? (() => {
+        const parts = user.name.trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return "U";
+        if (parts.length === 1) return parts[0][0].toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      })()
     : "U";
 
   const memberSinceYear = user?.createdAt ? new Date(user.createdAt).getFullYear() : "2026";

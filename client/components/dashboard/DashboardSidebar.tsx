@@ -66,7 +66,7 @@ export default function DashboardSidebar({
 
   const nav = user?.role === "admin" ? adminNav : userNav;
   const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    ? (() => { const p = user.name.trim().split(/\s+/).filter(Boolean); return p.length === 0 ? "?" : p.length === 1 ? p[0][0].toUpperCase() : (p[0][0] + p[p.length - 1][0]).toUpperCase(); })()
     : "?";
 
   const handleLogout = () => {
@@ -109,7 +109,7 @@ export default function DashboardSidebar({
         collapsed && !mobile ? "flex flex-col items-center gap-2" : "flex items-center gap-3",
       ].join(" ")}>
         {/* Avatar */}
-        <div className="w-9 h-9 rounded-xl bg-red-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+        <div className="w-9 h-9 rounded-full bg-red-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-xs ring-2 ring-red-500/20">
           {initials}
         </div>
 

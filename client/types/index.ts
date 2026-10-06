@@ -360,6 +360,7 @@ export interface MapHospital {
   district: string;
   state: string;
   phone: string;
+  distance?: string;
   position: LatLng;
 }
 

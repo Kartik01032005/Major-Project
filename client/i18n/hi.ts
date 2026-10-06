@@ -9,6 +9,7 @@ const hi: Translations = {
   nav_sign_in: "साइन इन",
   nav_get_started: "शुरू करें",
   nav_dashboard: "डैशबोर्ड",
+  nav_profile: "प्रोफ़ाइल",
   nav_sign_out: "साइन आउट",
   nav_hello: "नमस्ते,",
   nav_open_menu: "मेनू खोलें",

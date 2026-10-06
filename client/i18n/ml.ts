@@ -9,6 +9,7 @@ const ml: Translations = {
   nav_sign_in: "സൈൻ ഇൻ",
   nav_get_started: "ആരംഭിക്കുക",
   nav_dashboard: "ഡാഷ്ബോർഡ്",
+  nav_profile: "പ്രൊഫൈൽ",
   nav_sign_out: "സൈൻ ഔട്ട്",
   nav_hello: "ഹലോ,",
   nav_open_menu: "മെനു തുറക്കുക",

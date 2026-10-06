@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiBell, FiMenu, FiCheck } from "react-icons/fi";
@@ -42,6 +43,15 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
   }, []);
 
   const recentNotifs = notifications.slice(0, 6);
+
+  const userInitials = user?.name
+    ? (() => {
+        const parts = user.name.trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return "?";
+        if (parts.length === 1) return parts[0][0].toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      })()
+    : "?";
 
   return (
     <header className="h-16 flex-shrink-0 flex items-center gap-3 px-4 sm:px-6 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
@@ -169,9 +179,15 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
         </div>
 
         {/* User avatar */}
-        <div className="hidden sm:flex w-9 h-9 rounded-xl bg-red-600 items-center justify-center text-white text-sm font-bold flex-shrink-0">
-          {user?.name?.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() ?? "?"}
-        </div>
+        <Link
+          href="/dashboard/profile"
+          id="topbar-avatar-profile-btn"
+          title={t("topbar_my_profile") || "My Profile"}
+          className="hidden sm:flex w-9 h-9 rounded-full bg-red-600 hover:bg-red-700 items-center justify-center text-white text-xs font-bold flex-shrink-0 transition-transform active:scale-95 shadow-xs ring-2 ring-red-500/20"
+          aria-label={t("topbar_my_profile") || "My Profile"}
+        >
+          {userInitials}
+        </Link>
       </div>
     </header>
   );

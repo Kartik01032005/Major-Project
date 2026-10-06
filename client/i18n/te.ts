@@ -9,6 +9,7 @@ const te: Translations = {
   nav_sign_in: "సైన్ ఇన్",
   nav_get_started: "ప్రారంభించండి",
   nav_dashboard: "డాష్‌బోర్డ్",
+  nav_profile: "ప్రొఫైల్",
   nav_sign_out: "సైన్ అవుట్",
   nav_hello: "నమస్కారం,",
   nav_open_menu: "మెనూ తెరవండి",

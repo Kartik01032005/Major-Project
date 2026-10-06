@@ -41,9 +41,6 @@ import {
   SelectedPlaceState,
 } from "@/types";
 
-// Default neutral center of India when no device location or search location is available yet
-const INDIA_DEFAULT_CENTER: LatLng = { lat: 20.5937, lng: 78.9629 };
-
 const RADIUS_OPTIONS = [5, 10, 20, 30, 50] as const;
 type RadiusOption = (typeof RADIUS_OPTIONS)[number];
 
@@ -75,7 +72,7 @@ declare global {
   }
 }
 
-export default function NearbyFacilitiesPage() {
+export default function NearbyFacilitiesPage({ isDashboard = false }: { isDashboard?: boolean } = {}) {
   const { t } = useTranslation();
 
   // ─── Location State: Strictly Separated ────────────────────────────────────
@@ -551,8 +548,8 @@ export default function NearbyFacilitiesPage() {
   const totalCount = allFacilities.length;
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-slate-50/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-6 sm:py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div className={isDashboard ? "space-y-5" : "min-h-[calc(100vh-4rem)] bg-slate-50/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-6 sm:py-8"}>
+      <div className={isDashboard ? "space-y-5" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6"}>
         {/* ── Page Header & Location Mode Switch ───────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
@@ -613,14 +610,6 @@ export default function NearbyFacilitiesPage() {
                   id="mode-manual-btn"
                   onClick={() => {
                     setLocationMode("manual");
-                    if (!searchLocation) {
-                      setSearchLocation({
-                        displayName: "Sirsi, Uttara Kannada, Karnataka",
-                        latitude: 14.6195,
-                        longitude: 74.8354,
-                        type: "town",
-                      });
-                    }
                   }}
                   className={[
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all",
@@ -1099,10 +1088,10 @@ export default function NearbyFacilitiesPage() {
                     <FiLoader size={24} className="animate-spin" />
                   </div>
                   <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                    Detecting Device Location…
+                    📍 Finding your location...
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                    Acquiring real-time GPS coordinates to find hospitals and blood banks within 5 km.
+                    Acquiring real-time GPS coordinates from your device to find hospitals and blood banks within 5 km.
                   </p>
                 </div>
               ) : (
@@ -1119,14 +1108,16 @@ export default function NearbyFacilitiesPage() {
                     {permissionState === "insecure"
                       ? "HTTPS Required for Real Phone GPS"
                       : permissionState === "denied"
-                      ? "Location Permission Denied"
-                      : "Location Access Required"}
+                      ? "Location permission is required to find hospitals and blood banks near you."
+                      : (geoError ? "Unable to get your current location." : "Location access is required to find hospitals and blood banks near you.")}
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
                     {permissionState === "insecure"
                       ? "Android Chrome blocks device GPS on non-secure HTTP connections. Switch to HTTPS to allow real phone GPS, or search an area manually."
+                      : permissionState === "denied"
+                      ? "Location permission is required to find hospitals and blood banks near you. Please enable location permissions in your browser or device settings."
                       : (geoError ||
-                        "Allow location access on your device to discover real hospitals and blood banks within 5 km, or search an area manually.")}
+                        "Location access is required to find hospitals and blood banks near you.")}
                   </p>
                   <div className="flex items-center justify-center gap-2 flex-wrap pt-2">
                     {permissionState === "insecure" ? (
@@ -1152,7 +1143,7 @@ export default function NearbyFacilitiesPage() {
                         className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
                       >
                         <FiCrosshair size={13} />
-                        <span>{permissionState === "denied" ? "Retry / Allow Location" : "Find Near Me"}</span>
+                        <span>{permissionState === "denied" ? "Enable Location" : geoError ? "Try Again" : "Allow Location"}</span>
                       </button>
                     )}
                     <button
@@ -1170,6 +1161,15 @@ export default function NearbyFacilitiesPage() {
             {/* Loading Skeleton */}
             {activeCenter && loadingFacilities && allFacilities.length === 0 && (
               <div className="space-y-3">
+                <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-center space-y-2">
+                  <div className="w-8 h-8 rounded-full border-2 border-red-600 border-t-transparent animate-spin mx-auto mb-2" />
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                    📍 Searching nearby hospitals and blood banks...
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Querying live OpenStreetMap data within {radius} km of your device location
+                  </p>
+                </div>
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 animate-pulse space-y-3">
                     <div className="flex justify-between">
@@ -1399,45 +1399,84 @@ export default function NearbyFacilitiesPage() {
           <div className="order-1 lg:order-2 lg:col-span-7">
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-3 sm:p-4 shadow-sm border border-slate-200/80 dark:border-slate-800 lg:sticky lg:top-20">
               <div className="h-[400px] sm:h-[520px] lg:h-[620px] w-full rounded-2xl overflow-hidden">
-                <MapContainer
-                  center={activeCenter ?? INDIA_DEFAULT_CENTER}
-                  zoom={activeCenter ? 13 : 5}
-                  height="h-full"
-                  className="w-full"
-                  userLocation={userLocation}
-                  userPositionLabel={centerLabel}
-                  userPositionSub={centerSub}
-                  searchLocation={locationMode === "manual" ? searchLocation : null}
-                  radiusKm={radius}
-                  selectedId={selectedId}
-                  bloodBanks={bloodBanks}
-                  hospitals={hospitals}
-                  onBloodBankSelect={(bank) => {
-                    setSelectedId(bank.id);
-                    setSelectedPlace({
-                      id: bank.id,
-                      name: bank.name,
-                      latitude: bank.position.lat,
-                      longitude: bank.position.lng,
-                      type: "blood_bank",
-                      address: bank.address,
-                      phone: bank.phone,
-                      distance: bank.distance,
-                    });
-                  }}
-                  onHospitalSelect={(hosp) => {
-                    setSelectedId(hosp.id);
-                    setSelectedPlace({
-                      id: hosp.id,
-                      name: hosp.name,
-                      latitude: hosp.position.lat,
-                      longitude: hosp.position.lng,
-                      type: "hospital",
-                      address: hosp.address,
-                      phone: hosp.phone,
-                    });
-                  }}
-                />
+                {activeCenter ? (
+                  <MapContainer
+                    center={activeCenter}
+                    zoom={13}
+                    height="h-full"
+                    className="w-full"
+                    userLocation={userLocation}
+                    userPositionLabel={centerLabel}
+                    userPositionSub={centerSub}
+                    searchLocation={locationMode === "manual" ? searchLocation : null}
+                    radiusKm={radius}
+                    selectedId={selectedId}
+                    bloodBanks={bloodBanks}
+                    hospitals={hospitals}
+                    onBloodBankSelect={(bank) => {
+                      setSelectedId(bank.id);
+                      setSelectedPlace({
+                        id: bank.id,
+                        name: bank.name,
+                        latitude: bank.position.lat,
+                        longitude: bank.position.lng,
+                        type: "blood_bank",
+                        address: bank.address,
+                        phone: bank.phone,
+                        distance: bank.distance,
+                      });
+                    }}
+                    onHospitalSelect={(hosp) => {
+                      setSelectedId(hosp.id);
+                      const distKm = userLocation
+                        ? calculateClientDistanceKm(
+                            userLocation.latitude,
+                            userLocation.longitude,
+                            hosp.position.lat,
+                            hosp.position.lng
+                          )
+                        : null;
+                      setSelectedPlace({
+                        id: hosp.id,
+                        name: hosp.name,
+                        latitude: hosp.position.lat,
+                        longitude: hosp.position.lng,
+                        type: "hospital",
+                        address: hosp.address,
+                        phone: hosp.phone,
+                        distance: distKm !== null ? `${distKm.toFixed(1)} km` : hosp.distance,
+                      });
+                    }}
+                  />
+                ) : (
+                  <div className="h-full w-full rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col items-center justify-center p-6 text-center">
+                    <div className="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-950/50 flex items-center justify-center text-red-600 mb-4 shadow-xs ring-1 ring-red-500/20">
+                      <FiMapPin size={28} />
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5">
+                      {geoLoading ? "📍 Finding your location..." : "Location access is required to find hospitals and blood banks near you."}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-4 leading-relaxed">
+                      {geoLoading
+                        ? "Acquiring real-time GPS coordinates from your device..."
+                        : "Enable device location access to view real nearby facilities and interact with the live map."}
+                    </p>
+                    {!geoLoading && (
+                      <button
+                        onClick={async () => {
+                          if (isNativePlatform()) {
+                            await requestDevicePermission();
+                          }
+                          requestLocation(true);
+                        }}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-sm transition-all active:scale-95 cursor-pointer"
+                      >
+                        <FiCrosshair size={14} />
+                        <span>{permissionState === "denied" ? "Enable Location" : geoError ? "Try Again" : "Allow Location"}</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Map Legend */}

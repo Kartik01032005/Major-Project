@@ -24,6 +24,15 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const dashboardHref = user?.role === "admin" ? "/dashboard/admin" : "/dashboard";
+  const profileHref = user?.role === "admin" ? "/dashboard/admin" : "/dashboard/profile";
+  const userInitials = user?.name
+    ? (() => {
+        const parts = user.name.trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return "?";
+        if (parts.length === 1) return parts[0][0].toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      })()
+    : "?";
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState(() => {
@@ -214,9 +223,25 @@ export default function Navbar() {
                     {t("nav_hello")}{" "}
                     <span className="font-semibold text-slate-900 dark:text-white">{user.name.split(" ")[0]}</span>
                   </span>
-                  <Button variant="outline" size="sm" href={dashboardHref}>
-                    {t("nav_dashboard")}
-                  </Button>
+                  <Link
+                    href={profileHref}
+                    id="nav-profile-btn"
+                    className={[
+                      "inline-flex items-center gap-2 h-9 pl-1.5 pr-3.5 rounded-full border border-red-600/40",
+                      "bg-red-50/50 hover:bg-red-100/70 dark:bg-red-950/30 dark:hover:bg-red-950/50",
+                      "text-slate-900 dark:text-white text-xs font-semibold transition-all duration-150",
+                      "hover:border-red-600 active:scale-95 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
+                    ].join(" ")}
+                    aria-label={t("nav_profile") || "Profile"}
+                  >
+                    <span
+                      className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs ring-1 ring-red-500/30"
+                      aria-hidden="true"
+                    >
+                      {userInitials}
+                    </span>
+                    <span>{t("nav_profile") || "Profile"}</span>
+                  </Link>
                   <Button variant="ghost" size="sm" onClick={() => { logout(); router.push("/"); }}>
                     {t("nav_sign_out")}
                   </Button>
@@ -252,16 +277,22 @@ export default function Navbar() {
                     </span>
                   </span>
                   <Link
-                    href={dashboardHref}
-                    id="mobile-nav-dashboard-btn"
+                    href={profileHref}
+                    id="mobile-nav-profile-btn"
                     className={[
-                      "inline-flex items-center justify-center h-8 px-2.5 sm:px-3 rounded-xl text-xs font-semibold transition-all duration-150 outline-none shrink-0",
-                      "text-red-600 dark:text-red-400 border border-red-600/40 hover:border-red-600 hover:bg-red-50 dark:hover:bg-red-950/40",
+                      "inline-flex items-center gap-1.5 h-8 pl-1 pr-2.5 rounded-full text-xs font-semibold transition-all duration-150 outline-none shrink-0",
+                      "text-slate-900 dark:text-white border border-red-600/40 hover:border-red-600 bg-red-50/50 dark:bg-red-950/40 hover:bg-red-100/60",
                       "active:scale-95 focus-visible:ring-2 focus-visible:ring-red-500",
                     ].join(" ")}
-                    aria-label={t("nav_dashboard") || "Dashboard"}
+                    aria-label={t("nav_profile") || "Profile"}
                   >
-                    <span>{t("nav_dashboard") || "Dashboard"}</span>
+                    <span
+                      className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0 shadow-xs"
+                      aria-hidden="true"
+                    >
+                      {userInitials}
+                    </span>
+                    <span>{t("nav_profile") || "Profile"}</span>
                   </Link>
                 </>
               ) : null}
@@ -408,12 +439,26 @@ export default function Navbar() {
               >
                 {user ? (
                   <>
-                    <div className="px-4 py-1 text-xs text-slate-500 dark:text-slate-400 font-medium">
-                      {t("nav_logged_in_as")} <span className="font-semibold text-slate-900 dark:text-white">{user.name}</span>
+                    <div className="px-3 py-2 flex items-center gap-2.5 rounded-xl bg-slate-50 dark:bg-slate-850/60 mb-1 border border-slate-200/50 dark:border-slate-800/50">
+                      <div className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-xs">
+                        {userInitials}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{t("nav_logged_in_as")}</p>
+                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{user.name}</p>
+                      </div>
                     </div>
-                    <Button variant="primary" size="md" href={dashboardHref} fullWidth onClick={() => setMobileOpen(false)}>
-                      {t("nav_dashboard")}
-                    </Button>
+                    <Link
+                      href={profileHref}
+                      id="drawer-nav-profile-btn"
+                      className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium text-sm transition-colors shadow-xs active:scale-95"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <span className="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                        {userInitials}
+                      </span>
+                      <span>{t("nav_profile") || "Profile"}</span>
+                    </Link>
                     <Button variant="outline" size="md" onClick={() => { logout(); setMobileOpen(false); router.push("/"); }} fullWidth>
                       {t("nav_sign_out")}
                     </Button>
