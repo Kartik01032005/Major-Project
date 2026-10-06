@@ -8,7 +8,7 @@ import {
   FiUser, FiMail, FiPhone, FiLock, FiEye, FiEyeOff,
   FiMapPin, FiActivity, FiUserCheck, FiHeart
 } from "react-icons/fi";
-import { useAuth, useTranslation } from "@/context";
+import { useAuth, useTranslation, useToast } from "@/context";
 import { UserRole } from "@/types";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
@@ -19,6 +19,7 @@ import { ALL_STATES, getDistrictsByState } from "@/utils/locations";
 function RegisterFormContent() {
   const { register } = useAuth();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialRole = searchParams.get("role");
@@ -120,13 +121,16 @@ function RegisterFormContent() {
 
       const response = await register(payload);
       if (response.success) {
+        toast.success("Account created successfully! Welcome to BloodLink.");
         // Automatically redirects to home or dashboard after signup in context
         router.push("/");
       } else {
         setGeneralError(response.message);
+        toast.error(response.message || "Failed to register account.");
       }
     } catch {
       setGeneralError(t("register_err_generic"));
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

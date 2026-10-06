@@ -32,6 +32,20 @@ export default function Footer() {
     { label: t("footer_terms"), href: "/terms" },
   ];
 
+  const handleHomeClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname === "/") {
+      e.preventDefault();
+      if (window.location.hash) {
+        window.history.pushState(null, "", "/");
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      const hero = document.getElementById("home") || document.getElementById("main-content");
+      if (hero) {
+        hero.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  };
+
   return (
     <footer
       className="bg-slate-950 text-slate-400"
@@ -46,7 +60,12 @@ export default function Footer() {
 
           {/* ── Brand Column ────────────────────────────────────── */}
           <div className="lg:col-span-5 space-y-5">
-            <Link href="/" className="inline-flex items-center gap-2 group">
+            <Link
+              href="/"
+              onClick={handleHomeClick}
+              className="inline-flex items-center gap-2 group outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg"
+              aria-label="BloodLink – Home"
+            >
               <FaDroplet
                 size={18}
                 className="text-red-500 group-hover:text-red-400 transition-colors"
@@ -91,6 +110,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    onClick={link.href === "/" ? handleHomeClick : undefined}
                     className="text-sm text-slate-400 hover:text-white transition-colors"
                   >
                     {link.label}

@@ -8,8 +8,10 @@ import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { authService } from "@/services/authService";
+import { useToast } from "@/context";
 
 export default function ForgotPasswordPage() {
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [generalError, setGeneralError] = useState("");
@@ -20,7 +22,7 @@ export default function ForgotPasswordPage() {
     setEmailError("");
     setGeneralError("");
     if (!email) {
-      setEmailError("Email address is required.");
+      setEmailError("Please enter your email address.");
       return false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       setEmailError("Please enter a valid email address.");
@@ -39,12 +41,17 @@ export default function ForgotPasswordPage() {
       const res = await authService.forgotPassword(email);
       if (res.success) {
         setSubmitted(true);
+        toast.success("Password reset instructions sent to your email.");
       } else {
-        setGeneralError(res.message || "Failed to process password reset request.");
+        const msg = res.message || "Failed to process password reset request.";
+        setGeneralError(msg);
+        toast.error(msg);
       }
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } } };
-      setGeneralError(errorObj?.response?.data?.message || "An unexpected error occurred. Please try again.");
+      const msg = errorObj?.response?.data?.message || "An unexpected error occurred. Please try again.";
+      setGeneralError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

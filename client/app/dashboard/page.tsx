@@ -22,19 +22,19 @@ export default function UserDashboardPage() {
 
   return (
     <ProtectedRoute requiredRole="user">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Welcome Banner (full width) */}
+      <div className="max-w-7xl mx-auto space-y-6 pb-8">
+        {/* Welcome Banner */}
         <WelcomeBanner onEmergencyClick={() => setModalOpen(true)} />
 
-        {/* Balanced 2-Column Dashboard Grid */}
+        {/* Responsive Dashboard Grid (stacked on mobile, 2-column on desktop) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-          {/* Left Column: Donor Activity & Emergency Requests */}
+          {/* Column 1: Donor Profile & Emergency Requests */}
           <div className="space-y-6">
             <DonorProfileCard />
             <ActiveRequestsCard onNewRequest={() => setModalOpen(true)} />
           </div>
 
-          {/* Right Column: Notifications & Nearby Facilities */}
+          {/* Column 2: Notifications & Nearby Facilities (Map) */}
           <div className="space-y-6">
             <NotificationsPanel />
             <NearbyBloodBanksCard />

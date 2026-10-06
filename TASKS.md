@@ -550,6 +550,13 @@ Status:
   - [x] Privacy protection: zero persistent storage or server logging of raw user GPS, normalized cache keys containing no private identity
   - [x] All automated tests passing (115/115 client tests, 148/148 server tests) and Next.js production build (`npm run build`) passing with 0 errors
 
+## Mobile Overview – Donor Profile Grid & Welcome Banner
+- [x] 2-column × 2-row (`grid-cols-2`) grid for Donor Profile cards on all mobile screens (320px–480px) and desktop
+- [x] First row: Availability | Location, Second row: Last Donation | Donations
+- [x] Consistent card heights, compact padding, and proper text wrapping without horizontal overflow
+- [x] Aligned and compact Welcome Banner: side-by-side greeting and Emergency CTA with pill controls matching reference design
+- [x] Included Nearby Hospitals & Blood Banks with View All link in the Overview vertical stack
+
 ## DevOps & Deployment
 
 - [x] Create Dockerfile for frontend
@@ -585,7 +592,51 @@ Status:
 - [x] Image Optimization Audit (SVG vectors and lightweight assets)
 - [x] Privacy Policy Page (`/privacy` and `/privacy-policy` with genuine project facts)
 - [x] Terms & Conditions Page (`/terms` and `/terms-and-conditions` with emergency medical disclaimer)
-- [x] Genuine Contact Information (`support@bloodlink.in`, `+91 1800-000-0000`, Mysore, Karnataka)
+## UI/UX Polish & Accessibility Stabilization
+
+- [x] 1. Accessibility Improvements:
+  - [x] Semantic HTML and heading hierarchy preserved throughout public and dashboard routes
+  - [x] Accessible keyboard navigation with visible focus states (`:focus-visible` ring in `globals.css`)
+  - [x] Accessible skip-to-content link (`#main-content`) in root layout
+  - [x] Explicit `aria-label`, `aria-pressed`, and `role="dialog"` modal behaviors with Escape key handlers
+  - [x] Form inputs with accessible `id`, `htmlFor`, `aria-invalid`, and `aria-describedby` linked to errors
+  - [x] Screen-reader friendly live status alerts (`role="status"`, `role="alert"`, `aria-live="polite"`)
+  - [x] WCAG contrast compliance with dual indicator status (icons + descriptive text, never color alone)
+
+- [x] 2. Better Animations & Motion Controls:
+  - [x] Subtle, fast, professional micro-interactions on buttons, cards, modals, and dropdowns
+  - [x] Full `prefers-reduced-motion` compliance in `globals.css` and Framer Motion components
+  - [x] Zero heavy WebGL, 3D effects, or distracting animations added
+
+- [x] 3. Smooth Page Transitions:
+  - [x] Lightweight, fluid page transitions via App Router `template.tsx` (both root and dashboard child views)
+  - [x] Instant, non-blocking navigation respecting browser back/forward, Next.js routing, and mobile navigation
+  - [x] Automatically disables animation when `prefers-reduced-motion` is active
+
+- [x] 4. Better Form Validation:
+  - [x] Clear, human-readable, specific validation feedback on client side with immediate inline indicators
+  - [x] Audited Login, Signup, Forgot Password, Emergency Request, Profile, and Settings forms
+  - [x] Replaced generic "Invalid input" and "Required" with specific helpful prompts
+  - [x] Preserved user inputs without clearing valid data on validation errors
+
+- [x] 5. Toast Notification System:
+  - [x] Central `ToastProvider` and `useToast` hook in `client/context/ToastContext.tsx`
+  - [x] Styled to match BloodLink healthcare design system (dark & light mode, glassmorphism, accent badges)
+  - [x] ARIA live-region support (`aria-live="polite"`, `role="status"`/`role="alert"`)
+  - [x] Top-aligned positioning with mobile safe-area insets (`env(safe-area-inset-top)`), never covering mobile bottom navigation or emergency buttons
+  - [x] Built-in deduplication preventing spam of identical toasts within 2 seconds
+  - [x] Auto-dismiss with manual dismiss button (X)
+  - [x] Integrated across profile edits, availability toggles, emergency requests, settings, and authentication flows
+
+- [x] Responsive Welcome Banner:
+  - [x] Preserved mobile compact side-by-side header with instant CTA
+  - [x] Restored spacious desktop layout on `sm:` and larger screens with original CTA and notes
+
+- [x] PWA & Mobile Stabilization:
+  - [x] Next.js App Router Web App Manifest (`client/app/manifest.ts`)
+  - [x] Resilient service worker (`client/public/sw.js`) with static caching and safe non-API routing
+  - [x] Dedicated offline fallback page (`client/app/offline/page.tsx`) with 104 helpline and reload actions
+  - [x] Dev server host binding (`0.0.0.0`) in `client/package.json` for LAN mobile device testing
 
 ---
 

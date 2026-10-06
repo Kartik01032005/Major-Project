@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FiHome, FiUser, FiAlertCircle, FiBell, FiMap,
+  FiHome, FiGrid, FiUser, FiAlertCircle, FiBell, FiMap,
   FiPackage, FiCrosshair, FiList, FiLogOut, FiX,
   FiChevronLeft, FiChevronRight, FiSettings,
 } from "react-icons/fi";
@@ -47,7 +47,8 @@ export default function DashboardSidebar({
   const pathname = usePathname();
 
   const userNav: NavItem[] = [
-    { label: t("sidebar_overview"),          href: "/dashboard",                  icon: <FiHome size={18} /> },
+    { label: t("nav_home") || "Home",        href: "/",                           icon: <FiHome size={18} /> },
+    { label: t("sidebar_overview"),          href: "/dashboard",                  icon: <FiGrid size={18} /> },
     { label: t("sidebar_my_profile"),        href: "/dashboard/profile",          icon: <FiUser size={18} /> },
     { label: t("sidebar_emergency_request"), href: "/dashboard/emergency",        icon: <FiAlertCircle size={18} /> },
     { label: t("sidebar_my_requests"),       href: "/dashboard/requests",         icon: <FiList size={18} /> },
@@ -57,7 +58,8 @@ export default function DashboardSidebar({
   ];
 
   const adminNav: NavItem[] = [
-    { label: t("sidebar_overview"),           href: "/dashboard/admin",            icon: <FiHome size={18} /> },
+    { label: t("nav_home") || "Home",         href: "/",                           icon: <FiHome size={18} /> },
+    { label: t("sidebar_overview"),           href: "/dashboard/admin",            icon: <FiGrid size={18} /> },
     { label: t("sidebar_blood_inventory"),    href: "/dashboard/admin/inventory",  icon: <FiPackage size={18} /> },
     { label: t("sidebar_hospitals"),          href: "/dashboard/admin/hospitals",  icon: <FiCrosshair size={18} /> },
     { label: t("sidebar_emergency_requests"), href: "/dashboard/admin/requests",  icon: <FiAlertCircle size={18} /> },
@@ -79,7 +81,13 @@ export default function DashboardSidebar({
       {/* Nav Links */}
       <nav className="flex-1 overflow-y-auto py-4 px-2" aria-label="Dashboard navigation">
         {nav.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/dashboard" && item.href !== "/dashboard/admin" && pathname.startsWith(item.href));
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname === item.href ||
+                (item.href !== "/dashboard" &&
+                  item.href !== "/dashboard/admin" &&
+                  pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}
@@ -194,14 +202,14 @@ export default function DashboardSidebar({
               role="dialog"
               aria-modal="true"
               aria-label="Navigation menu"
-              initial={{ x: "-100%" }}
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
+              exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 350, damping: 32 }}
               className={[
-                "fixed top-0 left-0 bottom-0 z-50 w-72",
+                "fixed top-0 right-0 bottom-0 z-50 w-72",
                 "bg-white dark:bg-slate-950",
-                "border-r border-slate-200 dark:border-slate-800",
+                "border-l border-slate-200 dark:border-slate-800",
                 "flex flex-col shadow-2xl md:hidden",
               ].join(" ")}
             >

@@ -55,21 +55,6 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
 
   return (
     <header className="h-16 flex-shrink-0 flex items-center gap-3 px-4 sm:px-6 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
-      {/* Hamburger (mobile only) */}
-      <button
-        id="dashboard-menu-btn"
-        className={[
-          "md:hidden w-9 h-9 flex items-center justify-center rounded-lg",
-          "text-slate-500 hover:text-slate-900 hover:bg-slate-100",
-          "dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800",
-          "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
-        ].join(" ")}
-        onClick={onMenuClick}
-        aria-label="Open navigation"
-      >
-        <FiMenu size={20} />
-      </button>
-
       {/* Page title */}
       <div className="flex-1 min-w-0">
         <h1 className="text-base font-semibold text-slate-900 dark:text-white truncate">{pageTitle}</h1>
@@ -177,6 +162,21 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
             )}
           </AnimatePresence>
         </div>
+
+        {/* Mobile menu toggle (3 bars - placed after bell) */}
+        <button
+          id="dashboard-menu-btn"
+          className={[
+            "md:hidden w-9 h-9 flex items-center justify-center rounded-lg",
+            "text-slate-500 hover:text-slate-900 hover:bg-slate-100",
+            "dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800",
+            "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
+          ].join(" ")}
+          onClick={onMenuClick}
+          aria-label="Open navigation"
+        >
+          <FiMenu size={20} />
+        </button>
 
         {/* User avatar */}
         <Link

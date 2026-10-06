@@ -12,8 +12,17 @@ import {
   FiHome,
   FiMap,
   FiInfo,
+  FiGrid,
+  FiUser,
+  FiAlertCircle,
+  FiList,
+  FiBell,
+  FiSettings,
+  FiPackage,
+  FiCrosshair,
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
+import { BiSolidDroplet } from "react-icons/bi";
 import Button from "@/components/ui/Button";
 import { useAuth, useTranslation } from "@/context";
 import { useRouter } from "next/navigation";
@@ -24,7 +33,6 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const dashboardHref = user?.role === "admin" ? "/dashboard/admin" : "/dashboard";
-  const profileHref = user?.role === "admin" ? "/dashboard/admin" : "/dashboard/profile";
   const userInitials = user?.name
     ? (() => {
         const parts = user.name.trim().split(/\s+/).filter(Boolean);
@@ -108,6 +116,22 @@ export default function Navbar() {
     return pathname === href;
   };
 
+  const handleHomeClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    setMobileOpen(false);
+    if (pathname === "/") {
+      e.preventDefault();
+      if (window.location.hash) {
+        window.history.pushState(null, "", "/");
+        setActiveSection("");
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+      const hero = document.getElementById("home") || document.getElementById("main-content");
+      if (hero) {
+        hero.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  };
+
   const navLinks = [
     {
       label: t("nav_home"),
@@ -132,6 +156,70 @@ export default function Navbar() {
     },
   ];
 
+  const dashboardNavLinks = user?.role === "admin" ? [
+    {
+      label: t("sidebar_overview") || "Overview",
+      href: "/dashboard/admin",
+      icon: <FiGrid size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_blood_inventory") || "Blood Inventory",
+      href: "/dashboard/admin/inventory",
+      icon: <FiPackage size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_hospitals") || "Hospitals",
+      href: "/dashboard/admin/hospitals",
+      icon: <FiCrosshair size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_emergency_requests") || "Emergency Requests",
+      href: "/dashboard/admin/requests",
+      icon: <FiAlertCircle size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_settings") || "Settings",
+      href: "/dashboard/settings",
+      icon: <FiSettings size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+  ] : [
+    {
+      label: t("sidebar_overview") || "Overview",
+      href: "/dashboard",
+      icon: <FiGrid size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_my_profile") || "My Profile",
+      href: "/dashboard/profile",
+      icon: <FiUser size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_emergency_request") || "Emergency Request",
+      href: "/dashboard/emergency",
+      icon: <FiAlertCircle size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_my_requests") || "My Requests",
+      href: "/dashboard/requests",
+      icon: <FiList size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_notifications") || "Notifications",
+      href: "/dashboard/notifications",
+      icon: <FiBell size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_nearby_banks") || "Nearby Banks",
+      href: "/dashboard/nearby",
+      icon: <FiMap size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_settings") || "Settings",
+      href: "/dashboard/settings",
+      icon: <FiSettings size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+  ];
+
   useEffect(() => {
     if (mobileOpen) {
       const originalOverflow = document.body.style.overflow;
@@ -143,6 +231,7 @@ export default function Navbar() {
   }, [mobileOpen]);
 
   const isHome = pathname === "/";
+  const isDashboard = pathname?.startsWith("/dashboard");
   const hasSolidNav = !isHome || scrolled;
 
   return (
@@ -151,6 +240,7 @@ export default function Navbar() {
         role="banner"
         className={[
           "fixed inset-x-0 top-0 z-50 transition-all duration-300",
+          isDashboard ? "max-md:hidden" : "",
           hasSolidNav
             ? "bg-white/72 dark:bg-slate-950/72 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60 shadow-xs"
             : "bg-transparent border-b border-transparent",
@@ -164,16 +254,16 @@ export default function Navbar() {
             {/* ── Logo ─────────────────────────────────────────── */}
             <Link
               href="/"
+              onClick={handleHomeClick}
               className="flex shrink-0 items-center gap-2 sm:gap-2.5 group outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg"
               aria-label="BloodLink – Home"
             >
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                className="text-red-600 group-hover:text-red-700 transition-colors"
+              <div
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-600 flex items-center justify-center text-white shadow-sm shrink-0"
+                aria-hidden="true"
               >
-                <FaDroplet size={18} className="sm:w-5 sm:h-5" aria-hidden="true" />
-              </motion.div>
+                <BiSolidDroplet size={15} className="text-white" />
+              </div>
               <div className="flex items-baseline gap-0">
                 <span className="text-[16px] sm:text-[17px] font-bold tracking-tight text-slate-900 dark:text-white">
                   Blood
@@ -192,6 +282,7 @@ export default function Navbar() {
                   <li key={link.href} className="flex-none">
                     <Link
                       href={link.href}
+                      onClick={link.href === "/" ? handleHomeClick : undefined}
                       className={[
                         "relative inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-150 outline-none",
                         "focus-visible:ring-2 focus-visible:ring-red-500",
@@ -217,6 +308,24 @@ export default function Navbar() {
 
             {/* ── Desktop CTA ───────────────────────────────────── */}
             <div className="hidden md:flex shrink-0 items-center gap-3 whitespace-nowrap">
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new CustomEvent("bloodlink:toggle-chatbot"));
+                  }
+                }}
+                id="navbar-ai-assistant-btn"
+                className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-900 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-colors shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
+                aria-label="BloodLink AI Assistant"
+                title="BloodLink AI Assistant"
+              >
+                <span className="w-5 h-5 rounded-full bg-red-600 flex items-center justify-center text-white shrink-0">
+                  <BiSolidDroplet size={11} />
+                </span>
+                <span>AI Assistant</span>
+              </button>
+
               {user ? (
                 <>
                   <span className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -224,23 +333,17 @@ export default function Navbar() {
                     <span className="font-semibold text-slate-900 dark:text-white">{user.name.split(" ")[0]}</span>
                   </span>
                   <Link
-                    href={profileHref}
-                    id="nav-profile-btn"
+                    href={dashboardHref}
+                    id="nav-dashboard-btn"
                     className={[
-                      "inline-flex items-center gap-2 h-9 pl-1.5 pr-3.5 rounded-full border border-red-600/40",
+                      "inline-flex items-center justify-center h-9 px-4 rounded-full border border-red-600/40",
                       "bg-red-50/50 hover:bg-red-100/70 dark:bg-red-950/30 dark:hover:bg-red-950/50",
                       "text-slate-900 dark:text-white text-xs font-semibold transition-all duration-150",
                       "hover:border-red-600 active:scale-95 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
                     ].join(" ")}
-                    aria-label={t("nav_profile") || "Profile"}
+                    aria-label={t("nav_dashboard") || "Dashboard"}
                   >
-                    <span
-                      className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0 shadow-xs ring-1 ring-red-500/30"
-                      aria-hidden="true"
-                    >
-                      {userInitials}
-                    </span>
-                    <span>{t("nav_profile") || "Profile"}</span>
+                    <span>{t("nav_dashboard") || "Dashboard"}</span>
                   </Link>
                   <Button variant="ghost" size="sm" onClick={() => { logout(); router.push("/"); }}>
                     {t("nav_sign_out")}
@@ -266,6 +369,20 @@ export default function Navbar() {
 
             {/* ── Mobile Right Actions & Hamburger ─────────────────── */}
             <div className="md:hidden flex items-center gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new CustomEvent("bloodlink:toggle-chatbot"));
+                  }
+                }}
+                id="mobile-navbar-ai-btn"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
+                aria-label="BloodLink AI Assistant"
+                title="BloodLink AI Assistant"
+              >
+                <BiSolidDroplet size={14} />
+              </button>
               {user ? (
                 <>
                   <span className="hidden min-[360px]:inline-flex items-center text-xs text-slate-500 dark:text-slate-400 font-medium truncate max-w-[80px] min-[390px]:max-w-[110px]">
@@ -277,22 +394,16 @@ export default function Navbar() {
                     </span>
                   </span>
                   <Link
-                    href={profileHref}
-                    id="mobile-nav-profile-btn"
+                    href={dashboardHref}
+                    id="mobile-nav-dashboard-btn"
                     className={[
-                      "inline-flex items-center gap-1.5 h-8 pl-1 pr-2.5 rounded-full text-xs font-semibold transition-all duration-150 outline-none shrink-0",
+                      "inline-flex items-center justify-center h-8 px-3 rounded-full text-xs font-semibold transition-all duration-150 outline-none shrink-0",
                       "text-slate-900 dark:text-white border border-red-600/40 hover:border-red-600 bg-red-50/50 dark:bg-red-950/40 hover:bg-red-100/60",
                       "active:scale-95 focus-visible:ring-2 focus-visible:ring-red-500",
                     ].join(" ")}
-                    aria-label={t("nav_profile") || "Profile"}
+                    aria-label={t("nav_dashboard") || "Dashboard"}
                   >
-                    <span
-                      className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0 shadow-xs"
-                      aria-hidden="true"
-                    >
-                      {userInitials}
-                    </span>
-                    <span>{t("nav_profile") || "Profile"}</span>
+                    <span>{t("nav_dashboard") || "Dashboard"}</span>
                   </Link>
                 </>
               ) : null}
@@ -341,7 +452,7 @@ export default function Navbar() {
 
       {/* ── Mobile Overlay ──────────────────────────────────────────── */}
       <AnimatePresence>
-        {mobileOpen && (
+        {mobileOpen && !isDashboard && (
           <>
             <motion.div
               key="overlay"
@@ -365,7 +476,7 @@ export default function Navbar() {
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 350, damping: 32 }}
               className={[
-                "fixed top-0 right-0 z-50 w-[280px]",
+                "fixed top-0 right-0 z-50 w-[290px] sm:w-[320px]",
                 "h-screen h-[100dvh] max-h-[100dvh]",
                 "bg-white dark:bg-slate-950",
                 "border-l border-slate-200 dark:border-slate-800",
@@ -374,12 +485,19 @@ export default function Navbar() {
             >
               {/* Drawer Header */}
               <div className="flex items-center justify-between h-16 px-5 border-b border-slate-100 dark:border-slate-800 shrink-0">
-                <div className="flex items-center gap-2">
-                  <FaDroplet size={18} className="text-red-600" aria-hidden="true" />
+                <Link
+                  href="/"
+                  onClick={handleHomeClick}
+                  className="flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-lg"
+                  aria-label="BloodLink – Home"
+                >
+                  <div className="w-6 h-6 rounded-full bg-red-600 flex items-center justify-center text-white shrink-0 shadow-sm" aria-hidden="true">
+                    <BiSolidDroplet size={13} />
+                  </div>
                   <span className="font-bold text-base text-slate-900 dark:text-white tracking-tight">
                     Blood<span className="text-red-600">Link</span>
                   </span>
-                </div>
+                </Link>
                 <button
                   className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   onClick={() => setMobileOpen(false)}
@@ -391,43 +509,100 @@ export default function Navbar() {
 
               {/* Drawer Links */}
               <nav
-                className="flex-1 overflow-y-auto min-h-0 p-3 overscroll-contain"
+                className="flex-1 overflow-y-auto min-h-0 p-3 overscroll-contain space-y-3"
                 style={{ WebkitOverflowScrolling: "touch" }}
               >
-                {navLinks.map((link, i) => {
-                  const active = isLinkActive(link.href);
-                  return (
-                    <motion.div
-                      key={link.href}
-                      initial={{ opacity: 0, x: 16 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.06 + 0.1 }}
-                    >
-                      <Link
-                        href={link.href}
-                        className={[
-                          "group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium mb-1 transition-colors",
-                          active
-                            ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400 font-semibold"
-                            : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white",
-                        ].join(" ")}
-                        onClick={() => {
-                          if (link.href.includes("#")) {
-                            setActiveSection(link.href.replace("/", ""));
-                          } else {
-                            setActiveSection("");
-                          }
-                          setMobileOpen(false);
-                        }}
+                {/* ── Site Links ── */}
+                <div className="space-y-1">
+                  <div className="px-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Menu
+                  </div>
+                  {navLinks.map((link, i) => {
+                    const active = isLinkActive(link.href);
+                    return (
+                      <motion.div
+                        key={link.href}
+                        initial={{ opacity: 0, x: 16 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 + 0.05 }}
                       >
-                        <span className="w-5 flex items-center justify-center shrink-0">
-                          {link.mobileIcon}
-                        </span>
-                        <span className="leading-snug">{link.label}</span>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
+                        <Link
+                          href={link.href}
+                          className={[
+                            "group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                            active
+                              ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400 font-semibold"
+                              : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white",
+                          ].join(" ")}
+                          onClick={(e) => {
+                            if (link.href === "/") {
+                              handleHomeClick(e);
+                              return;
+                            }
+                            if (link.href.includes("#")) {
+                              setActiveSection(link.href.replace("/", ""));
+                            } else {
+                              setActiveSection("");
+                            }
+                            setMobileOpen(false);
+                          }}
+                        >
+                          <span className="w-5 flex items-center justify-center shrink-0">
+                            {link.mobileIcon}
+                          </span>
+                          <span className="leading-snug">{link.label}</span>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                  {/* ── Dashboard Links ── */}
+                  {dashboardNavLinks.map((item, i) => {
+                    const active = pathname === item.href;
+                    return (
+                      <motion.div
+                        key={item.href}
+                        initial={{ opacity: 0, x: 16 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: (navLinks.length + i) * 0.03 + 0.1 }}
+                      >
+                        <Link
+                          href={item.href}
+                          className={[
+                            "group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                            active
+                              ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400 font-semibold"
+                              : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white",
+                          ].join(" ")}
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          <span className="w-5 flex items-center justify-center shrink-0">
+                            {item.icon}
+                          </span>
+                          <span className="leading-snug">{item.label}</span>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* ── AI Assistant ── */}
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      if (typeof window !== "undefined") {
+                        window.dispatchEvent(new CustomEvent("bloodlink:open-chatbot"));
+                      }
+                    }}
+                    className="group flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                  >
+                    <div className="w-5 h-5 rounded-full bg-red-600 flex items-center justify-center text-white shrink-0 shadow-sm" aria-hidden="true">
+                      <BiSolidDroplet size={11} />
+                    </div>
+                    <span className="leading-snug">BloodLink AI Assistant</span>
+                  </button>
+                </div>
               </nav>
 
               {/* Drawer Footer CTA */}
@@ -439,25 +614,13 @@ export default function Navbar() {
               >
                 {user ? (
                   <>
-                    <div className="px-3 py-2 flex items-center gap-2.5 rounded-xl bg-slate-50 dark:bg-slate-850/60 mb-1 border border-slate-200/50 dark:border-slate-800/50">
-                      <div className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-xs">
-                        {userInitials}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{t("nav_logged_in_as")}</p>
-                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{user.name}</p>
-                      </div>
-                    </div>
                     <Link
-                      href={profileHref}
-                      id="drawer-nav-profile-btn"
-                      className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium text-sm transition-colors shadow-xs active:scale-95"
+                      href={dashboardHref}
+                      id="drawer-nav-dashboard-btn"
+                      className="w-full inline-flex items-center justify-center h-10 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium text-sm transition-colors shadow-xs active:scale-95"
                       onClick={() => setMobileOpen(false)}
                     >
-                      <span className="w-5 h-5 rounded-full bg-white/20 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
-                        {userInitials}
-                      </span>
-                      <span>{t("nav_profile") || "Profile"}</span>
+                      <span>{t("nav_dashboard") || "Dashboard"}</span>
                     </Link>
                     <Button variant="outline" size="md" onClick={() => { logout(); setMobileOpen(false); router.push("/"); }} fullWidth>
                       {t("nav_sign_out")}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { FiMail, FiLock, FiEye, FiEyeOff, FiActivity } from "react-icons/fi";
-import { useAuth, useTranslation } from "@/context";
+import { useAuth, useTranslation, useToast } from "@/context";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -13,6 +13,7 @@ import Button from "@/components/ui/Button";
 export default function LoginPage() {
   const { login } = useAuth();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const router = useRouter();
 
   // Form states
@@ -59,13 +60,16 @@ export default function LoginPage() {
     try {
       const response = await login(email, password);
       if (response.success) {
+        toast.success("Welcome back! Logged in successfully.");
         // Redirect to homepage or user dashboard
         router.push("/");
       } else {
         setGeneralError(response.message);
+        toast.error(response.message || "Invalid email or password.");
       }
     } catch {
       setGeneralError(t("login_err_generic"));
+      toast.error("Unable to sign in. Please try again.");
     } finally {
       setLoading(false);
     }

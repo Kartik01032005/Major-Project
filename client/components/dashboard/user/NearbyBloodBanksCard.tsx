@@ -76,17 +76,17 @@ export default function NearbyBloodBanksCard() {
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-        <div className="flex items-center gap-2">
-          <span className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/40 flex items-center justify-center text-red-600">
-            <FiMap size={15} />
+        <div className="flex items-center gap-3">
+          <span className="w-8 h-8 rounded-full bg-red-500/10 dark:bg-red-950/40 flex items-center justify-center text-red-600 dark:text-red-400">
+            <FiMap size={16} />
           </span>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{t("nearby_title")}</h3>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">{t("nearby_title")}</h3>
         </div>
         <Link
           href="/dashboard/nearby"
-          className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline flex items-center gap-1"
+          className="text-xs sm:text-sm font-semibold text-red-600 dark:text-red-400 hover:underline"
         >
-          {t("nearby_view_map")} <FiExternalLink size={12} />
+          View All
         </Link>
       </div>
 

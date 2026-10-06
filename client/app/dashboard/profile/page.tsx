@@ -8,12 +8,7 @@ export default function ProfilePage() {
   return (
     <ProtectedRoute requiredRole="user">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">My Profile</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage your blood donor profile, verified donation activity, and account settings.
-          </p>
-        </div>
+        <h1 className="sr-only">Profile</h1>
         <ProfileCard />
       </div>
     </ProtectedRoute>

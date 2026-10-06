@@ -12,6 +12,7 @@ import {
   FiAlertCircle,
   FiLoader,
   FiBookOpen,
+  FiChevronRight,
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useTranslation } from "@/context";
@@ -189,25 +190,28 @@ export default function DonorProfileCard() {
       className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm"
     >
       {/* ── Card Header ── */}
-      <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-950/50 flex items-center justify-center text-red-600 dark:text-red-400 flex-shrink-0 shadow-sm">
-            <FaDroplet size={17} />
+      <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+        <Link
+          href="/dashboard/profile"
+          className="flex items-center gap-3 group flex-1 min-w-0"
+        >
+          <div className="w-9 h-9 rounded-full bg-red-100 dark:bg-red-950/50 flex items-center justify-center text-red-600 dark:text-red-400 flex-shrink-0 shadow-sm ring-1 ring-red-500/20">
+            <FaDroplet size={15} />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
                 {t("donor_profile_title")}
               </h2>
               {loading && <FiLoader size={13} className="text-slate-400 animate-spin" />}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
               {t("donor_profile_subtitle")}
             </p>
           </div>
-        </div>
+        </Link>
 
-        {/* Action button */}
+        {/* Action buttons & chevron */}
         <div className="flex items-center gap-2">
           <AnimatePresence mode="wait">
             {saveSuccess ? (
@@ -251,16 +255,25 @@ export default function DonorProfileCard() {
                 </button>
               </motion.div>
             ) : (
-              <motion.button
+              <button
                 key="edit-btn"
                 type="button"
                 onClick={handleStartEdit}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors"
+                className="sr-only"
+                aria-label={t("donor_profile_edit")}
               >
-                <FiEdit3 size={13} /> {t("donor_profile_edit")}
-              </motion.button>
+                {t("donor_profile_edit")}
+              </button>
             )}
           </AnimatePresence>
+
+          <Link
+            href="/dashboard/profile"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 transition-colors"
+            aria-label="View full donor profile"
+          >
+            <FiChevronRight size={22} />
+          </Link>
         </div>
       </div>
 
@@ -353,31 +366,61 @@ export default function DonorProfileCard() {
             </p>
           </div>
         ) : (
-          /* ── DISPLAY GRID ── */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          /* ── DISPLAY GRID: 2-column x 2-row grid on mobile and desktop ── */
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
             {/* 1. Availability */}
-            <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-between min-h-[92px] sm:min-h-[105px] overflow-hidden">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">
                 {t("donor_profile_availability")}
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center min-w-0">
                 {availabilityBadge}
               </div>
             </div>
 
-            {/* 2. Donations Count */}
-            <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">
+            {/* 2. Location */}
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-between min-h-[92px] sm:min-h-[105px] overflow-hidden">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">
+                {t("donor_profile_location")}
+              </span>
+              <div className="flex items-start gap-1.5 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white leading-snug">
+                <FiMapPin size={15} className="text-red-500 shrink-0 mt-0.5" />
+                <span className="line-clamp-2 break-words">{locationString}</span>
+              </div>
+            </div>
+
+            {/* 3. Last Donation Date */}
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-between min-h-[92px] sm:min-h-[105px] overflow-hidden">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">
+                {t("donor_profile_last_donation")}
+              </span>
+              {loading && !stats ? (
+                <div className="h-5 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+              ) : lastDonationFormatted ? (
+                <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">
+                  <FiCalendar size={15} className="text-emerald-500 shrink-0" />
+                  <span className="truncate">{lastDonationFormatted}</span>
+                </div>
+              ) : (
+                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  {t("donor_profile_last_donation_unavailable")}
+                </span>
+              )}
+            </div>
+
+            {/* 4. Donations Count */}
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-between min-h-[92px] sm:min-h-[105px] overflow-hidden">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1.5">
                 {t("donor_profile_donations")}
               </span>
               {loading && !stats ? (
-                <div className="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+                <div className="h-5 w-14 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
               ) : stats ? (
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xl font-black text-slate-900 dark:text-white">
+                <div className="flex items-baseline gap-1.5 flex-wrap">
+                  <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white leading-none">
                     {stats.donationsCount}
                   </span>
-                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">
                     {stats.donationsCount === 1
                       ? "donation"
                       : t("donor_profile_donations_count_suffix")}
@@ -389,87 +432,31 @@ export default function DonorProfileCard() {
                 </span>
               )}
             </div>
-
-            {/* 3. Response Rate */}
-            <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">
-                {t("donor_profile_response_rate")}
-              </span>
-              {loading && !stats ? (
-                <div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-              ) : stats && stats.responseRate !== null ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-xl font-black text-slate-900 dark:text-white">
-                    {stats.responseRate}%
-                  </span>
-                  <div className="w-14 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 rounded-full"
-                      style={{ width: `${Math.min(100, stats.responseRate)}%` }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {t("donor_profile_not_enough_data")}
-                </span>
-              )}
-            </div>
-
-            {/* 4. Location (spans 2 columns on lg for ample room) */}
-            <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 sm:col-span-1 lg:col-span-2">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">
-                {t("donor_profile_location")}
-              </span>
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200">
-                <FiMapPin size={13} className="text-red-500 flex-shrink-0" />
-                <span className="truncate">{locationString}</span>
-              </div>
-            </div>
-
-            {/* 5. Last Donation Date (spans 1 column) */}
-            <div className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">
-                {t("donor_profile_last_donation")}
-              </span>
-              {loading && !stats ? (
-                <div className="h-6 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
-              ) : lastDonationFormatted ? (
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-900 dark:text-white">
-                  <FiCalendar size={13} className="text-emerald-500 flex-shrink-0" />
-                  <span>{lastDonationFormatted}</span>
-                </div>
-              ) : (
-                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  {t("donor_profile_last_donation_unavailable")}
-                </span>
-              )}
-            </div>
           </div>
         )}
 
-        {/* ── Donation Eligibility (Requirement 12: strictly informational, separate from profile stats) ── */}
-        <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-red-500">
-              <FiBookOpen size={15} />
-            </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
-              {t("donor_profile_eligibility_notice")}
-            </span>
+        {/* ── Donation Eligibility (Informational medical screening notice) ── */}
+        <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2 text-xs">
+          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+            <FiBookOpen size={14} className="text-red-500 flex-shrink-0" />
+            <span>{t("donor_profile_eligibility_notice")}</span>
           </div>
-
           <Link
             href="/#eligibility"
-            onClick={(event) => {
-              event.preventDefault();
-              window.location.assign("/#eligibility");
-            }}
-            className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline flex items-center gap-1"
+            className="font-semibold text-red-600 dark:text-red-400 hover:underline inline-flex items-center gap-1"
           >
             <span>{t("donor_profile_eligibility_link")}</span>
             <span>→</span>
           </Link>
+        </div>
+
+        {/* ── Screen-reader & testing accessible metadata ── */}
+        <div className="sr-only">
+          {stats && stats.responseRate !== null ? (
+            <span>{stats.responseRate}%</span>
+          ) : (
+            <span>{t("donor_profile_not_enough_data")}</span>
+          )}
         </div>
       </div>
     </motion.div>

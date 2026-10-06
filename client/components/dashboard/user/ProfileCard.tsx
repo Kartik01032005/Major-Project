@@ -15,7 +15,7 @@ import {
   FiBookOpen,
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
-import { useAuth, useTranslation } from "@/context";
+import { useAuth, useTranslation, useToast } from "@/context";
 import { dashboardService } from "@/services";
 import { DonorProfileStats, User } from "@/types";
 
@@ -37,6 +37,7 @@ function formatDateSafe(dateVal: string | null | undefined): string {
 export default function ProfileCard() {
   const { user, updateUser } = useAuth();
   const { t } = useTranslation();
+  const { toast } = useToast();
 
   const [stats, setStats] = useState<DonorProfileStats | null>(user?.donorStats ?? null);
   const [loadingStats, setLoadingStats] = useState<boolean>(!user?.donorStats);
@@ -95,7 +96,7 @@ export default function ProfileCard() {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editName.trim()) {
-      setSaveError("Full Name is required.");
+      setSaveError("Please enter your full name.");
       return;
     }
     const cleanPhone = editPhone.trim().replace(/\D/g, "");
@@ -126,11 +127,14 @@ export default function ProfileCard() {
         }
         setIsEditing(false);
         setSaveSuccess(true);
+        toast.success("Profile updated successfully");
         setTimeout(() => setSaveSuccess(false), 2500);
       }
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      setSaveError(errorObj.response?.data?.message || "Failed to update profile. Please try again.");
+      const errMsg = errorObj.response?.data?.message || "Failed to update profile. Please try again.";
+      setSaveError(errMsg);
+      toast.error(errMsg);
     } finally {
       setSaving(false);
     }
@@ -328,62 +332,62 @@ export default function ProfileCard() {
               </div>
             </form>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
               {/* Email */}
-              <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex items-start gap-2.5 min-w-0">
+              <div className="p-2.5 sm:p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex items-start gap-2 sm:gap-2.5 min-w-0">
                 <span className="mt-0.5 text-slate-400 dark:text-slate-500 flex-shrink-0">
-                  <FiMail size={15} />
+                  <FiMail size={14} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     Email
                   </p>
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
+                  <p className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5" title={user?.email}>
                     {user?.email || "—"}
                   </p>
                 </div>
               </div>
 
               {/* Phone */}
-              <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex items-start gap-2.5 min-w-0">
+              <div className="p-2.5 sm:p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex items-start gap-2 sm:gap-2.5 min-w-0">
                 <span className="mt-0.5 text-slate-400 dark:text-slate-500 flex-shrink-0">
-                  <FiPhone size={15} />
+                  <FiPhone size={14} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     Phone
                   </p>
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
+                  <p className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
                     {user?.phone ? `+91 ${user.phone}` : "—"}
                   </p>
                 </div>
               </div>
 
               {/* Location */}
-              <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex items-start gap-2.5 min-w-0">
+              <div className="p-2.5 sm:p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex items-start gap-2 sm:gap-2.5 min-w-0">
                 <span className="mt-0.5 text-slate-400 dark:text-slate-500 flex-shrink-0">
-                  <FiMapPin size={15} />
+                  <FiMapPin size={14} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     Location
                   </p>
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
+                  <p className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5" title={locationString}>
                     {locationString}
                   </p>
                 </div>
               </div>
 
               {/* Joined */}
-              <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex items-start gap-2.5 min-w-0">
+              <div className="p-2.5 sm:p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/30 flex items-start gap-2 sm:gap-2.5 min-w-0">
                 <span className="mt-0.5 text-slate-400 dark:text-slate-500 flex-shrink-0">
-                  <FiCalendar size={15} />
+                  <FiCalendar size={14} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     Joined
                   </p>
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
+                  <p className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
                     {joinedDateFormatted}
                   </p>
                 </div>
@@ -432,17 +436,17 @@ export default function ProfileCard() {
           </div>
         </div>
 
-        {/* Compact Donor Metrics Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Compact Donor Metrics Grid (2x2 on mobile, 4-col on desktop) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           {/* 1. Availability Status */}
-          <div className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+          <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex flex-col justify-between min-h-[75px] sm:min-h-[85px]">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">
               Availability
             </span>
             <div className="flex items-center gap-2">
               <span
                 className={[
-                  "text-xs font-bold",
+                  "text-xs font-bold truncate",
                   isAvailable
                     ? "text-emerald-600 dark:text-emerald-400"
                     : "text-amber-600 dark:text-amber-400",
@@ -454,26 +458,26 @@ export default function ProfileCard() {
           </div>
 
           {/* 2. Donations Count */}
-          <div className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+          <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex flex-col justify-between min-h-[75px] sm:min-h-[85px]">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">
               Donations
             </span>
             {loadingStats && !stats ? (
               <div className="h-6 w-14 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
             ) : (
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-xl font-black text-slate-900 dark:text-white">
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white leading-none">
                   {stats?.donationsCount ?? 0}
                 </span>
-                <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  verified donations
+                <span className="text-[10px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">
+                  verified
                 </span>
               </div>
             )}
           </div>
 
           {/* 3. Last Donation */}
-          <div className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+          <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex flex-col justify-between min-h-[75px] sm:min-h-[85px]">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">
               Last Donation
             </span>
@@ -482,7 +486,7 @@ export default function ProfileCard() {
             ) : lastDonationFormatted ? (
               <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
                 <FiCalendar size={13} className="text-emerald-500 flex-shrink-0" />
-                <span>{lastDonationFormatted}</span>
+                <span className="truncate">{lastDonationFormatted}</span>
               </div>
             ) : (
               <span className="text-xs font-medium text-slate-400 dark:text-slate-500 italic">
@@ -492,7 +496,7 @@ export default function ProfileCard() {
           </div>
 
           {/* 4. Response Rate */}
-          <div className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+          <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex flex-col justify-between min-h-[75px] sm:min-h-[85px]">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-1">
               Response Rate
             </span>
@@ -500,10 +504,10 @@ export default function ProfileCard() {
               <div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
             ) : stats && stats.responseRate !== null ? (
               <div className="flex items-center gap-2">
-                <span className="text-xl font-black text-slate-900 dark:text-white">
+                <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
                   {stats.responseRate}%
                 </span>
-                <div className="w-14 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div className="w-10 sm:w-14 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-emerald-500 rounded-full"
                     style={{ width: `${Math.min(100, stats.responseRate)}%` }}

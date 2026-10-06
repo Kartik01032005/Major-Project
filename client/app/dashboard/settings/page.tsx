@@ -45,7 +45,7 @@ import AboutModal from "@/components/dashboard/settings/AboutModal";
 import LegalModal from "@/components/dashboard/settings/LegalModal";
 import DeleteAccountModal from "@/components/dashboard/settings/DeleteAccountModal";
 
-import { useAuth, useLanguage } from "@/context";
+import { useAuth, useLanguage, useToast } from "@/context";
 import { dashboardService } from "@/services";
 import { UserSettings, User, DonorProfileStats } from "@/types";
 import { LOCALES } from "@/i18n";
@@ -53,6 +53,7 @@ import { LOCALES } from "@/i18n";
 export default function SettingsPage() {
   const { user, updateUser } = useAuth();
   const { locale } = useLanguage();
+  const { toast } = useToast();
   const { resolvedTheme, setTheme } = useTheme();
 
   // Settings state from backend
@@ -83,13 +84,18 @@ export default function SettingsPage() {
   const [legalTab, setLegalTab] = useState<"privacy" | "terms">("privacy");
   const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
 
-  // Flash notification helper
+  // Flash notification helper with accessible Toast integration
   const notify = useCallback((type: "success" | "error", text: string) => {
     setStatusMessage({ type, text });
+    if (type === "success") {
+      toast.success(text);
+    } else {
+      toast.error(text);
+    }
     setTimeout(() => {
       setStatusMessage((current) => (current?.text === text ? null : current));
     }, 3500);
-  }, []);
+  }, [toast]);
 
   // Fetch initial settings from server
   useEffect(() => {
@@ -212,10 +218,8 @@ export default function SettingsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Settings
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            <h1 className="sr-only">Settings</h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
               Manage your account identity, donor preferences, emergency alerts, and security.
             </p>
           </div>

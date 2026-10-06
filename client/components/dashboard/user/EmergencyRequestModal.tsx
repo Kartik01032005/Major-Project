@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiAlertCircle, FiMapPin, FiPhone, FiCheck } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
-import { useAuth, useDashboard, useTranslation } from "@/context";
+import { useAuth, useDashboard, useTranslation, useToast } from "@/context";
 import { BloodGroup, UserGpsLocation, SelectedHospital } from "@/types";
 import Select from "@/components/ui/Select";
 import { ALL_STATES, getDistrictsByState } from "@/utils/locations";
@@ -21,6 +21,7 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
   const { user } = useAuth();
   const { createRequest } = useDashboard();
   const { t } = useTranslation();
+  const { toast } = useToast();
 
   const [bloodGroup, setBloodGroup] = useState<BloodGroup>(user?.bloodGroup ?? "O+");
   const [state, setState] = useState(user?.location?.state ?? "");
@@ -39,14 +40,25 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
   const [selectedHospital, setSelectedHospital] = useState<SelectedHospital | null>(null);
   const [isAddressUserModified, setIsAddressUserModified] = useState(false);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!state.trim()) e.state = t("emergency_err_state");
-    if (!district.trim()) e.district = t("emergency_err_district");
-    if (!hospitalName.trim()) e.hospitalName = t("emergency_err_hospital");
-    if (!address.trim()) e.address = t("emergency_err_address");
-    if (!contactNumber.trim()) e.contactNumber = t("emergency_err_contact_required");
-    else if (!/^\d{10}$/.test(contactNumber)) e.contactNumber = t("emergency_err_contact_invalid");
+    if (!state.trim()) e.state = "Please select your state.";
+    if (!district.trim()) e.district = "Please select your district.";
+    if (!hospitalName.trim()) e.hospitalName = "Please enter the hospital or medical center name.";
+    if (!address.trim()) e.address = "Please enter the hospital address or landmark.";
+    if (!contactNumber.trim()) e.contactNumber = "Please enter a contact phone number.";
+    else if (!/^\d{10}$/.test(contactNumber)) e.contactNumber = "Please enter a valid 10-digit mobile number.";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -93,10 +105,13 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
         hospitalOsmId: selectedHospital?.osmId,
       });
       setSubmitted(true);
+      toast.success("Emergency blood request broadcasted to nearby donors.");
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } } };
       console.error("Failed to create emergency request:", err);
-      setErrors({ form: errorObj?.response?.data?.message || t("emergency_err_generic") });
+      const errMsg = errorObj?.response?.data?.message || "Failed to submit emergency request. Please try again.";
+      setErrors({ form: errMsg });
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }

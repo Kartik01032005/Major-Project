@@ -51,6 +51,55 @@ export default function UploadHistoryModal({ isOpen, onClose }: UploadHistoryMod
 
           {/* Body */}
           <div className="p-6 overflow-y-auto space-y-4">
+            {/* Log Details / Breakdown Card — Rendered at TOP for instant visibility without scrolling */}
+            {selectedLog && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-red-200 dark:border-slate-700 space-y-3 shadow-sm ring-1 ring-red-500/10"
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <FiFileText className="text-red-600" size={14} />
+                    Parsed Units Breakdown: <span className="text-red-600 dark:text-red-400 font-semibold">{selectedLog.fileName}</span>
+                  </h4>
+                  <button
+                    onClick={() => setSelectedLog(null)}
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-semibold px-2 py-0.5 rounded hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                  >
+                    Close
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-4 gap-2">
+                  {Object.entries(selectedLog.summary.unitsByGroup || {}).map(([bg, count]) => (
+                    <div key={bg} className="p-2 rounded-lg bg-white dark:bg-slate-900 text-center border border-slate-200/50 dark:border-slate-800">
+                      <span className="text-[10px] font-bold text-red-600 block">{bg}</span>
+                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        {count} units
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {selectedLog.summary.errors && selectedLog.summary.errors.length > 0 && (
+                  <div className="mt-2">
+                    <h5 className="text-[11px] font-bold text-amber-600 flex items-center gap-1 mb-1">
+                      <FiAlertTriangle size={12} /> Logged Validation Errors ({selectedLog.summary.errors.length})
+                    </h5>
+                    <div className="max-h-28 overflow-y-auto text-[11px] text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1">
+                      {selectedLog.summary.errors.map((err, idx) => (
+                        <div key={idx} className="flex items-start gap-1.5">
+                          <span className="font-semibold text-amber-600">{err.row ? `Row ${err.row}:` : "Info:"}</span>
+                          <span>{err.reason}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
             {uploadHistory.length === 0 ? (
               <div className="py-12 text-center text-slate-400">
                 <FiFileText size={36} className="mx-auto mb-2 opacity-50" />
@@ -121,54 +170,6 @@ export default function UploadHistoryModal({ isOpen, onClose }: UploadHistoryMod
                   </tbody>
                 </table>
               </div>
-            )}
-
-            {/* Log Details Modal / Expanded Card */}
-            {selectedLog && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3"
-              >
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                    Parsed Units Breakdown for {selectedLog.fileName}
-                  </h4>
-                  <button
-                    onClick={() => setSelectedLog(null)}
-                    className="text-slate-400 hover:text-slate-600 text-xs font-semibold"
-                  >
-                    Close
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-4 gap-2">
-                  {Object.entries(selectedLog.summary.unitsByGroup || {}).map(([bg, count]) => (
-                    <div key={bg} className="p-2 rounded-lg bg-white dark:bg-slate-900 text-center border border-slate-200/50 dark:border-slate-800">
-                      <span className="text-[10px] font-bold text-red-600 block">{bg}</span>
-                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                        {count} units
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {selectedLog.summary.errors && selectedLog.summary.errors.length > 0 && (
-                  <div className="mt-2">
-                    <h5 className="text-[11px] font-bold text-amber-600 flex items-center gap-1 mb-1">
-                      <FiAlertTriangle size={12} /> Logged Validation Errors ({selectedLog.summary.errors.length})
-                    </h5>
-                    <div className="max-h-28 overflow-y-auto text-[11px] text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1">
-                      {selectedLog.summary.errors.map((err, idx) => (
-                        <div key={idx} className="flex items-start gap-1.5">
-                          <span className="font-semibold text-amber-600">{err.row ? `Row ${err.row}:` : "Info:"}</span>
-                          <span>{err.reason}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </motion.div>
             )}
           </div>
 

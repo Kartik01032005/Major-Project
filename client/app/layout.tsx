@@ -4,8 +4,9 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
-import { AuthProvider, LanguageProvider } from "@/context";
+import { AuthProvider, LanguageProvider, ToastProvider } from "@/context";
 import Chatbot from "@/components/chatbot/Chatbot";
+import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -62,6 +63,7 @@ export const metadata: Metadata = {
       { url: "/apple-icon", sizes: "180x180", type: "image/png" },
     ],
   },
+  manifest: "/manifest.webmanifest",
   robots: {
     index: true,
     follow: true,
@@ -93,15 +95,24 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning data-scroll-behavior="smooth">
       <body className="min-h-screen flex flex-col antialiased" suppressHydrationWarning>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[10000] focus:px-4 focus:py-2 focus:bg-red-600 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-white font-medium text-sm"
+        >
+          Skip to main content
+        </a>
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>
-              <Navbar />
-              <main className="flex-1 pt-16" id="main-content" role="main">
-                {children}
-              </main>
-              <Footer />
-              <Chatbot />
+              <ToastProvider>
+                <Navbar />
+                <main className="flex-1 pt-16" id="main-content" role="main">
+                  {children}
+                </main>
+                <Footer />
+                <Chatbot />
+                <ServiceWorkerRegister />
+              </ToastProvider>
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>

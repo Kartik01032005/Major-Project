@@ -11,12 +11,7 @@ export default function MyRequestsPage() {
   return (
     <ProtectedRoute requiredRole="user">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">My Requests</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            View status and manage all your emergency blood requests.
-          </p>
-        </div>
+        <h1 className="sr-only">My Requests</h1>
         <ActiveRequestsCard onNewRequest={() => router.push("/dashboard/emergency")} />
       </div>
     </ProtectedRoute>

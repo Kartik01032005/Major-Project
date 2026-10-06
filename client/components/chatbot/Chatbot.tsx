@@ -4,7 +4,6 @@ import React, { useState, useCallback, useEffect } from "react";
 import { ChatMessage, ChatbotCategory } from "@/types/chatbot";
 import { chatbotService, getWelcomeMessage } from "@/services/chatbotService";
 import { useLanguage } from "@/context/LanguageContext";
-import ChatbotButton from "./ChatbotButton";
 import ChatWindow from "./ChatWindow";
 
 export const Chatbot: React.FC = () => {
@@ -112,27 +111,37 @@ export const Chatbot: React.FC = () => {
     }
   }, [handleSendMessage, lastQuery]);
 
-  return (
-    <>
-      <ChatbotButton
-        isOpen={isOpen}
-        onClick={() => setIsOpen((prev) => !prev)}
-      />
+  // Listen to open/toggle events triggered from homescreen navbar
+  useEffect(() => {
+    const handleToggle = () => setIsOpen((prev) => !prev);
+    const handleOpen = () => setIsOpen(true);
+    const handleClose = () => setIsOpen(false);
 
-      <ChatWindow
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        messages={messages}
-        isTyping={isTyping}
-        inputValue={inputValue}
-        onInputChange={setInputValue}
-        onSendMessage={handleSendMessage}
-        onClearChat={handleClearChat}
-        onQuickReplyClick={handleQuickReplyClick}
-        error={error}
-        onRetry={handleRetry}
-      />
-    </>
+    window.addEventListener("bloodlink:toggle-chatbot", handleToggle);
+    window.addEventListener("bloodlink:open-chatbot", handleOpen);
+    window.addEventListener("bloodlink:close-chatbot", handleClose);
+
+    return () => {
+      window.removeEventListener("bloodlink:toggle-chatbot", handleToggle);
+      window.removeEventListener("bloodlink:open-chatbot", handleOpen);
+      window.removeEventListener("bloodlink:close-chatbot", handleClose);
+    };
+  }, []);
+
+  return (
+    <ChatWindow
+      isOpen={isOpen}
+      onClose={() => setIsOpen(false)}
+      messages={messages}
+      isTyping={isTyping}
+      inputValue={inputValue}
+      onInputChange={setInputValue}
+      onSendMessage={handleSendMessage}
+      onClearChat={handleClearChat}
+      onQuickReplyClick={handleQuickReplyClick}
+      error={error}
+      onRetry={handleRetry}
+    />
   );
 };
 export default Chatbot;

@@ -9,6 +9,16 @@ jest.mock("../services/dashboardService");
 jest.mock("../context", () => ({
   useAuth: jest.fn(),
   useLanguage: jest.fn(),
+  useToast: () => ({
+    toast: {
+      success: jest.fn(),
+      error: jest.fn(),
+      warning: jest.fn(),
+      info: jest.fn(),
+    },
+    dismiss: jest.fn(),
+    dismissAll: jest.fn(),
+  }),
 }));
 
 jest.mock("next-themes", () => ({
