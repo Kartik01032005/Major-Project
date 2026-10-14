@@ -638,6 +638,13 @@ Status:
   - [x] Dedicated offline fallback page (`client/app/offline/page.tsx`) with 104 helpline and reload actions
   - [x] Dev server host binding (`0.0.0.0`) in `client/package.json` for LAN mobile device testing
 
+- [x] Bulk Blood Inventory Upload Modal Positioning & Viewport Optimization:
+  - [x] Viewport-level React Portal rendering to `document.body` eliminating parent transform/overflow constraints
+  - [x] Horizontal and vertical viewport centering with responsive `max-h-[calc(100dvh-32px)]`
+  - [x] Body and dashboard background scroll locking when modal is open, with Escape key dismiss
+  - [x] Always-visible header and footer with internal fallback scrolling (`flex-1 min-h-0`)
+  - [x] Preserved exact healthcare UI theme, colors, borders, dark mode, icons, and upload functionality
+
 ---
 
 ## Product Scope

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiUploadCloud, FiFileText, FiCheckCircle, FiAlertCircle,
@@ -18,6 +19,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
   const { uploadInventoryFile } = useDashboard();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [mounted, setMounted] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [mode, setMode] = useState<"merge" | "replace">("merge");
   const [dragActive, setDragActive] = useState(false);
@@ -26,7 +28,53 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
   const [summary, setSummary] = useState<UploadSummary | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
 
-  if (!isOpen) return null;
+  const resetModal = useCallback(() => {
+    setSelectedFile(null);
+    setSummary(null);
+    setErrorMsg("");
+    setProgress(0);
+    setUploading(false);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    resetModal();
+    onClose();
+  }, [resetModal, onClose]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock background scrolling and add Escape key listener when modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const dashboardContent = document.getElementById("dashboard-content");
+    const origDashboardOverflow = dashboardContent?.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    if (dashboardContent) {
+      dashboardContent.style.overflow = "hidden";
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      if (dashboardContent && origDashboardOverflow !== undefined) {
+        dashboardContent.style.overflow = origDashboardOverflow;
+      }
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, handleClose]);
+
+  if (!isOpen || !mounted) return null;
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -100,53 +148,50 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
     }
   };
 
-  const resetModal = () => {
-    setSelectedFile(null);
-    setSummary(null);
-    setErrorMsg("");
-    setProgress(0);
-    setUploading(false);
-  };
-
-  const handleClose = () => {
-    resetModal();
-    onClose();
-  };
-
-  return (
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-900/60 backdrop-blur-sm overflow-hidden"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) handleClose();
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bulk-upload-title"
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]"
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(650px,calc(100dvh-32px))] overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
             <div className="flex items-center gap-3">
-              <span className="p-2.5 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600">
+              <span className="p-2 sm:p-2.5 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 shrink-0">
                 <FiUploadCloud size={20} />
               </span>
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                <h3 id="bulk-upload-title" className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                   Bulk Blood Inventory Upload
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
                   Upload Excel (.xlsx, .xls), CSV, or PDF inventory files
                 </p>
               </div>
             </div>
             <button
               onClick={handleClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+              aria-label="Close dialog"
             >
               <FiX size={18} />
             </button>
           </div>
 
           {/* Body */}
-          <div className="p-6 overflow-y-auto space-y-6">
+          <div className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4 sm:space-y-5 flex-1 min-h-0">
 
             {/* Error Message */}
             {errorMsg && (
@@ -166,12 +211,12 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
                     Select Update Mode
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                     <button
                       type="button"
                       onClick={() => setMode("merge")}
                       className={[
-                        "p-3.5 rounded-xl border text-left transition-all flex items-start gap-3",
+                        "p-3 sm:p-3.5 rounded-xl border text-left transition-all flex items-start gap-2.5 sm:gap-3",
                         mode === "merge"
                           ? "border-red-500 bg-red-50/40 dark:bg-red-950/20 text-slate-900 dark:text-white ring-1 ring-red-500/30"
                           : "border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400"
@@ -180,7 +225,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
                       <FiLayers size={18} className="mt-0.5 text-red-600 shrink-0" />
                       <div>
                         <span className="block text-xs font-bold">Merge / Add to Stock</span>
-                        <span className="text-[11px] opacity-80 block mt-0.5">
+                        <span className="text-[11px] opacity-80 block mt-0.5 leading-snug">
                           Increments current inventory with units extracted from file.
                         </span>
                       </div>
@@ -190,7 +235,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
                       type="button"
                       onClick={() => setMode("replace")}
                       className={[
-                        "p-3.5 rounded-xl border text-left transition-all flex items-start gap-3",
+                        "p-3 sm:p-3.5 rounded-xl border text-left transition-all flex items-start gap-2.5 sm:gap-3",
                         mode === "replace"
                           ? "border-amber-500 bg-amber-50/40 dark:bg-amber-950/20 text-slate-900 dark:text-white ring-1 ring-amber-500/30"
                           : "border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400"
@@ -199,7 +244,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
                       <FiRefreshCw size={18} className="mt-0.5 text-amber-600 shrink-0" />
                       <div>
                         <span className="block text-xs font-bold">Replace All Inventory</span>
-                        <span className="text-[11px] opacity-80 block mt-0.5">
+                        <span className="text-[11px] opacity-80 block mt-0.5 leading-snug">
                           Resets existing inventory and sets exact stock counts from file.
                         </span>
                       </div>
@@ -215,7 +260,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
                   className={[
-                    "relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-3",
+                    "relative border-2 border-dashed rounded-2xl p-5 sm:p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2.5 sm:gap-3",
                     dragActive
                       ? "border-red-500 bg-red-50/30 dark:bg-red-950/20 scale-[0.99]"
                       : "border-slate-200 dark:border-slate-800 hover:border-red-400 dark:hover:border-red-800 bg-slate-50/50 dark:bg-slate-900/50"
@@ -230,10 +275,10 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
                   />
 
                   {selectedFile ? (
-                    <div className="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                      <FiFileText size={24} className="text-red-600" />
-                      <div className="text-left">
-                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[300px]">
+                    <div className="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm max-w-full">
+                      <FiFileText size={22} className="text-red-600 shrink-0" />
+                      <div className="text-left min-w-0">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[240px] sm:max-w-[340px]">
                           {selectedFile.name}
                         </p>
                         <p className="text-[11px] text-slate-400">
@@ -243,14 +288,14 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
                     </div>
                   ) : (
                     <>
-                      <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/50 flex items-center justify-center text-red-600">
-                        <FiUploadCloud size={24} />
+                      <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-red-50 dark:bg-red-950/50 flex items-center justify-center text-red-600 shrink-0">
+                        <FiUploadCloud size={20} className="sm:size-[22px]" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                        <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
                           Click to upload or drag & drop file
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
                           Supported formats: Excel (.xlsx, .xls), CSV (.csv), PDF (.pdf) up to 10MB
                         </p>
                       </div>
@@ -357,7 +402,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+          <div className="px-5 sm:px-6 py-3.5 sm:py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5 sm:gap-3 shrink-0">
             {!summary ? (
               <>
                 <button
@@ -398,6 +443,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

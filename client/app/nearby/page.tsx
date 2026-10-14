@@ -44,16 +44,6 @@ import {
 const RADIUS_OPTIONS = [5, 10, 20, 30, 50] as const;
 type RadiusOption = (typeof RADIUS_OPTIONS)[number];
 
-const ALL_BLOOD_GROUPS: BloodGroup[] = [
-  "A+",
-  "A-",
-  "B+",
-  "B-",
-  "AB+",
-  "AB-",
-  "O+",
-  "O-",
-];
 
 const BLOOD_GROUP_COLORS: Record<string, string> = {
   "A+": "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300 border-red-200 dark:border-red-900",
@@ -107,7 +97,7 @@ export default function NearbyFacilitiesPage({ isDashboard = false }: { isDashbo
   const [radius, setRadius] = useState<RadiusOption>(5);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "hospitals" | "bloodbanks">("all");
-  const [bloodGroupFilter, setBloodGroupFilter] = useState<BloodGroup | "all">("all");
+  const bloodGroupFilter: BloodGroup | "all" = "all";
   const [openNowFilter, setOpenNowFilter] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -1023,43 +1013,6 @@ export default function NearbyFacilitiesPage({ isDashboard = false }: { isDashbo
               })}
             </div>
           </div>
-
-          {/* Blood Group Filter Pills (only relevant when blood banks are shown) */}
-          {typeFilter !== "hospitals" && (
-            <div className="flex items-center gap-1.5 pt-2 overflow-x-auto pb-1">
-              <span className="text-[11px] font-medium text-slate-400 shrink-0 mr-1">
-                {t("nearby_filter_blood_group") || "Blood Group"}:
-              </span>
-              <button
-                onClick={() => setBloodGroupFilter("all")}
-                className={[
-                  "px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition-all",
-                  bloodGroupFilter === "all"
-                    ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200",
-                ].join(" ")}
-              >
-                {t("nearby_all_groups") || "All Groups"}
-              </button>
-              {ALL_BLOOD_GROUPS.map((bg) => {
-                const active = bloodGroupFilter === bg;
-                return (
-                  <button
-                    key={bg}
-                    onClick={() => setBloodGroupFilter(bg)}
-                    className={[
-                      "px-2.5 py-1 rounded-lg text-xs font-bold shrink-0 transition-all border",
-                      active
-                        ? "bg-red-600 text-white border-red-600"
-                        : "bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-red-300",
-                    ].join(" ")}
-                  >
-                    {bg}
-                  </button>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         {/* ── Main Layout: Results Sidebar (Left) & Large Interactive Map (Right) ─ */}
