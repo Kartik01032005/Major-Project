@@ -60,4 +60,17 @@ api.interceptors.request.use(
   }
 );
 
+// Response interceptor to handle 401 unauthorized and clear invalid credentials
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("bloodlink_auth_token");
+      localStorage.removeItem("bloodlink_auth_user");
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
+

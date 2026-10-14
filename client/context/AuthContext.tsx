@@ -110,12 +110,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           } catch (err: unknown) {
             const errorObj = err as { response?: { status?: number } };
-            // Expired or bad token: log out
-            if (errorObj.response?.status === 401) {
+            // Expired, invalid, or forbidden session: log out immediately
+            if (
+              errorObj.response?.status === 401 ||
+              errorObj.response?.status === 403 ||
+              errorObj.response?.status === 404
+            ) {
               logout();
-            } else if (savedUser) {
-              // Server is offline, fallback to cached user details for seamless offline client test
-              setUser(JSON.parse(savedUser));
+            } else if (!errorObj.response && savedUser) {
+              // Server is offline (network error), fallback to cached user details for seamless offline client test
+              try {
+                setUser(JSON.parse(savedUser));
+              } catch {
+                logout();
+              }
+            } else {
+              logout();
             }
           }
         }

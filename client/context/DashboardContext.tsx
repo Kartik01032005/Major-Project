@@ -92,22 +92,38 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ── Fetch Helpers ──────────────────────────────────────────────────────────
 
   const refreshUploadHistory = useCallback(async () => {
-    if (!user || user.role !== "admin") return;
+    if (!user || user.role !== "admin") {
+      setUploadHistory([]);
+      return;
+    }
     try {
       const logs = await dashboardService.getUploadHistory();
-      setUploadHistory(logs);
-    } catch (err) {
-      console.error("Failed to load upload history:", err);
+      setUploadHistory(Array.isArray(logs) ? logs : []);
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { status?: number } };
+      if (errorObj?.response?.status === 403 || errorObj?.response?.status === 401) {
+        setUploadHistory([]);
+      } else {
+        console.error("Failed to load upload history:", err);
+      }
     }
   }, [user]);
 
   const refreshThresholds = useCallback(async () => {
-    if (!user || user.role !== "admin") return;
+    if (!user || user.role !== "admin") {
+      setThresholds(null);
+      return;
+    }
     try {
       const data = await dashboardService.getThresholds();
-      setThresholds(data);
-    } catch (err) {
-      console.error("Failed to load thresholds:", err);
+      setThresholds(data || null);
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { status?: number } };
+      if (errorObj?.response?.status === 403 || errorObj?.response?.status === 401) {
+        setThresholds(null);
+      } else {
+        console.error("Failed to load thresholds:", err);
+      }
     }
   }, [user]);
 
@@ -137,15 +153,23 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   const refreshInventory = useCallback(async () => {
-    if (!user || user.role !== "admin") return;
+    if (!user || user.role !== "admin") {
+      setInventory([]);
+      return;
+    }
     setLoadingInventory(true);
     try {
       const data = await dashboardService.getInventory();
-      setInventory(data);
+      setInventory(Array.isArray(data) ? data : []);
       refreshThresholds();
       refreshUploadHistory();
-    } catch (err) {
-      console.error("Failed to load inventory:", err);
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { status?: number } };
+      if (errorObj?.response?.status === 403 || errorObj?.response?.status === 401) {
+        setInventory([]);
+      } else {
+        console.error("Failed to load inventory:", err);
+      }
     } finally {
       setLoadingInventory(false);
     }
@@ -183,8 +207,12 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       await refreshHospitals();
       await refreshRequests();
       await refreshNotifications();
-      if (user.role === "admin") {
+      if (user?.role === "admin") {
         await refreshInventory();
+      } else {
+        setInventory([]);
+        setUploadHistory([]);
+        setThresholds(null);
       }
     };
 
