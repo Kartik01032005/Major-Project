@@ -227,7 +227,7 @@ export const createRequest = async (req: Request, res: Response): Promise<void> 
     const matchingDonors = await User.find({
       bloodGroup: { $in: compatibleDonorGroups.length > 0 ? compatibleDonorGroups : [bloodGroup] },
       isAvailableDonor: true,
-      role: "user",
+      role: { $in: ["user", "USER"] },
       _id: { $ne: req.user._id }
     });
 
@@ -244,7 +244,7 @@ export const createRequest = async (req: Request, res: Response): Promise<void> 
     }
 
     // Find all admin users/blood banks to notify them
-    const admins = await User.find({ role: "admin" });
+    const admins = await User.find({ role: { $in: ["admin", "BLOOD_BANK"] } });
     for (const admin of admins) {
       enqueueNotification({
         receiverId: admin._id.toString(),
@@ -440,7 +440,7 @@ export const acceptRequest = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    if (req.user.role !== "user") {
+    if (req.user.role !== "user" && req.user.role !== "USER") {
       res.status(403).json({ success: false, message: "Only donors can accept requests" });
       return;
     }
@@ -832,7 +832,7 @@ export const computeTrackingStats = async (request: any): Promise<IEmergencyTrac
     notifiedCount = await User.countDocuments({
       bloodGroup: { $in: compatibleDonorGroups.length > 0 ? compatibleDonorGroups : [request.bloodGroup] },
       isAvailableDonor: true,
-      role: "user",
+      role: { $in: ["user", "USER"] },
       _id: { $ne: creatorId }
     });
   }
@@ -913,7 +913,7 @@ export const getRequestTracking = async (req: Request, res: Response): Promise<v
       : String(rawReqBy);
 
     const isRequester = creatorId === req.user._id.toString();
-    const isAdmin = req.user.role === "admin";
+    const isAdmin = req.user.role === "admin" || req.user.role === "BLOOD_BANK";
 
     if (!isRequester && !isAdmin) {
       res.status(403).json({

@@ -38,13 +38,35 @@ export interface IUserSettings {
   };
 }
 
+export type Role = "USER" | "BLOOD_BANK" | "HOSPITAL" | "user" | "admin";
+export type ApprovalStatus = "PENDING_APPROVAL" | "APPROVED" | "REJECTED";
+
+export interface IHospitalProfileStats {
+  profileCompletion: number;
+  totalRequests: number;
+  activeRequests: number;
+  fulfilledRequests: number;
+  totalDonorsResponded: number;
+}
+
 export interface IUser extends Document {
   name: string;
   email: string;
   password?: string; // Optional so we can exclude it when reading data from database
   phone: string;
   bloodGroup?: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
-  role: "user" | "admin";
+  role: Role;
+  approvalStatus?: ApprovalStatus;
+  organizationName?: string;
+  address?: string;
+  registrationNumber?: string;
+  hospitalType?: string;
+  operatingHours?: string;
+  emergencyContactPhone?: string;
+  hospitalStats?: IHospitalProfileStats;
+  rejectionReason?: string;
+  approvedAt?: Date;
+  approvedBy?: any;
   isAvailableDonor: boolean;
   location: ILocation;
   settings?: IUserSettings;

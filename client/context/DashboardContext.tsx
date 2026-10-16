@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import {
   EmergencyRequest,
   BloodInventoryItem,
@@ -88,6 +88,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [loadingHospitals, setLoadingHospitals] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const currentUserIdRef = useRef<string | null>(null);
 
   // ── Fetch Helpers ──────────────────────────────────────────────────────────
 
@@ -191,6 +192,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 // ── Seed on Login & Real-time Socket Sync ────────────────────────────────────
   useEffect(() => {
     if (!user) {
+      currentUserIdRef.current = null;
       socketService.disconnect();
       const timer = setTimeout(() => {
         setRequests([]);
@@ -200,6 +202,14 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }, 0);
       return () => clearTimeout(timer);
     }
+
+    if (currentUserIdRef.current && currentUserIdRef.current !== user._id) {
+      setRequests([]);
+      setInventory([]);
+      setNotifications([]);
+      setHospitals([]);
+    }
+    currentUserIdRef.current = user._id;
 
     const userId = user._id;
 
@@ -416,16 +426,31 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setNotifications((prev) =>
         prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
       );
-    } catch (err) {
-      console.error("Failed to mark notification as read:", err);
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { status?: number } };
+      // If 403 or 404, the notification no longer belongs to this session; remove it from local state
+      if (errorObj?.response?.status === 403 || errorObj?.response?.status === 404) {
+        setNotifications((prev) => prev.filter((n) => n._id !== id));
+      } else {
+        console.error("Failed to mark notification as read:", err);
+      }
     }
   }, []);
 
   const markAllRead = useCallback(async () => {
-    const unread = notifications.filter((n) => !n.isRead);
-    await Promise.all(unread.map((n) => dashboardService.markRead(n._id)));
+    // Optimistically mark all notifications in UI as read
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-  }, [notifications]);
+    try {
+      await dashboardService.markAllRead();
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { status?: number } };
+      if (errorObj?.response?.status === 403 || errorObj?.response?.status === 401) {
+        refreshNotifications();
+      } else {
+        console.error("Failed to mark all notifications as read:", err);
+      }
+    }
+  }, [refreshNotifications]);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 

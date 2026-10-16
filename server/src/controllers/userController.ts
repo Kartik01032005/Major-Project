@@ -15,11 +15,49 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const donorStats = await computeDonorProfileStats(
-      req.user._id,
-      req.user.bloodGroup,
-      req.user.createdAt
-    );
+    const isHospital = (req.user.role || "").toUpperCase() === "HOSPITAL";
+
+    let donorStats;
+    let hospitalStats;
+
+    if (isHospital) {
+      const [totalRequests, activeRequests, fulfilledRequests, requests] = await Promise.all([
+        EmergencyRequest.countDocuments({ requestBy: req.user._id }),
+        EmergencyRequest.countDocuments({ requestBy: req.user._id, status: { $in: ["Pending", "Approved"] } }),
+        EmergencyRequest.countDocuments({ requestBy: req.user._id, status: "Completed" }),
+        EmergencyRequest.find({ requestBy: req.user._id }).select("acceptedBy")
+      ]);
+      const totalDonorsResponded = requests.reduce((acc, curr) => acc + (curr.acceptedBy?.length || 0), 0);
+
+      const fieldsToCheck = [
+        req.user.name,
+        req.user.email,
+        req.user.phone,
+        req.user.organizationName,
+        req.user.address,
+        req.user.registrationNumber,
+        req.user.hospitalType,
+        req.user.operatingHours,
+        req.user.location?.state,
+        req.user.location?.district,
+      ];
+      const filledCount = fieldsToCheck.filter(f => typeof f === "string" && f.trim().length > 0).length;
+      const profileCompletion = Math.round((filledCount / fieldsToCheck.length) * 100);
+
+      hospitalStats = {
+        profileCompletion,
+        totalRequests,
+        activeRequests,
+        fulfilledRequests,
+        totalDonorsResponded
+      };
+    } else {
+      donorStats = await computeDonorProfileStats(
+        req.user._id,
+        req.user.bloodGroup,
+        req.user.createdAt
+      );
+    }
 
     const userObj = req.user.toObject ? req.user.toObject() : { ...req.user };
     delete userObj.password;
@@ -33,7 +71,8 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
       message: "Profile retrieved successfully",
       data: {
         ...userObj,
-        donorStats
+        donorStats,
+        hospitalStats
       }
     });
   } catch (error: any) {
@@ -92,7 +131,8 @@ export const getPublicDonorProfile = async (req: Request, res: Response): Promis
     });
 
     const isOwnProfile = donor._id.toString() === req.user._id.toString();
-    const canSeeContact = isOwnProfile || !!acceptedRequest || req.user.role === "admin";
+    const isInstitutionalAdmin = req.user.role === "admin" || req.user.role === "BLOOD_BANK" || req.user.role === "HOSPITAL";
+    const canSeeContact = isOwnProfile || !!acceptedRequest || isInstitutionalAdmin;
 
     // Privacy protection: NEVER expose exact GPS or exact address to other users
     const safeLocation = donor.location
@@ -139,7 +179,19 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const { name, phone, bloodGroup, isAvailableDonor, location } = req.body;
+    const {
+      name,
+      phone,
+      bloodGroup,
+      isAvailableDonor,
+      location,
+      organizationName,
+      address,
+      registrationNumber,
+      hospitalType,
+      operatingHours,
+      emergencyContactPhone
+    } = req.body;
 
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -149,7 +201,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
 
     // Check if phone is being changed and is already taken
     if (phone && phone !== user.phone) {
-      const phoneExists = await User.findOne({ phone });
+      const phoneExists = await User.findOne({ phone, _id: { $ne: user._id } });
       if (phoneExists) {
         res.status(400).json({ success: false, message: "Phone number is already registered" });
         return;
@@ -158,6 +210,12 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
     }
 
     if (name) user.name = name.trim();
+    if (organizationName !== undefined) user.organizationName = organizationName.trim();
+    if (address !== undefined) user.address = address.trim();
+    if (registrationNumber !== undefined) user.registrationNumber = registrationNumber.trim();
+    if (hospitalType !== undefined) user.hospitalType = hospitalType.trim();
+    if (operatingHours !== undefined) user.operatingHours = operatingHours.trim();
+    if (emergencyContactPhone !== undefined) user.emergencyContactPhone = emergencyContactPhone.trim();
     if (bloodGroup) user.bloodGroup = bloodGroup;
     if (typeof isAvailableDonor !== "undefined") user.isAvailableDonor = Boolean(isAvailableDonor);
     if (location) {
@@ -171,11 +229,48 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
 
     const updatedUser = await user.save();
 
-    const donorStats = await computeDonorProfileStats(
-      updatedUser._id,
-      updatedUser.bloodGroup,
-      updatedUser.createdAt
-    );
+    const isHospital = (updatedUser.role || "").toUpperCase() === "HOSPITAL";
+    let donorStats;
+    let hospitalStats;
+
+    if (isHospital) {
+      const [totalRequests, activeRequests, fulfilledRequests, requests] = await Promise.all([
+        EmergencyRequest.countDocuments({ requestBy: updatedUser._id }),
+        EmergencyRequest.countDocuments({ requestBy: updatedUser._id, status: { $in: ["Pending", "Approved"] } }),
+        EmergencyRequest.countDocuments({ requestBy: updatedUser._id, status: "Completed" }),
+        EmergencyRequest.find({ requestBy: updatedUser._id }).select("acceptedBy")
+      ]);
+      const totalDonorsResponded = requests.reduce((acc, curr) => acc + (curr.acceptedBy?.length || 0), 0);
+
+      const fieldsToCheck = [
+        updatedUser.name,
+        updatedUser.email,
+        updatedUser.phone,
+        updatedUser.organizationName,
+        updatedUser.address,
+        updatedUser.registrationNumber,
+        updatedUser.hospitalType,
+        updatedUser.operatingHours,
+        updatedUser.location?.state,
+        updatedUser.location?.district,
+      ];
+      const filledCount = fieldsToCheck.filter(f => typeof f === "string" && f.trim().length > 0).length;
+      const profileCompletion = Math.round((filledCount / fieldsToCheck.length) * 100);
+
+      hospitalStats = {
+        profileCompletion,
+        totalRequests,
+        activeRequests,
+        fulfilledRequests,
+        totalDonorsResponded
+      };
+    } else {
+      donorStats = await computeDonorProfileStats(
+        updatedUser._id,
+        updatedUser.bloodGroup,
+        updatedUser.createdAt
+      );
+    }
 
     // Create copy without password or tokens
     const responseData = {
@@ -185,12 +280,20 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       phone: updatedUser.phone,
       bloodGroup: updatedUser.bloodGroup,
       role: updatedUser.role,
+      approvalStatus: updatedUser.approvalStatus,
+      organizationName: updatedUser.organizationName,
+      address: updatedUser.address,
+      registrationNumber: updatedUser.registrationNumber,
+      hospitalType: updatedUser.hospitalType,
+      operatingHours: updatedUser.operatingHours,
+      emergencyContactPhone: updatedUser.emergencyContactPhone,
       isAvailableDonor: updatedUser.isAvailableDonor,
       location: updatedUser.location,
       settings: updatedUser.settings,
       createdAt: updatedUser.createdAt,
       updatedAt: updatedUser.updatedAt,
-      donorStats
+      donorStats,
+      hospitalStats
     };
 
     res.status(200).json({

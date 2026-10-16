@@ -6,6 +6,28 @@ interface DecodedToken {
   id: string;
 }
 
+export type CanonicalRole = "USER" | "BLOOD_BANK" | "HOSPITAL";
+
+export const getCanonicalRole = (role?: string | null): CanonicalRole | null => {
+  if (!role || typeof role !== "string") return null;
+  const upper = role.trim().toUpperCase();
+  if (upper === "USER") return "USER";
+  if (upper === "BLOOD_BANK" || upper === "ADMIN") return "BLOOD_BANK";
+  if (upper === "HOSPITAL") return "HOSPITAL";
+  return null;
+};
+
+export const normalizeRole = (role?: string | null): CanonicalRole => {
+  return getCanonicalRole(role) || "USER";
+};
+
+export const getEffectiveApprovalStatus = (user: { role?: string; approvalStatus?: string }): "PENDING_APPROVAL" | "APPROVED" | "REJECTED" => {
+  const canonicalRole = getCanonicalRole(user.role);
+  if (!canonicalRole) return "REJECTED";
+  if (user.approvalStatus === "REJECTED") return "REJECTED";
+  return "APPROVED";
+};
+
 export const authGuard = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   let token: string | undefined;
 
@@ -39,10 +61,56 @@ export const authGuard = async (req: Request, res: Response, next: NextFunction)
   }
 };
 
-export const adminGuard = (req: Request, res: Response, next: NextFunction): void => {
-  if (req.user && req.user.role === "admin") {
+/**
+ * Require one or more roles. In college project demo mode, institutional accounts have direct dashboard and API access.
+ */
+export const requireRole = (...allowedRoles: Array<"USER" | "BLOOD_BANK" | "HOSPITAL">) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: "Not authorized" });
+      return;
+    }
+
+    const canonicalUserRole = getCanonicalRole(req.user.role);
+    if (!canonicalUserRole) {
+      res.status(403).json({
+        success: false,
+        message: "This account has an invalid or missing role configuration. Access denied.",
+      });
+      return;
+    }
+
+    if (!allowedRoles.includes(canonicalUserRole)) {
+      res.status(403).json({ success: false, message: "Access denied: Insufficient permissions" });
+      return;
+    }
+
+    if (req.user.approvalStatus === "REJECTED") {
+      res.status(403).json({
+        success: false,
+        message: "Institutional account registration was rejected.",
+        approvalStatus: "REJECTED"
+      });
+      return;
+    }
+
     next();
-  } else {
-    res.status(403).json({ success: false, message: "Access denied: Admins only" });
-  }
+  };
+};
+
+/**
+ * Blood Bank guard (backward compatible with adminGuard)
+ */
+export const adminGuard = (req: Request, res: Response, next: NextFunction): void => {
+  return requireRole("BLOOD_BANK")(req, res, next);
+};
+
+export const bloodBankGuard = adminGuard;
+
+export const hospitalGuard = (req: Request, res: Response, next: NextFunction): void => {
+  return requireRole("HOSPITAL")(req, res, next);
+};
+
+export const institutionGuard = (req: Request, res: Response, next: NextFunction): void => {
+  return requireRole("BLOOD_BANK", "HOSPITAL")(req, res, next);
 };

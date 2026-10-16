@@ -102,6 +102,7 @@ beforeAll(async () => {
   const loginReq = await request(app).post("/api/auth/login").send({
     email: requesterData.email,
     password: requesterData.password,
+    role: "USER",
   });
   requesterToken = loginReq.body.data.token;
   requesterId = loginReq.body.data.user._id;
@@ -110,6 +111,7 @@ beforeAll(async () => {
   const loginOther = await request(app).post("/api/auth/login").send({
     email: otherRequesterData.email,
     password: otherRequesterData.password,
+    role: "USER",
   });
   otherUserToken = loginOther.body.data.token;
 
@@ -117,6 +119,7 @@ beforeAll(async () => {
   const loginAdmin = await request(app).post("/api/auth/login").send({
     email: adminData.email,
     password: adminData.password,
+    role: "BLOOD_BANK",
   });
   adminToken = loginAdmin.body.data.token;
 
@@ -124,6 +127,7 @@ beforeAll(async () => {
   const loginA = await request(app).post("/api/auth/login").send({
     email: donorAData.email,
     password: donorAData.password,
+    role: "USER",
   });
   donorAToken = loginA.body.data.token;
   donorAId = loginA.body.data.user._id;
@@ -132,6 +136,7 @@ beforeAll(async () => {
   const loginB = await request(app).post("/api/auth/login").send({
     email: donorBData.email,
     password: donorBData.password,
+    role: "USER",
   });
   donorBToken = loginB.body.data.token;
   donorBId = loginB.body.data.user._id;
@@ -140,6 +145,7 @@ beforeAll(async () => {
   const loginC = await request(app).post("/api/auth/login").send({
     email: donorCData.email,
     password: donorCData.password,
+    role: "USER",
   });
   donorCToken = loginC.body.data.token;
   donorCId = loginC.body.data.user._id;

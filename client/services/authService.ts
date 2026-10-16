@@ -29,8 +29,8 @@ interface MeResponse {
 }
 
 export const authService = {
-  login: async (email: string, password: string): Promise<LoginResponse> => {
-    const response = await api.post<LoginResponse>("/auth/login", { email, password });
+  login: async (email: string, password: string, role?: UserRole): Promise<LoginResponse> => {
+    const response = await api.post<LoginResponse>("/auth/login", { email, password, role });
     return response.data;
   },
 
@@ -41,6 +41,9 @@ export const authService = {
     password?: string;
     bloodGroup?: BloodGroup;
     role: UserRole;
+    organizationName?: string;
+    address?: string;
+    registrationNumber?: string;
     location?: {
       state: string;
       district: string;
@@ -49,6 +52,16 @@ export const authService = {
     };
   }): Promise<RegisterResponse> => {
     const response = await api.post<RegisterResponse>("/auth/register", userData);
+    return response.data;
+  },
+
+  getPendingInstitutions: async (): Promise<{ success: boolean; data: User[] }> => {
+    const response = await api.get<{ success: boolean; data: User[] }>("/auth/institutions/pending");
+    return response.data;
+  },
+
+  updateInstitutionApproval: async (id: string, status: "APPROVED" | "REJECTED", rejectionReason?: string): Promise<{ success: boolean; data: User }> => {
+    const response = await api.patch<{ success: boolean; data: User }>(`/auth/institutions/${id}/approval`, { status, rejectionReason });
     return response.data;
   },
 

@@ -7,6 +7,17 @@ import BloodInventory from "../models/BloodInventory.js";
  */
 export const seedInitialData = async (): Promise<void> => {
   try {
+    // Ensure all existing demo institutional accounts are activated directly
+    await User.updateMany(
+      {
+        role: { $in: ["BLOOD_BANK", "HOSPITAL", "admin"] },
+        approvalStatus: { $ne: "APPROVED" },
+      },
+      {
+        $set: { approvalStatus: "APPROVED" },
+      }
+    );
+
     // 1. Ensure Primary Admin User (kartiknilekani568@gmail.com) exists with password "Kartik@2005"
     let adminUser = await User.findOne({ email: "kartiknilekani568@gmail.com" });
     if (!adminUser) {

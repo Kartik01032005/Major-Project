@@ -314,7 +314,11 @@ export const getNearbyFacilities = async (req: Request, res: Response): Promise<
 
     // 1. Fetch BloodLink MongoDB Registered Blood Banks
     const bloodBankUsers = await User.find({
-      role: "admin",
+      role: { $in: ["admin", "BLOOD_BANK"] },
+      $or: [
+        { approvalStatus: "APPROVED" },
+        { role: "admin", approvalStatus: { $exists: false } },
+      ],
       "location.latitude": { $ne: 0 },
       "location.longitude": { $ne: 0 },
     }).lean();

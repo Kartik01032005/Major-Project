@@ -28,11 +28,21 @@ import { useAuth, useTranslation } from "@/context";
 import { useRouter } from "next/navigation";
 
 export default function Navbar() {
+  const pathname = usePathname();
   const { user, logout } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
-  const pathname = usePathname();
-  const dashboardHref = user?.role === "admin" ? "/dashboard/admin" : "/dashboard";
+  const dashboardHref = (() => {
+    if (!user) return "/dashboard";
+    const roleUpper = (user.role || "").toUpperCase();
+    if (roleUpper === "BLOOD_BANK" || user.role === "admin") {
+      return "/dashboard/admin";
+    }
+    if (roleUpper === "HOSPITAL") {
+      return "/dashboard/hospital";
+    }
+    return "/dashboard";
+  })();
   const userInitials = user?.name
     ? (() => {
         const parts = user.name.trim().split(/\s+/).filter(Boolean);

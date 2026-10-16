@@ -7,7 +7,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<ApiResponse<{ token: string; user: User }>>;
+  login: (email: string, password: string, role?: UserRole) => Promise<ApiResponse<{ token: string; user: User }>>;
   register: (userData: {
     name: string;
     email: string;
@@ -15,6 +15,9 @@ interface AuthContextType {
     password?: string;
     bloodGroup?: BloodGroup;
     role: UserRole;
+    organizationName?: string;
+    address?: string;
+    registrationNumber?: string;
     location?: {
       state: string;
       district: string;
@@ -136,9 +139,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const login = async (email: string, password: string): Promise<ApiResponse<{ token: string; user: User }>> => {
+  const login = async (
+    email: string,
+    password: string,
+    role?: UserRole
+  ): Promise<ApiResponse<{ token: string; user: User }>> => {
     try {
-      const res = await authService.login(email.trim(), password);
+      const res = await authService.login(email.trim(), password, role);
       
       if (res.success && res.data) {
         const { token: apiToken, user: apiUser } = res.data;
@@ -171,6 +178,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     password?: string;
     bloodGroup?: BloodGroup;
     role: UserRole;
+    organizationName?: string;
+    address?: string;
+    registrationNumber?: string;
     location?: {
       state: string;
       district: string;
@@ -182,8 +192,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const regRes = await authService.register(userData);
       
       if (regRes.success) {
-        // Automatically login user after registration
-        const logRes = await login(userData.email, userData.password || "password123");
+        // Automatically login user after registration with the registered role
+        const logRes = await login(userData.email, userData.password || "password123", userData.role);
         if (logRes.success) {
           return {
             success: true,

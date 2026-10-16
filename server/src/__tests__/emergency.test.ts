@@ -53,14 +53,17 @@ beforeAll(async () => {
   const userLogin = await request(app).post("/api/auth/login").send({
     email: userData.email,
     password: userData.password,
+    role: "USER",
   });
   userToken = userLogin.body.data.token;
 
   // Register and login admin
   await request(app).post("/api/auth/register").send(adminData);
+  await User.updateOne({ email: adminData.email }, { approvalStatus: "APPROVED" });
   const adminLogin = await request(app).post("/api/auth/login").send({
     email: adminData.email,
     password: adminData.password,
+    role: "BLOOD_BANK",
   });
   adminToken = adminLogin.body.data.token;
 });
@@ -347,6 +350,7 @@ describe("PUT /api/emergency/:id/accept", () => {
     const donorLogin = await request(app).post("/api/auth/login").send({
       email: "donor.matching@bloodlink.dev",
       password: "Test@1234",
+      role: "USER",
     });
     donorToken = donorLogin.body.data.token;
     donorUser = await User.findOne({ email: "donor.matching@bloodlink.dev" }) as InstanceType<typeof User>;
@@ -364,6 +368,7 @@ describe("PUT /api/emergency/:id/accept", () => {
     const mismatchLogin = await request(app).post("/api/auth/login").send({
       email: "donor.mismatch@bloodlink.dev",
       password: "Test@1234",
+      role: "USER",
     });
     mismatchDonorToken = mismatchLogin.body.data.token;
 
@@ -380,6 +385,7 @@ describe("PUT /api/emergency/:id/accept", () => {
     const universalLogin = await request(app).post("/api/auth/login").send({
       email: "donor.universal@bloodlink.dev",
       password: "Test@1234",
+      role: "USER",
     });
     universalDonorToken = universalLogin.body.data.token;
   });

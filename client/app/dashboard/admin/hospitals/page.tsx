@@ -69,7 +69,7 @@ export default function AdminHospitalsMapPage() {
   const mapCenter = selectedMapHospital?.position ?? DEFAULT_CENTER;
 
   return (
-    <ProtectedRoute requiredRole="admin">
+    <ProtectedRoute requiredRole={["BLOOD_BANK", "admin"]}>
       <div className="max-w-7xl mx-auto space-y-5">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

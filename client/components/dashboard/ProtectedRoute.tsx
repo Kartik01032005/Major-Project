@@ -8,8 +8,25 @@ import Loader from "@/components/ui/Loader";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: UserRole;
+  requiredRole?: UserRole | UserRole[];
+  allowPending?: boolean;
 }
+
+export const normalizeUserRole = (role?: string): "USER" | "BLOOD_BANK" | "HOSPITAL" => {
+  if (!role) return "USER";
+  const upper = role.toUpperCase();
+  if (upper === "BLOOD_BANK" || upper === "ADMIN") return "BLOOD_BANK";
+  if (upper === "HOSPITAL") return "HOSPITAL";
+  return "USER";
+};
+
+export const getDashboardRoute = (user: { role?: string; approvalStatus?: string } | null): string => {
+  if (!user) return "/dashboard";
+  const norm = normalizeUserRole(user.role);
+  if (norm === "BLOOD_BANK") return "/dashboard/admin";
+  if (norm === "HOSPITAL") return "/dashboard/hospital";
+  return "/dashboard";
+};
 
 export default function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
@@ -21,9 +38,16 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
       router.replace("/login");
       return;
     }
-    if (requiredRole && user.role !== requiredRole) {
-      // Redirect to appropriate dashboard
-      router.replace(user.role === "admin" ? "/dashboard/admin" : "/dashboard");
+
+    const normRole = normalizeUserRole(user.role);
+
+    if (requiredRole) {
+      const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+      const normalizedAllowed = allowed.map(r => normalizeUserRole(r));
+
+      if (!normalizedAllowed.includes(normRole)) {
+        router.replace(getDashboardRoute(user));
+      }
     }
   }, [user, loading, requiredRole, router]);
 
@@ -32,7 +56,14 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
   }
 
   if (!user) return null;
-  if (requiredRole && user.role !== requiredRole) return null;
+
+  const normRole = normalizeUserRole(user.role);
+
+  if (requiredRole) {
+    const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+    const normalizedAllowed = allowed.map(r => normalizeUserRole(r));
+    if (!normalizedAllowed.includes(normRole)) return null;
+  }
 
   return <>{children}</>;
 }

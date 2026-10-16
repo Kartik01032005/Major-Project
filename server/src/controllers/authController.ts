@@ -18,6 +18,8 @@ const generateToken = (id: string): string => {
   return jwt.sign({ id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"] });
 };
 
+import { normalizeRole, getEffectiveApprovalStatus, getCanonicalRole } from "../middleware/auth.js";
+
 // ─── Register Controller ──────────────────────────────────────────────────────
 export const register = async (req: Request, res: Response): Promise<void> => {
   const errors = validationResult(req);
@@ -38,7 +40,18 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { name, email, password, phone, role, bloodGroup, location, organizationName } = req.body;
+  const {
+    name,
+    email,
+    password,
+    phone,
+    role,
+    bloodGroup,
+    location,
+    organizationName,
+    address,
+    registrationNumber
+  } = req.body;
   const normalizedEmail = email ? email.toLowerCase().trim() : "";
 
   try {
@@ -63,7 +76,20 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       longitude: 0,
     };
 
-    const finalName = role === "admin" && organizationName ? `${name} (${organizationName})` : name;
+    // Determine canonical role and activate directly for demo project
+    let assignedRole: "USER" | "BLOOD_BANK" | "HOSPITAL" = "USER";
+    const requestedRoleUpper = (role || "").toUpperCase();
+    if (requestedRoleUpper === "BLOOD_BANK" || requestedRoleUpper === "ADMIN") {
+      assignedRole = "BLOOD_BANK";
+    } else if (requestedRoleUpper === "HOSPITAL") {
+      assignedRole = "HOSPITAL";
+    } else {
+      assignedRole = "USER";
+    }
+    const assignedStatus: "APPROVED" = "APPROVED";
+
+    const isInstitutional = assignedRole === "BLOOD_BANK" || assignedRole === "HOSPITAL";
+    const finalName = isInstitutional && organizationName ? `${name} (${organizationName})` : name;
 
     // Create user (password hashing is handled in User Schema pre-save)
     const newUser = await User.create({
@@ -71,8 +97,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       email: normalizedEmail,
       password,
       phone: phone?.trim(),
-      bloodGroup: role === "admin" ? undefined : bloodGroup,
-      role: role ?? "user",
+      bloodGroup: isInstitutional ? undefined : bloodGroup,
+      role: assignedRole,
+      approvalStatus: assignedStatus,
+      organizationName: isInstitutional ? organizationName?.trim() : undefined,
+      address: address?.trim(),
+      registrationNumber: registrationNumber?.trim(),
       location: userLocation,
     });
 
@@ -87,6 +117,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         phone: newUser.phone,
         bloodGroup: newUser.bloodGroup,
         role: newUser.role,
+        approvalStatus: newUser.approvalStatus,
+        organizationName: newUser.organizationName,
+        address: newUser.address,
+        registrationNumber: newUser.registrationNumber,
         isAvailableDonor: newUser.isAvailableDonor,
         location: newUser.location,
       },
@@ -117,26 +151,47 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
   const normalizedEmail = email ? email.toLowerCase().trim() : "";
 
   try {
-    // Find user
+    // 1. Find user by email
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       res.status(401).json({ success: false, message: "Invalid email or password" });
       return;
     }
 
-    // Check password matches
+    // 2. Check password matches
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       res.status(401).json({ success: false, message: "Invalid email or password" });
       return;
     }
 
-    // Create token
+    // 3. Verify account's stored role is valid
+    const storedCanonicalRole = getCanonicalRole(user.role);
+    if (!storedCanonicalRole) {
+      res.status(403).json({
+        success: false,
+        message: "This account has an invalid or missing role configuration. Please contact an administrator.",
+      });
+      return;
+    }
+
+    // 4. Compare requested role with the account's stored role
+    const requestedCanonicalRole = getCanonicalRole(role);
+    if (!requestedCanonicalRole || requestedCanonicalRole !== storedCanonicalRole) {
+      res.status(403).json({
+        success: false,
+        message: "This account is not registered for the selected role. Please select the correct role.",
+      });
+      return;
+    }
+
+    // 5. Successful credential & role matching! Create token with user's verified stored role
     const token = generateToken(user._id.toString());
+    const effectiveStatus = getEffectiveApprovalStatus(user);
 
     // Exclude password in response
     const userResponse = {
@@ -146,6 +201,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       phone: user.phone,
       bloodGroup: user.bloodGroup,
       role: user.role,
+      approvalStatus: effectiveStatus,
+      organizationName: user.organizationName,
+      address: user.address,
+      registrationNumber: user.registrationNumber,
+      rejectionReason: user.rejectionReason,
       isAvailableDonor: user.isAvailableDonor,
       location: user.location,
       createdAt: user.createdAt,
@@ -174,14 +234,105 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const effectiveStatus = getEffectiveApprovalStatus(req.user);
+    const userObj = req.user.toObject ? req.user.toObject() : { ...req.user };
+    delete userObj.password;
+    delete userObj.resetPasswordToken;
+    delete userObj.resetPasswordTokenHash;
+    delete userObj.resetPasswordExpires;
+    delete userObj.resetPasswordExpiresAt;
+    userObj.approvalStatus = effectiveStatus;
+
     res.status(200).json({
       success: true,
       message: "User profile retrieved successfully",
-      data: req.user,
+      data: userObj,
     });
   } catch (error: any) {
     console.error("❌ Get profile error:", error);
     res.status(500).json({ success: false, message: "Server error during profile retrieval" });
+  }
+};
+
+// ─── Institutional Approval Controllers ──────────────────────────────────────
+export const getPendingInstitutions = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const pending = await User.find({
+      role: { $in: ["BLOOD_BANK", "HOSPITAL"] },
+      approvalStatus: "PENDING_APPROVAL",
+    }).select("-password").sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: pending.length,
+      data: pending,
+    });
+  } catch (error: any) {
+    console.error("❌ Get pending institutions error:", error);
+    res.status(500).json({ success: false, message: "Server error fetching pending institutions" });
+  }
+};
+
+export const updateInstitutionApproval = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: "Not authorized" });
+      return;
+    }
+
+    const { id } = req.params;
+    const { status, rejectionReason } = req.body;
+
+    if (!["APPROVED", "REJECTED"].includes(status)) {
+      res.status(400).json({ success: false, message: "Invalid status. Must be APPROVED or REJECTED." });
+      return;
+    }
+
+    if (!mongoose.isValidObjectId(id)) {
+      res.status(400).json({ success: false, message: "Invalid institution ID format." });
+      return;
+    }
+
+    const targetUser = await User.findById(id);
+    if (!targetUser) {
+      res.status(404).json({ success: false, message: "Institution not found." });
+      return;
+    }
+
+    const normRole = normalizeRole(targetUser.role);
+    if (normRole !== "BLOOD_BANK" && normRole !== "HOSPITAL") {
+      res.status(400).json({ success: false, message: "User is not an institutional account." });
+      return;
+    }
+
+    targetUser.approvalStatus = status;
+    if (status === "APPROVED") {
+      targetUser.approvedAt = new Date();
+      targetUser.approvedBy = req.user._id;
+      targetUser.rejectionReason = undefined;
+    } else {
+      targetUser.rejectionReason = rejectionReason || "Institution registration not approved by administrator";
+    }
+
+    await targetUser.save();
+
+    res.status(200).json({
+      success: true,
+      message: `Institution ${status.toLowerCase()} successfully`,
+      data: {
+        _id: targetUser._id,
+        name: targetUser.name,
+        email: targetUser.email,
+        role: targetUser.role,
+        approvalStatus: targetUser.approvalStatus,
+        organizationName: targetUser.organizationName,
+        rejectionReason: targetUser.rejectionReason,
+        approvedAt: targetUser.approvedAt,
+      },
+    });
+  } catch (error: any) {
+    console.error("❌ Update institution approval error:", error);
+    res.status(500).json({ success: false, message: "Server error updating institution approval" });
   }
 };
 

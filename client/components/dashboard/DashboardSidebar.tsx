@@ -60,13 +60,27 @@ export default function DashboardSidebar({
   const adminNav: NavItem[] = [
     { label: t("nav_home") || "Home",         href: "/",                           icon: <FiHome size={18} /> },
     { label: t("sidebar_overview"),           href: "/dashboard/admin",            icon: <FiGrid size={18} /> },
+    { label: "Blood Bank Profile",            href: "/dashboard/profile",          icon: <FiUser size={18} /> },
     { label: t("sidebar_blood_inventory"),    href: "/dashboard/admin/inventory",  icon: <FiPackage size={18} /> },
     { label: t("sidebar_hospitals"),          href: "/dashboard/admin/hospitals",  icon: <FiCrosshair size={18} /> },
     { label: t("sidebar_emergency_requests"), href: "/dashboard/admin/requests",  icon: <FiAlertCircle size={18} /> },
     { label: t("sidebar_settings"),           href: "/dashboard/settings",         icon: <FiSettings size={18} /> },
   ];
 
-  const nav = user?.role === "admin" ? adminNav : userNav;
+  const hospitalNav: NavItem[] = [
+    { label: t("nav_home") || "Home",         href: "/",                           icon: <FiHome size={18} /> },
+    { label: "Hospital Portal",               href: "/dashboard/hospital",         icon: <FiGrid size={18} /> },
+    { label: "Hospital Profile",              href: "/dashboard/profile",          icon: <FiUser size={18} /> },
+    { label: t("sidebar_emergency_request"), href: "/dashboard/emergency",        icon: <FiAlertCircle size={18} /> },
+    { label: t("sidebar_my_requests"),       href: "/dashboard/requests",         icon: <FiList size={18} /> },
+    { label: t("sidebar_nearby_banks"),      href: "/dashboard/nearby",           icon: <FiMap size={18} /> },
+    { label: t("sidebar_settings"),           href: "/dashboard/settings",         icon: <FiSettings size={18} /> },
+  ];
+
+  const roleUpper = (user?.role || "").toUpperCase();
+  const isBloodBank = roleUpper === "BLOOD_BANK" || user?.role === "admin";
+  const isHospital = roleUpper === "HOSPITAL";
+  const nav = isBloodBank ? adminNav : isHospital ? hospitalNav : userNav;
   const initials = user?.name
     ? (() => { const p = user.name.trim().split(/\s+/).filter(Boolean); return p.length === 0 ? "?" : p.length === 1 ? p[0][0].toUpperCase() : (p[0][0] + p[p.length - 1][0]).toUpperCase(); })()
     : "?";
@@ -87,6 +101,7 @@ export default function DashboardSidebar({
               : pathname === item.href ||
                 (item.href !== "/dashboard" &&
                   item.href !== "/dashboard/admin" &&
+                  item.href !== "/dashboard/hospital" &&
                   pathname.startsWith(item.href));
           return (
             <Link

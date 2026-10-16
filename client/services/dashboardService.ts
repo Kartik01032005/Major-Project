@@ -14,6 +14,7 @@ import {
   DonorProfileStats,
   PublicDonorProfile,
   UserSettings,
+  DonorCertificate,
 } from "@/types";
 
 
@@ -170,6 +171,10 @@ export const dashboardService = {
     return response.data.data;
   },
 
+  markAllRead: async (): Promise<void> => {
+    await api.put("/notifications/read-all");
+  },
+
   // Hospitals
   getHospitals: async (): Promise<Hospital[]> => {
     const response = await api.get<{ success: boolean; data: Hospital[] }>("/hospitals");
@@ -212,6 +217,12 @@ export const dashboardService = {
 
   updateProfile: async (data: {
     name?: string;
+    organizationName?: string;
+    address?: string;
+    registrationNumber?: string;
+    hospitalType?: string;
+    operatingHours?: string;
+    emergencyContactPhone?: string;
     phone?: string;
     bloodGroup?: BloodGroup;
     isAvailableDonor?: boolean;
@@ -221,8 +232,8 @@ export const dashboardService = {
       latitude?: number;
       longitude?: number;
     };
-  }): Promise<User & { donorStats?: DonorProfileStats }> => {
-    const response = await api.put<{ success: boolean; data: User & { donorStats?: DonorProfileStats } }>("/users/profile", data);
+  }): Promise<User> => {
+    const response = await api.put<{ success: boolean; data: User }>("/users/profile", data);
     return response.data.data;
   },
   // Settings
@@ -248,6 +259,39 @@ export const dashboardService = {
 
   deleteAccount: async (): Promise<void> => {
     await api.delete("/auth/delete-account");
+  },
+
+  // ─── Donor Medical Certificate (Task 2) ──────────────────────────────
+  getMyCertificate: async (): Promise<DonorCertificate> => {
+    const response = await api.get<{ success: boolean; data: DonorCertificate }>("/certificates/my-certificate");
+    return response.data.data;
+  },
+
+  submitCertificate: async (
+    formData: FormData,
+    onProgress?: (percent: number) => void
+  ): Promise<DonorCertificate> => {
+    const response = await api.post<{ success: boolean; message: string; data: DonorCertificate }>(
+      "/certificates",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total && onProgress) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            onProgress(percent);
+          }
+        },
+      }
+    );
+    return response.data.data;
+  },
+
+  downloadCertificateFile: async (): Promise<Blob> => {
+    const response = await api.get("/certificates/my-certificate/file", {
+      responseType: "blob",
+    });
+    return response.data;
   },
 };
 export default dashboardService;

@@ -63,6 +63,7 @@ describe("Task #3 — Emergency Blood Request Expiry Test Suite", () => {
     const loginReq = await request(app).post("/api/auth/login").send({
       email: requesterData.email,
       password: requesterData.password,
+      role: "USER",
     });
     requesterToken = loginReq.body.data.token;
     requesterId = loginReq.body.data.user._id;
@@ -72,6 +73,7 @@ describe("Task #3 — Emergency Blood Request Expiry Test Suite", () => {
     const loginDon = await request(app).post("/api/auth/login").send({
       email: donorData.email,
       password: donorData.password,
+      role: "USER",
     });
     donorToken = loginDon.body.data.token;
     donorId = loginDon.body.data.user._id;
@@ -81,6 +83,7 @@ describe("Task #3 — Emergency Blood Request Expiry Test Suite", () => {
     const loginAdm = await request(app).post("/api/auth/login").send({
       email: adminData.email,
       password: adminData.password,
+      role: "BLOOD_BANK",
     });
     adminToken = loginAdm.body.data.token;
     adminId = loginAdm.body.data.user._id;

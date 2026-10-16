@@ -25,6 +25,12 @@ const updateValidation = [
     .optional()
     .isBoolean()
     .withMessage("isAvailableDonor must be a boolean"),
+  body("organizationName").optional().isString().withMessage("Organization name must be a string"),
+  body("address").optional().isString().withMessage("Address must be a string"),
+  body("registrationNumber").optional().isString().withMessage("Registration number must be a string"),
+  body("hospitalType").optional().isString().withMessage("Hospital type must be a string"),
+  body("operatingHours").optional().isString().withMessage("Operating hours must be a string"),
+  body("emergencyContactPhone").optional().isString().withMessage("Emergency contact phone must be a string"),
   body("location").optional().isObject().withMessage("Location must be an object"),
   body("location.state").optional().notEmpty().withMessage("State cannot be empty"),
   body("location.district").optional().notEmpty().withMessage("District cannot be empty"),

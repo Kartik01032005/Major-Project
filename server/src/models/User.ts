@@ -47,7 +47,26 @@ const UserSchema = new Schema<IUser>({
     type: String,
     enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
   },
-  role: { type: String, required: true, enum: ["user", "admin"], default: "user" },
+  role: {
+    type: String,
+    required: true,
+    enum: ["USER", "BLOOD_BANK", "HOSPITAL", "user", "admin"],
+    default: "USER"
+  },
+  approvalStatus: {
+    type: String,
+    enum: ["PENDING_APPROVAL", "APPROVED", "REJECTED"],
+    default: "APPROVED"
+  },
+  organizationName: { type: String, trim: true },
+  address: { type: String, trim: true },
+  registrationNumber: { type: String, trim: true },
+  hospitalType: { type: String, trim: true },
+  operatingHours: { type: String, trim: true },
+  emergencyContactPhone: { type: String, trim: true },
+  rejectionReason: { type: String, trim: true },
+  approvedAt: { type: Date },
+  approvedBy: { type: Schema.Types.ObjectId, ref: "User" },
   isAvailableDonor: { type: Boolean, default: true },
   location: { type: LocationSchema, required: true },
   settings: {

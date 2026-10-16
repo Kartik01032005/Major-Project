@@ -10,7 +10,7 @@ import HospitalManagement from "@/components/dashboard/admin/HospitalManagement"
 
 export default function AdminDashboardPage() {
   return (
-    <ProtectedRoute requiredRole="admin">
+    <ProtectedRoute requiredRole={["BLOOD_BANK", "admin"]}>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Blood Inventory (with Bulk Upload) & Emergency Requests — Top Priority (No scroll needed) */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

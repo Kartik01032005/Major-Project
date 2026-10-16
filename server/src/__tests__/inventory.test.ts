@@ -33,9 +33,11 @@ beforeAll(async () => {
 
   // Register and login admin
   await request(app).post("/api/auth/register").send(adminData);
+  await User.updateOne({ email: adminData.email }, { approvalStatus: "APPROVED" });
   const adminLogin = await request(app).post("/api/auth/login").send({
     email: adminData.email,
     password: adminData.password,
+    role: "BLOOD_BANK",
   });
   adminToken = adminLogin.body.data.token;
 
@@ -44,6 +46,7 @@ beforeAll(async () => {
   const userLogin = await request(app).post("/api/auth/login").send({
     email: userData.email,
     password: userData.password,
+    role: "USER",
   });
   userToken = userLogin.body.data.token;
 });

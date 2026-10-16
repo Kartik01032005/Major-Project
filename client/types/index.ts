@@ -70,7 +70,8 @@ export interface WhyPoint {
 // ─── User ─────────────────────────────────────────────────────────────────────
 
 export type BloodGroup = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
-export type UserRole = "user" | "admin";
+export type UserRole = "USER" | "BLOOD_BANK" | "HOSPITAL" | "user" | "admin";
+export type ApprovalStatus = "PENDING_APPROVAL" | "APPROVED" | "REJECTED";
 
 export interface DonorProfileStats {
   donationsCount: number;
@@ -126,6 +127,14 @@ export interface UserSettings {
   };
 }
 
+export interface HospitalProfileStats {
+  profileCompletion: number;
+  totalRequests: number;
+  activeRequests: number;
+  fulfilledRequests: number;
+  totalDonorsResponded: number;
+}
+
 export interface User {
   _id: string;
   name: string;
@@ -133,6 +142,14 @@ export interface User {
   phone: string;
   bloodGroup?: BloodGroup;
   role: UserRole;
+  approvalStatus?: ApprovalStatus;
+  organizationName?: string;
+  address?: string;
+  registrationNumber?: string;
+  hospitalType?: string;
+  operatingHours?: string;
+  emergencyContactPhone?: string;
+  rejectionReason?: string;
   isAvailableDonor: boolean;
   location?: {
     state: string;
@@ -143,6 +160,7 @@ export interface User {
   settings?: UserSettings;
   createdAt: string;
   donorStats?: DonorProfileStats;
+  hospitalStats?: HospitalProfileStats;
 }
 
 // ─── API Response ─────────────────────────────────────────────────────────────
@@ -414,3 +432,35 @@ export type AvailabilityLevel =
   | "Very Low"
   | "Critical"
   | "Almost Empty";
+
+// ─── Donor Verification & Medical Certificate (Task 2) ─────────────────────────
+
+export type CertificateStatus =
+  | "NOT_SUBMITTED"
+  | "PENDING"
+  | "VERIFIED"
+  | "REJECTED"
+  | "NEEDS_INFORMATION"
+  | "EXPIRED"
+  | "REVOKED";
+
+export interface CertificateFileInfo {
+  originalName: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface DonorCertificate {
+  id?: string;
+  status: CertificateStatus;
+  issuingHospital?: string;
+  issuingHospitalId?: string;
+  issueDate?: string;
+  expiryDate?: string;
+  rejectionReason?: string;
+  feedbackMessage?: string;
+  submittedAt?: string;
+  reviewedAt?: string;
+  file?: CertificateFileInfo;
+}
+

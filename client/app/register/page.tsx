@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiUser, FiMail, FiPhone, FiLock, FiEye, FiEyeOff,
-  FiMapPin, FiActivity, FiUserCheck, FiHeart
+  FiMapPin, FiActivity, FiUserCheck, FiHeart, FiPlusSquare, FiShield
 } from "react-icons/fi";
 import { useAuth, useTranslation, useToast } from "@/context";
 import { UserRole } from "@/types";
@@ -24,10 +24,12 @@ function RegisterFormContent() {
   const searchParams = useSearchParams();
   const initialRole = searchParams.get("role");
 
-  // Active role tab ("user" = Individual Donor, "admin" = Blood Bank / Admin)
-  const [role, setRole] = useState<UserRole>(
-    initialRole === "admin" || initialRole === "user" ? initialRole : "user"
-  );
+  // Active role tab ("USER" = Individual Donor, "BLOOD_BANK" = Blood Bank, "HOSPITAL" = Hospital)
+  const [role, setRole] = useState<UserRole>(() => {
+    if (initialRole === "HOSPITAL" || initialRole === "hospital") return "HOSPITAL";
+    if (initialRole === "admin" || initialRole === "BLOOD_BANK" || initialRole === "blood_bank") return "BLOOD_BANK";
+    return "USER";
+  });
 
   // Form Field States
   const [name, setName] = useState("");
@@ -36,8 +38,10 @@ function RegisterFormContent() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   
-  // Admin-specific fields
+  // Institutional fields
   const [organizationName, setOrganizationName] = useState("");
+  const [address, setAddress] = useState("");
+  const [registrationNumber, setRegistrationNumber] = useState("");
   const [state, setState] = useState("");
   const [district, setDistrict] = useState("");
 
@@ -46,17 +50,29 @@ function RegisterFormContent() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState("");
 
+  const isInstitution = role === "BLOOD_BANK" || role === "HOSPITAL" || role === "admin";
+
   const validate = () => {
     const tempErrors: Record<string, string> = {};
     let isValid = true;
 
     if (!name) {
-      tempErrors.name = role === "user" ? t("register_err_name_required") : t("register_err_contact_required");
+      tempErrors.name = !isInstitution ? t("register_err_name_required") : "Contact / Authorized person name is required";
       isValid = false;
     }
 
-    if (role === "admin" && !organizationName) {
-      tempErrors.organizationName = t("register_err_org_required");
+    if (isInstitution && !organizationName) {
+      tempErrors.organizationName = role === "HOSPITAL" ? "Hospital name is required" : (t("register_err_org_required") || "Organization name is required");
+      isValid = false;
+    }
+
+    if (role === "HOSPITAL" && !registrationNumber) {
+      tempErrors.registrationNumber = "Hospital registration / license number is required";
+      isValid = false;
+    }
+
+    if (role === "HOSPITAL" && !address) {
+      tempErrors.address = "Hospital campus / street address is required";
       isValid = false;
     }
 
@@ -106,7 +122,9 @@ function RegisterFormContent() {
     try {
       const payload = {
         name,
-        ...(role === "admin" && { organizationName }),
+        ...(isInstitution && { organizationName }),
+        ...(address && { address }),
+        ...(registrationNumber && { registrationNumber }),
         email,
         phone,
         password,
@@ -114,7 +132,7 @@ function RegisterFormContent() {
         location: {
           state,
           district,
-          latitude: 12.305, // Default mock locations
+          latitude: 12.305, // Default mock coordinates for state/district
           longitude: 76.645,
         }
       };
@@ -122,8 +140,13 @@ function RegisterFormContent() {
       const response = await register(payload);
       if (response.success) {
         toast.success("Account created successfully! Welcome to BloodLink.");
-        // Automatically redirects to home or dashboard after signup in context
-        router.push("/");
+        if (role === "BLOOD_BANK" || role === "admin") {
+          router.push("/dashboard/admin");
+        } else if (role === "HOSPITAL") {
+          router.push("/dashboard/hospital");
+        } else {
+          router.push("/dashboard");
+        }
       } else {
         setGeneralError(response.message);
         toast.error(response.message || "Failed to register account.");
@@ -144,42 +167,73 @@ function RegisterFormContent() {
           <FiActivity size={22} className="animate-heartbeat" />
         </div>
         <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-          {t("register_title")}
+          {role === "HOSPITAL"
+            ? "Register Hospital Account"
+            : role === "BLOOD_BANK"
+            ? "Register Blood Bank Account"
+            : t("register_title")}
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          {t("register_subtitle")}
+          {role === "HOSPITAL"
+            ? "Register your hospital or healthcare facility with BloodLink"
+            : role === "BLOOD_BANK"
+            ? "Register your blood bank facility to manage inventories"
+            : t("register_subtitle")}
         </p>
       </div>
 
       {/* Role Selection Tabs */}
-      <div className="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl mb-6 border border-slate-200/50 dark:border-slate-800">
+      <div className="grid grid-cols-3 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl mb-6 border border-slate-200/50 dark:border-slate-800">
         <button
           type="button"
-          onClick={() => { setRole("user"); setErrors({}); setGeneralError(""); }}
+          onClick={() => { setRole("USER"); setErrors({}); setGeneralError(""); }}
           className={[
-            "flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all",
-            role === "user"
+            "flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all",
+            role === "USER" || role === "user"
               ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
               : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
           ].join(" ")}
         >
           <FiUser size={13} />
-          {t("register_tab_donor")}
+          {t("register_tab_donor") || "Donor"}
         </button>
         <button
           type="button"
-          onClick={() => { setRole("admin"); setErrors({}); setGeneralError(""); }}
+          onClick={() => { setRole("BLOOD_BANK"); setErrors({}); setGeneralError(""); }}
           className={[
-            "flex items-center justify-center gap-2 py-2 text-xs font-semibold rounded-lg transition-all",
-            role === "admin"
+            "flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all",
+            role === "BLOOD_BANK" || role === "admin"
               ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
               : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
           ].join(" ")}
         >
           <FiUserCheck size={13} />
-          {t("register_tab_admin")}
+          {t("register_tab_admin") || "Blood Bank"}
+        </button>
+        <button
+          type="button"
+          onClick={() => { setRole("HOSPITAL"); setErrors({}); setGeneralError(""); }}
+          className={[
+            "flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all",
+            role === "HOSPITAL"
+              ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
+              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          ].join(" ")}
+        >
+          <FiPlusSquare size={13} />
+          Hospital
         </button>
       </div>
+
+      {/* Institutional Demo Notice */}
+      {isInstitution && (
+        <div className="mb-5 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs font-medium text-blue-700 dark:text-blue-400 flex items-start gap-2">
+          <FiShield className="shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" size={15} />
+          <span>
+            College Project Demo Mode: Institutional accounts are activated immediately with direct dashboard access.
+          </span>
+        </div>
+      )}
 
       {/* General Error */}
       {generalError && (
@@ -199,8 +253,8 @@ function RegisterFormContent() {
             transition={{ duration: 0.2 }}
             className="space-y-4"
           >
-            {role === "user" ? (
-              // Individual fields
+            {!isInstitution ? (
+              // Individual Donor fields
               <>
                 <Input
                   label={t("register_label_full_name")}
@@ -214,44 +268,66 @@ function RegisterFormContent() {
                 />
               </>
             ) : (
-              // Admin/Hospital fields
+              // Institutional fields (Blood Bank / Hospital)
               <>
                 <Input
-                  label={t("register_label_org_name")}
+                  label={role === "HOSPITAL" ? "Hospital / Facility Name" : t("register_label_org_name")}
                   type="text"
                   value={organizationName}
                   onChange={(e) => setOrganizationName(e.target.value)}
                   error={errors.organizationName}
-                  placeholder={t("register_ph_org_name")}
+                  placeholder={role === "HOSPITAL" ? "e.g. City General Hospital" : t("register_ph_org_name")}
                   leftIcon={<FiHeart size={16} />}
                   required
                 />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Input
+                    label={role === "HOSPITAL" ? "Authorized Officer / Nodal Contact" : t("register_label_contact_name")}
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    error={errors.name}
+                    placeholder="Full name of representative"
+                    leftIcon={<FiUser size={16} />}
+                    required
+                  />
+                  <Input
+                    label="Registration / License Number"
+                    type="text"
+                    value={registrationNumber}
+                    onChange={(e) => setRegistrationNumber(e.target.value)}
+                    error={errors.registrationNumber}
+                    placeholder={role === "HOSPITAL" ? "e.g. HSP-REG-84729" : "e.g. BB-LIC-10294"}
+                    leftIcon={<FiShield size={16} />}
+                    required={role === "HOSPITAL"}
+                  />
+                </div>
                 <Input
-                  label={t("register_label_contact_name")}
+                  label="Official Address / Campus"
                   type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  error={errors.name}
-                  placeholder={t("register_ph_contact_name")}
-                  leftIcon={<FiUser size={16} />}
-                  required
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  error={errors.address}
+                  placeholder="Street address, building, campus location"
+                  leftIcon={<FiMapPin size={16} />}
+                  required={role === "HOSPITAL"}
                 />
               </>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label={t("register_label_email")}
+                label={isInstitution ? "Official Email" : t("register_label_email")}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 error={errors.email}
-                placeholder={t("register_ph_email")}
+                placeholder={isInstitution ? "official@hospital.org" : t("register_ph_email")}
                 leftIcon={<FiMail size={16} />}
                 required
               />
               <Input
-                label={t("register_label_phone")}
+                label={isInstitution ? "Official Phone" : t("register_label_phone")}
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -329,7 +405,11 @@ function RegisterFormContent() {
           fullWidth
           className="mt-6"
         >
-          {t("register_submit")}
+          {role === "HOSPITAL"
+            ? "Submit Hospital Registration"
+            : role === "BLOOD_BANK"
+            ? "Submit Blood Bank Registration"
+            : t("register_submit")}
         </Button>
       </form>
 
@@ -337,7 +417,7 @@ function RegisterFormContent() {
       <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
         {t("register_have_account")}{" "}
         <Link
-          href="/login"
+          href={`/login${role === "HOSPITAL" ? "?role=HOSPITAL" : role === "BLOOD_BANK" ? "?role=BLOOD_BANK" : ""}`}
           className="font-semibold text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
         >
           {t("register_login_link")}
