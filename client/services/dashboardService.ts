@@ -15,6 +15,8 @@ import {
   PublicDonorProfile,
   UserSettings,
   DonorCertificate,
+  HospitalQueueResponse,
+  HospitalQueueSubmission,
 } from "@/types";
 
 
@@ -289,6 +291,46 @@ export const dashboardService = {
 
   downloadCertificateFile: async (): Promise<Blob> => {
     const response = await api.get("/certificates/my-certificate/file", {
+      responseType: "blob",
+    });
+    return response.data;
+  },
+
+  // ─── Hospital Certificate Review Dashboard (Task 3) ──────────────────
+  getHospitalCertificateQueue: async (params?: {
+    status?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<HospitalQueueResponse> => {
+    const response = await api.get<{ success: boolean; data: HospitalQueueResponse }>(
+      "/certificates/hospital-queue",
+      { params }
+    );
+    return response.data.data;
+  },
+
+  getCertificateById: async (id: string): Promise<HospitalQueueSubmission> => {
+    const response = await api.get<{ success: boolean; data: HospitalQueueSubmission }>(
+      `/certificates/${id}`
+    );
+    return response.data.data;
+  },
+
+  reviewCertificate: async (
+    id: string,
+    data: { action: "APPROVE" | "REJECT" | "REQUEST_CLARIFICATION"; reason?: string }
+  ): Promise<{ message: string; data: Partial<DonorCertificate> }> => {
+    const response = await api.put<{
+      success: boolean;
+      message: string;
+      data: Partial<DonorCertificate>;
+    }>(`/certificates/${id}/review`, data);
+    return response.data;
+  },
+
+  downloadCertificateById: async (id: string): Promise<Blob> => {
+    const response = await api.get(`/certificates/${id}/file`, {
       responseType: "blob",
     });
     return response.data;

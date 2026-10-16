@@ -433,14 +433,16 @@ export type AvailabilityLevel =
   | "Critical"
   | "Almost Empty";
 
-// ─── Donor Verification & Medical Certificate (Task 2) ─────────────────────────
+// ─── Donor Verification & Medical Certificate (Task 2 & 3) ─────────────────────
 
 export type CertificateStatus =
   | "NOT_SUBMITTED"
   | "PENDING"
   | "VERIFIED"
+  | "APPROVED"
   | "REJECTED"
   | "NEEDS_INFORMATION"
+  | "NEEDS_CLARIFICATION"
   | "EXPIRED"
   | "REVOKED";
 
@@ -450,8 +452,20 @@ export interface CertificateFileInfo {
   size: number;
 }
 
+export interface CertificateAuditLog {
+  previousStatus: CertificateStatus;
+  newStatus: CertificateStatus;
+  reviewedBy: string;
+  reviewerName?: string;
+  reviewerHospital?: string;
+  action: "APPROVE" | "REJECT" | "REQUEST_CLARIFICATION";
+  reason?: string;
+  timestamp: string;
+}
+
 export interface DonorCertificate {
   id?: string;
+  referenceId?: string;
   status: CertificateStatus;
   issuingHospital?: string;
   issuingHospitalId?: string;
@@ -462,5 +476,47 @@ export interface DonorCertificate {
   submittedAt?: string;
   reviewedAt?: string;
   file?: CertificateFileInfo;
+  history?: CertificateAuditLog[];
 }
+
+export interface HospitalQueueSubmission {
+  id: string;
+  referenceId: string;
+  donor: {
+    id?: string;
+    name: string;
+    bloodGroup: string;
+  };
+  issuingHospital: string;
+  issuingHospitalId?: string;
+  issueDate: string;
+  expiryDate?: string;
+  status: CertificateStatus;
+  submittedAt: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+  feedbackMessage?: string;
+  file?: CertificateFileInfo;
+  history?: CertificateAuditLog[];
+}
+
+export interface HospitalQueueStats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  needsClarification: number;
+}
+
+export interface HospitalQueueResponse {
+  stats: HospitalQueueStats;
+  submissions: HospitalQueueSubmission[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 

@@ -20,6 +20,7 @@ import { useAuth } from "@/context";
 import ProtectedRoute from "@/components/dashboard/ProtectedRoute";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import HospitalVerificationQueue from "@/components/dashboard/hospital/HospitalVerificationQueue";
 
 export default function HospitalDashboardPage() {
   const { user } = useAuth();
@@ -134,45 +135,12 @@ export default function HospitalDashboardPage() {
           </Card>
         </div>
 
-        {/* Section 3 Architecture Readiness & Setup State */}
+        {/* Task 3: Hospital Certificate Review Queue */}
+        <HospitalVerificationQueue />
+
+        {/* Secondary Hospital Operations & Profile */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <Card padding="lg" className="border-l-4 border-l-red-600">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/50 text-red-600 flex items-center justify-center shrink-0">
-                  <FiShield size={20} />
-                </div>
-                <div className="space-y-3 flex-1">
-                  <div>
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                      Hospital Verification Dashboard (Task 3 Ready)
-                    </h2>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                      Your hospital account has passed role-based authentication and security clearance.
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 text-sm space-y-2">
-                    <p className="font-semibold text-slate-900 dark:text-white">
-                      Upcoming Medical Certificate Verification Queue
-                    </p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400">
-                      When Section 3 is activated, authorized staff will be able to review incoming medical certificate verification requests from donors issued by this hospital, view medical documents securely, and submit verification decisions.
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-3 pt-1">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                      <FiCheckCircle size={12} /> Authentication & Access Cleared
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      Ready for Section 3 workflow
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
             <Card padding="md" className="space-y-4">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <FiActivity className="text-red-600" />

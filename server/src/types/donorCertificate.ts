@@ -4,8 +4,10 @@ export type CertificateStatus =
   | "NOT_SUBMITTED"
   | "PENDING"
   | "VERIFIED"
+  | "APPROVED"
   | "REJECTED"
   | "NEEDS_INFORMATION"
+  | "NEEDS_CLARIFICATION"
   | "EXPIRED"
   | "REVOKED";
 
@@ -15,6 +17,17 @@ export interface ICertificateFile {
   mimeType: string;
   size: number;
   path: string;
+}
+
+export interface ICertificateAuditLog {
+  previousStatus: CertificateStatus;
+  newStatus: CertificateStatus;
+  reviewedBy: Types.ObjectId;
+  reviewerName?: string;
+  reviewerHospital?: string;
+  action: "APPROVE" | "REJECT" | "REQUEST_CLARIFICATION";
+  reason?: string;
+  timestamp: Date;
 }
 
 export interface IDonorCertificate extends Document {
@@ -28,6 +41,7 @@ export interface IDonorCertificate extends Document {
   rejectionReason?: string;
   feedbackMessage?: string;
   file: ICertificateFile;
+  history?: ICertificateAuditLog[];
   submittedAt: Date;
   reviewedAt?: Date;
   reviewedBy?: Types.ObjectId;

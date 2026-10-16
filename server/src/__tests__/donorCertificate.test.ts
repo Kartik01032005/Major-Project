@@ -26,8 +26,30 @@ const testDonor2 = {
   location: { state: "Karnataka", district: "Mysore" },
 };
 
+const testHospitalA = {
+  name: "Dr. Arvind Rao",
+  email: "apollo.admin@bloodlink.dev",
+  password: "Password@123",
+  phone: "9100000003",
+  role: "HOSPITAL",
+  organizationName: "Apollo BGS Hospital Mysore",
+  location: { state: "Karnataka", district: "Mysore" },
+};
+
+const testHospitalB = {
+  name: "Dr. Sheila Sen",
+  email: "columbia.admin@bloodlink.dev",
+  password: "Password@123",
+  phone: "9100000004",
+  role: "HOSPITAL",
+  organizationName: "Columbia Asia Hospital Mysore",
+  location: { state: "Karnataka", district: "Mysore" },
+};
+
 let donor1Token: string;
 let donor2Token: string;
+let hospitalAToken: string;
+let hospitalBToken: string;
 
 // Sample valid file buffers
 const validPdfBuffer = Buffer.from("%PDF-1.4\n%Demo Certificate Content for BloodLink Testing\n%%EOF");
@@ -59,6 +81,23 @@ beforeAll(async () => {
     role: "USER",
   });
   donor2Token = login2.body.data.token;
+
+  // Register Hospital A & B
+  await request(app).post("/api/auth/register").send(testHospitalA);
+  const loginHospA = await request(app).post("/api/auth/login").send({
+    email: testHospitalA.email,
+    password: testHospitalA.password,
+    role: "HOSPITAL",
+  });
+  hospitalAToken = loginHospA.body.data.token;
+
+  await request(app).post("/api/auth/register").send(testHospitalB);
+  const loginHospB = await request(app).post("/api/auth/login").send({
+    email: testHospitalB.email,
+    password: testHospitalB.password,
+    role: "HOSPITAL",
+  });
+  hospitalBToken = loginHospB.body.data.token;
 });
 
 afterAll(async () => {
@@ -71,7 +110,16 @@ afterAll(async () => {
     }
   }
   await DonorCertificate.deleteMany({});
-  await User.deleteMany({ email: { $in: [testDonor1.email, testDonor2.email] } });
+  await User.deleteMany({
+    email: {
+      $in: [
+        testDonor1.email,
+        testDonor2.email,
+        testHospitalA.email,
+        testHospitalB.email,
+      ],
+    },
+  });
   await mongoose.connection.close();
 });
 
@@ -295,6 +343,211 @@ describe("Donor Certificate Submission API (Task 2)", () => {
 
       expect(fileRes.status).toBe(200);
       expect(fileRes.headers["content-type"]).toBe("image/png");
+    });
+  });
+
+  describe("6. Hospital Verification Dashboard Queue & Role Security (Task 3)", () => {
+    let columbiaCertId: string;
+    let apolloCertId: string;
+
+    beforeAll(async () => {
+      // Donor 1 has certificate for Columbia Asia Hospital Mysore
+      const d1Cert = await DonorCertificate.findOne({ issuingHospital: "Columbia Asia Hospital Mysore" });
+      columbiaCertId = d1Cert!._id.toString();
+
+      // Submit certificate for Donor 2 under Apollo BGS Hospital Mysore
+      const res = await request(app)
+        .post("/api/certificates")
+        .set("Authorization", `Bearer ${donor2Token}`)
+        .field("issuingHospital", "Apollo BGS Hospital Mysore")
+        .field("issueDate", "2026-01-20")
+        .attach("certificate", validPdfBuffer, "donor2_cert.pdf");
+
+      apolloCertId = res.body.data.id;
+    });
+
+    it("rejects non-hospital users from accessing hospital queue", async () => {
+      const res = await request(app)
+        .get("/api/certificates/hospital-queue")
+        .set("Authorization", `Bearer ${donor1Token}`);
+
+      expect(res.status).toBe(403);
+    });
+
+    it("retrieves submissions assigned to Hospital A (Apollo BGS Hospital Mysore)", async () => {
+      const res = await request(app)
+        .get("/api/certificates/hospital-queue")
+        .set("Authorization", `Bearer ${hospitalAToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.stats).toBeDefined();
+      expect(res.body.data.stats.total).toBeGreaterThanOrEqual(1);
+      expect(res.body.data.stats.pending).toBeGreaterThanOrEqual(1);
+
+      // Verify Apollo queue only includes Apollo certificates
+      const submissions = res.body.data.submissions;
+      expect(submissions.length).toBeGreaterThanOrEqual(1);
+      const apolloMatch = submissions.find((s: any) => s.id === apolloCertId);
+      expect(apolloMatch).toBeDefined();
+      expect(apolloMatch.issuingHospital).toBe("Apollo BGS Hospital Mysore");
+      expect(apolloMatch.donor.name).toBe("Donor Two");
+
+      // Verify Columbia Asia certificates are NOT in Apollo's queue (Cross-Institution Isolation)
+      const columbiaLeak = submissions.find((s: any) => s.id === columbiaCertId);
+      expect(columbiaLeak).toBeUndefined();
+    });
+
+    it("retrieves submissions assigned to Hospital B (Columbia Asia Hospital Mysore)", async () => {
+      const res = await request(app)
+        .get("/api/certificates/hospital-queue")
+        .set("Authorization", `Bearer ${hospitalBToken}`);
+
+      expect(res.status).toBe(200);
+      const submissions = res.body.data.submissions;
+      expect(submissions.find((s: any) => s.id === columbiaCertId)).toBeDefined();
+      expect(submissions.find((s: any) => s.id === apolloCertId)).toBeUndefined();
+    });
+
+    it("prevents Hospital A from downloading Hospital B's certificate file", async () => {
+      const res = await request(app)
+        .get(`/api/certificates/${columbiaCertId}/file`)
+        .set("Authorization", `Bearer ${hospitalAToken}`);
+
+      expect(res.status).toBe(403);
+      expect(res.body.message).toMatch(/not authorized/i);
+    });
+
+    it("allows Hospital A to securely download its own assigned certificate file", async () => {
+      const res = await request(app)
+        .get(`/api/certificates/${apolloCertId}/file`)
+        .set("Authorization", `Bearer ${hospitalAToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.headers["content-type"]).toBe("application/pdf");
+    });
+  });
+
+  describe("7. Certificate Review Decisions & Audit Trail (Task 3)", () => {
+    let testCertId: string;
+
+    beforeEach(async () => {
+      // Fresh submission for Donor 2 under Apollo
+      const res = await request(app)
+        .post("/api/certificates")
+        .set("Authorization", `Bearer ${donor2Token}`)
+        .field("issuingHospital", "Apollo BGS Hospital Mysore")
+        .field("issueDate", "2026-02-10")
+        .attach("certificate", validPdfBuffer, "donor2_review.pdf");
+
+      testCertId = res.body.data.id;
+    });
+
+    it("rejects review decision without reason for REJECT action", async () => {
+      const res = await request(app)
+        .put(`/api/certificates/${testCertId}/review`)
+        .set("Authorization", `Bearer ${hospitalAToken}`)
+        .send({ action: "REJECT" });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/rejection reason is required/i);
+    });
+
+    it("rejects review decision without reason for REQUEST_CLARIFICATION action", async () => {
+      const res = await request(app)
+        .put(`/api/certificates/${testCertId}/review`)
+        .set("Authorization", `Bearer ${hospitalAToken}`)
+        .send({ action: "REQUEST_CLARIFICATION" });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/clarification.*required/i);
+    });
+
+    it("prevents Hospital B from reviewing Hospital A's assigned certificate", async () => {
+      const res = await request(app)
+        .put(`/api/certificates/${testCertId}/review`)
+        .set("Authorization", `Bearer ${hospitalBToken}`)
+        .send({ action: "APPROVE" });
+
+      expect(res.status).toBe(403);
+      expect(res.body.message).toMatch(/not authorized to review certificates issued by another institution/i);
+    });
+
+    it("prevents donor from reviewing or approving their own certificate", async () => {
+      const res = await request(app)
+        .put(`/api/certificates/${testCertId}/review`)
+        .set("Authorization", `Bearer ${donor2Token}`)
+        .send({ action: "APPROVE" });
+
+      expect(res.status).toBe(403);
+    });
+
+    it("successfully requests clarification, updating status to NEEDS_INFORMATION and logging audit trail", async () => {
+      const res = await request(app)
+        .put(`/api/certificates/${testCertId}/review`)
+        .set("Authorization", `Bearer ${hospitalAToken}`)
+        .send({
+          action: "REQUEST_CLARIFICATION",
+          reason: "Please provide a clearer scan with visible physician signature.",
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.status).toBe("NEEDS_INFORMATION");
+      expect(res.body.data.feedbackMessage).toBe(
+        "Please provide a clearer scan with visible physician signature."
+      );
+      expect(res.body.data.history.length).toBeGreaterThanOrEqual(1);
+
+      // Verify donor's view reflects the clarification
+      const donorRes = await request(app)
+        .get("/api/certificates/my-certificate")
+        .set("Authorization", `Bearer ${donor2Token}`);
+
+      expect(donorRes.status).toBe(200);
+      expect(donorRes.body.data.status).toBe("NEEDS_INFORMATION");
+      expect(donorRes.body.data.feedbackMessage).toBe(
+        "Please provide a clearer scan with visible physician signature."
+      );
+    });
+
+    it("successfully rejects certificate, updating status to REJECTED with reason", async () => {
+      const res = await request(app)
+        .put(`/api/certificates/${testCertId}/review`)
+        .set("Authorization", `Bearer ${hospitalAToken}`)
+        .send({
+          action: "REJECT",
+          reason: "Document does not match institution's serial format.",
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.status).toBe("REJECTED");
+      expect(res.body.data.rejectionReason).toBe(
+        "Document does not match institution's serial format."
+      );
+    });
+
+    it("successfully approves certificate, updating status to APPROVED and logging audit trail", async () => {
+      const res = await request(app)
+        .put(`/api/certificates/${testCertId}/review`)
+        .set("Authorization", `Bearer ${hospitalAToken}`)
+        .send({ action: "APPROVE" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.status).toBe("APPROVED");
+      expect(res.body.data.reviewedAt).toBeDefined();
+
+      const lastAudit = res.body.data.history[res.body.data.history.length - 1];
+      expect(lastAudit.action).toBe("APPROVE");
+      expect(lastAudit.newStatus).toBe("APPROVED");
+      expect(lastAudit.reviewerHospital).toBe("Apollo BGS Hospital Mysore");
+
+      // Verify donor's view reflects the approved state
+      const donorRes = await request(app)
+        .get("/api/certificates/my-certificate")
+        .set("Authorization", `Bearer ${donor2Token}`);
+
+      expect(donorRes.status).toBe(200);
+      expect(donorRes.body.data.status).toBe("APPROVED");
     });
   });
 });

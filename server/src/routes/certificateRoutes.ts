@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authGuard } from "../middleware/auth.js";
+import { authGuard, hospitalGuard } from "../middleware/auth.js";
 import {
   certificateMulter,
   validateCertificateFile,
@@ -10,6 +10,9 @@ import {
   submitCertificate,
   downloadMyCertificateFile,
   downloadCertificateById,
+  getHospitalCertificateQueue,
+  getCertificateById,
+  reviewCertificate,
 } from "../controllers/donorCertificateController.js";
 
 const router = Router();
@@ -20,10 +23,19 @@ router.get("/my-certificate", authGuard, getMyCertificate);
 // Securely view/download authenticated user's uploaded certificate file
 router.get("/my-certificate/file", authGuard, downloadMyCertificateFile);
 
-// Securely view/download certificate file by ID (strictly authorized to owner or admin)
+// Hospital verification dashboard queue (strictly HOSPITAL role)
+router.get("/hospital-queue", authGuard, hospitalGuard, getHospitalCertificateQueue);
+
+// Securely view/download certificate file by ID (strictly authorized to owner, assigned hospital, or admin)
 router.get("/:id/file", authGuard, downloadCertificateById);
 
-// Submit or replace medical certificate
+// Retrieve single certificate details by ID (owner, assigned hospital, or admin)
+router.get("/:id", authGuard, getCertificateById);
+
+// Submit review decision: Approve, Reject, Request Clarification (strictly HOSPITAL role)
+router.put("/:id/review", authGuard, hospitalGuard, reviewCertificate);
+
+// Submit or replace medical certificate (Donor)
 router.post(
   "/",
   authGuard,

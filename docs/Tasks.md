@@ -620,16 +620,16 @@ BloodLink maintains a modern Next.js web application and Android APK testing bun
 - [x] Allow users to track their verification request without exposing private medical information.
 
 ## 3. Hospital Verification Dashboard
-- [ ] Create a protected hospital dashboard consistent with the existing UI.
-- [ ] Display certificate-verification requests assigned to the hospital.
-- [ ] Provide secure document viewing for authorized hospital staff.
-- [ ] Allow authorized staff to confirm whether a certificate was issued by their institution.
-- [ ] Support approve, reject, and request-clarification actions.
-- [ ] Require reasons for rejection and clarification requests.
-- [ ] Record reviewer identity, institution, timestamp, and decision history.
-- [ ] Prevent cross-institution access to verification requests.
-- [ ] Add search, filtering, pagination, and appropriate loading and error states.
-- [ ] Notify users when their verification status changes.
+- [x] Create a protected hospital dashboard consistent with the existing UI.
+- [x] Display certificate-verification requests assigned to the hospital.
+- [x] Provide secure document viewing for authorized hospital staff.
+- [x] Allow authorized staff to confirm whether a certificate was issued by their institution.
+- [x] Support approve, reject, and request-clarification actions.
+- [x] Require reasons for rejection and clarification requests.
+- [x] Record reviewer identity, institution, timestamp, and decision history.
+- [x] Prevent cross-institution access to verification requests.
+- [x] Add search, filtering, pagination, and appropriate loading and error states.
+- [x] Notify users when their verification status changes.
 
 ## 4. Blood Bank Verification Workflow
 - [ ] Extend the existing blood-bank dashboard without disrupting inventory management.

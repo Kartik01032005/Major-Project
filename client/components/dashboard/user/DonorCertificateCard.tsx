@@ -80,7 +80,23 @@ const STATUS_CONFIG: Record<
     description:
       "Your medical certificate has been verified for simulated donor participation. Clinical screening is still required before blood collection.",
   },
+  APPROVED: {
+    label: "Certificate Approved",
+    badgeClass:
+      "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/60",
+    icon: <FiCheckCircle className="w-3.5 h-3.5" />,
+    description:
+      "Your medical certificate has been accepted and verified by the issuing hospital for the simulated donor verification workflow.",
+  },
   NEEDS_INFORMATION: {
+    label: "Clarification Needed",
+    badgeClass:
+      "bg-orange-100 text-orange-800 dark:bg-orange-950/60 dark:text-orange-300 border-orange-300 dark:border-orange-800/60",
+    icon: <FiAlertTriangle className="w-3.5 h-3.5" />,
+    description:
+      "The reviewing institution requested clarification. Please review their feedback and upload an updated document.",
+  },
+  NEEDS_CLARIFICATION: {
     label: "Clarification Needed",
     badgeClass:
       "bg-orange-100 text-orange-800 dark:bg-orange-950/60 dark:text-orange-300 border-orange-300 dark:border-orange-800/60",

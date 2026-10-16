@@ -12,6 +12,24 @@ const CertificateFileSchema = new Schema(
   { _id: false }
 );
 
+const CertificateAuditLogSchema = new Schema(
+  {
+    previousStatus: { type: String, required: true },
+    newStatus: { type: String, required: true },
+    reviewedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    reviewerName: { type: String, trim: true },
+    reviewerHospital: { type: String, trim: true },
+    action: {
+      type: String,
+      enum: ["APPROVE", "REJECT", "REQUEST_CLARIFICATION"],
+      required: true,
+    },
+    reason: { type: String, trim: true },
+    timestamp: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const DonorCertificateSchema = new Schema<IDonorCertificate>(
   {
     userId: {
@@ -24,10 +42,12 @@ const DonorCertificateSchema = new Schema<IDonorCertificate>(
       type: String,
       required: true,
       trim: true,
+      index: true,
     },
     issuingHospitalId: {
       type: Schema.Types.ObjectId,
-      ref: "Hospital",
+      ref: "User",
+      index: true,
     },
     issueDate: {
       type: Date,
@@ -42,8 +62,10 @@ const DonorCertificateSchema = new Schema<IDonorCertificate>(
         "NOT_SUBMITTED",
         "PENDING",
         "VERIFIED",
+        "APPROVED",
         "REJECTED",
         "NEEDS_INFORMATION",
+        "NEEDS_CLARIFICATION",
         "EXPIRED",
         "REVOKED",
       ],
@@ -62,6 +84,10 @@ const DonorCertificateSchema = new Schema<IDonorCertificate>(
       type: CertificateFileSchema,
       required: true,
     },
+    history: {
+      type: [CertificateAuditLogSchema],
+      default: [],
+    },
     submittedAt: {
       type: Date,
       default: Date.now,
@@ -79,8 +105,10 @@ const DonorCertificateSchema = new Schema<IDonorCertificate>(
   }
 );
 
-// Compound index to quickly find user's latest certificate submissions
+// Compound indexes
 DonorCertificateSchema.index({ userId: 1, createdAt: -1 });
+DonorCertificateSchema.index({ issuingHospitalId: 1, status: 1 });
+DonorCertificateSchema.index({ issuingHospital: 1, status: 1 });
 
 export const DonorCertificate = model<IDonorCertificate>(
   "DonorCertificate",
