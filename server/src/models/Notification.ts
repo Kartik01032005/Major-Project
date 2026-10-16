@@ -10,6 +10,7 @@ const NotificationSchema = new Schema<INotification>({
     required: true,
     enum: ["Emergency", "Approval", "Rejection", "Inventory", "System"]
   },
+  link: { type: String, trim: true },
   isRead: { type: Boolean, default: false }
 }, {
   timestamps: true
@@ -17,6 +18,7 @@ const NotificationSchema = new Schema<INotification>({
 
 // Index to speed up fetching user notifications
 NotificationSchema.index({ receiverId: 1, createdAt: -1 });
+NotificationSchema.index({ receiverId: 1, isRead: 1 });
 
 export const Notification = model<INotification>("Notification", NotificationSchema);
 export default Notification;

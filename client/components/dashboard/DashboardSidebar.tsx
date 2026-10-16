@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   FiHome, FiGrid, FiUser, FiAlertCircle, FiBell, FiMap,
   FiPackage, FiCrosshair, FiList, FiLogOut, FiX,
-  FiChevronLeft, FiChevronRight, FiSettings,
+  FiChevronLeft, FiChevronRight, FiSettings, FiShield,
 } from "react-icons/fi";
 import { useAuth, useTranslation } from "@/context";
 
@@ -68,13 +68,12 @@ export default function DashboardSidebar({
   ];
 
   const hospitalNav: NavItem[] = [
-    { label: t("nav_home") || "Home",         href: "/",                           icon: <FiHome size={18} /> },
-    { label: "Hospital Portal",               href: "/dashboard/hospital",         icon: <FiGrid size={18} /> },
-    { label: "Hospital Profile",              href: "/dashboard/profile",          icon: <FiUser size={18} /> },
-    { label: t("sidebar_emergency_request"), href: "/dashboard/emergency",        icon: <FiAlertCircle size={18} /> },
-    { label: t("sidebar_my_requests"),       href: "/dashboard/requests",         icon: <FiList size={18} /> },
-    { label: t("sidebar_nearby_banks"),      href: "/dashboard/nearby",           icon: <FiMap size={18} /> },
-    { label: t("sidebar_settings"),           href: "/dashboard/settings",         icon: <FiSettings size={18} /> },
+    { label: t("nav_home") || "Home",               href: "/",                           icon: <FiHome size={18} /> },
+    { label: "Hospital Profile",                    href: "/dashboard/profile",          icon: <FiUser size={18} /> },
+    { label: "Certificate Verification Queue",      href: "/dashboard/hospital",         icon: <FiShield size={18} /> },
+    { label: t("sidebar_my_requests"),             href: "/dashboard/requests",         icon: <FiList size={18} /> },
+    { label: t("sidebar_nearby_banks"),            href: "/dashboard/nearby",           icon: <FiMap size={18} /> },
+    { label: t("sidebar_settings"),                 href: "/dashboard/settings",         icon: <FiSettings size={18} /> },
   ];
 
   const roleUpper = (user?.role || "").toUpperCase();
@@ -99,6 +98,7 @@ export default function DashboardSidebar({
             item.href === "/"
               ? pathname === "/"
               : pathname === item.href ||
+                (item.href === "/dashboard/hospital" && pathname.startsWith("/dashboard/hospital")) ||
                 (item.href !== "/dashboard" &&
                   item.href !== "/dashboard/admin" &&
                   item.href !== "/dashboard/hospital" &&
@@ -175,7 +175,7 @@ export default function DashboardSidebar({
           "hidden md:flex flex-col relative h-full",
           "bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800",
           "transition-all duration-300 ease-in-out flex-shrink-0",
-          collapsed ? "w-[68px]" : "w-64",
+          collapsed ? "w-[68px]" : "w-72",
         ].join(" ")}
       >
         {renderSidebarContent(false)}

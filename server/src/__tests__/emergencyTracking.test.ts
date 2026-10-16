@@ -3,6 +3,7 @@ import request from "supertest";
 import app from "../app.js";
 import User from "../models/User.js";
 import EmergencyRequest from "../models/EmergencyRequest.js";
+import DonorCertificate from "../models/DonorCertificate.js";
 import Notification from "../models/Notification.js";
 import { computeTrackingStats } from "../controllers/emergencyController.js";
 
@@ -149,11 +150,29 @@ beforeAll(async () => {
   });
   donorCToken = loginC.body.data.token;
   donorCId = loginC.body.data.user._id;
+
+  for (const id of [donorAId, donorBId, donorCId]) {
+    await DonorCertificate.create({
+      userId: id,
+      issuingHospital: "General Hospital Mysore",
+      issueDate: new Date("2026-01-01"),
+      status: "APPROVED",
+      file: {
+        filename: "test.pdf",
+        originalName: "cert.pdf",
+        mimeType: "application/pdf",
+        size: 1024,
+        path: "test.pdf",
+      },
+      submittedAt: new Date(),
+    });
+  }
 });
 
 afterAll(async () => {
   await EmergencyRequest.deleteMany({});
   await Notification.deleteMany({});
+  await DonorCertificate.deleteMany({});
   await User.deleteMany({
     email: {
       $in: [

@@ -17,6 +17,11 @@ import {
   DonorCertificate,
   HospitalQueueResponse,
   HospitalQueueSubmission,
+  BloodBankQueueResponse,
+  BloodBankQueueSubmission,
+  ContactAttempt,
+  CertificateAuditLog,
+  DonorCertificateEligibility,
 } from "@/types";
 
 
@@ -177,6 +182,10 @@ export const dashboardService = {
     await api.put("/notifications/read-all");
   },
 
+  deleteNotification: async (id: string): Promise<void> => {
+    await api.delete(`/notifications/${id}`);
+  },
+
   // Hospitals
   getHospitals: async (): Promise<Hospital[]> => {
     const response = await api.get<{ success: boolean; data: Hospital[] }>("/hospitals");
@@ -269,6 +278,13 @@ export const dashboardService = {
     return response.data.data;
   },
 
+  getCertificateEligibility: async (): Promise<DonorCertificateEligibility> => {
+    const response = await api.get<{ success: boolean; data: DonorCertificateEligibility }>(
+      "/certificates/eligibility"
+    );
+    return response.data.data;
+  },
+
   submitCertificate: async (
     formData: FormData,
     onProgress?: (percent: number) => void
@@ -335,5 +351,32 @@ export const dashboardService = {
     });
     return response.data;
   },
+
+  // ─── Blood Bank Certificate Verification Workflow (Task 4) ───────────
+  getBloodBankCertificateQueue: async (params?: {
+    status?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<BloodBankQueueResponse> => {
+    const response = await api.get<{ success: boolean; data: BloodBankQueueResponse }>(
+      "/certificates/blood-bank-queue",
+      { params }
+    );
+    return response.data.data;
+  },
+
+  recordCertificateContactAttempt: async (
+    id: string,
+    data: { contactMethod: string; notes: string; outcome?: string }
+  ): Promise<{ contactAttempts: ContactAttempt[]; history: CertificateAuditLog[] }> => {
+    const response = await api.post<{
+      success: boolean;
+      message: string;
+      data: { contactAttempts: ContactAttempt[]; history: CertificateAuditLog[] };
+    }>(`/certificates/${id}/contact-attempt`, data);
+    return response.data.data;
+  },
 };
 export default dashboardService;
+

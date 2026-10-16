@@ -2,22 +2,34 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { FiBell, FiCheck, FiCheckCircle, FiXCircle, FiAlertCircle, FiInfo, FiPackage } from "react-icons/fi";
+import {
+  FiBell,
+  FiCheck,
+  FiCheckCircle,
+  FiXCircle,
+  FiAlertCircle,
+  FiInfo,
+  FiPackage,
+  FiArrowRight,
+  FiTrash2,
+} from "react-icons/fi";
 import { useDashboard, useTranslation } from "@/context";
 import { NotificationType } from "@/types";
 
-const TYPE_CONFIG: Record<NotificationType, { icon: React.ReactNode; color: string }> = {
-  Emergency:  { icon: <FiAlertCircle size={16} />,  color: "text-amber-400 bg-amber-500/10 border border-amber-500/20" },
-  Approval:   { icon: <FiCheckCircle size={16} />,  color: "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20" },
-  Rejection:  { icon: <FiXCircle size={16} />,      color: "text-red-400 bg-red-500/10 border border-red-500/20" },
-  Inventory:  { icon: <FiPackage size={16} />,      color: "text-blue-400 bg-blue-500/10 border border-blue-500/20" },
-  System:     { icon: <FiInfo size={16} />,         color: "text-slate-400 bg-slate-500/10 border border-slate-500/20" },
+const TYPE_CONFIG: Record<NotificationType, { icon: React.ReactNode; color: string; badge: string }> = {
+  Emergency:  { icon: <FiAlertCircle size={16} />,  color: "text-amber-400 bg-amber-500/10 border border-amber-500/20", badge: "Emergency" },
+  Approval:   { icon: <FiCheckCircle size={16} />,  color: "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20", badge: "Verified" },
+  Rejection:  { icon: <FiXCircle size={16} />,      color: "text-red-400 bg-red-500/10 border border-red-500/20", badge: "Rejected" },
+  Inventory:  { icon: <FiPackage size={16} />,      color: "text-blue-400 bg-blue-500/10 border border-blue-500/20", badge: "Stock" },
+  System:     { icon: <FiInfo size={16} />,         color: "text-slate-400 bg-slate-500/10 border border-slate-500/20", badge: "System" },
 };
 
 export default function NotificationsPanel() {
-  const { notifications, unreadCount, markAllRead, markRead } = useDashboard();
+  const { notifications, unreadCount, markAllRead, markRead, deleteNotification } = useDashboard();
   const { t } = useTranslation();
+  const router = useRouter();
   const [currentTime, setCurrentTime] = useState(0);
 
   useEffect(() => {
@@ -34,6 +46,20 @@ export default function NotificationsPanel() {
     if (hrs < 24) return `${hrs}${t("common_ago_hours")}`;
     return `${Math.floor(hrs / 24)}${t("common_ago_days")}`;
   }
+
+  const handleNotificationClick = async (n: { _id: string; isRead: boolean; link?: string }) => {
+    if (!n.isRead) {
+      await markRead(n._id);
+    }
+    if (n.link) {
+      router.push(n.link);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    await deleteNotification(id);
+  };
 
   return (
     <motion.div
@@ -86,7 +112,7 @@ export default function NotificationsPanel() {
           <p className="text-xs text-slate-400 mt-1">{t("notifications_empty_sub")}</p>
         </div>
       ) : (
-        <ul className="divide-y divide-slate-100 dark:divide-slate-800 max-h-80 overflow-y-auto">
+        <ul className="divide-y divide-slate-100 dark:divide-slate-800 max-h-96 overflow-y-auto">
           {notifications.map((n, i) => {
             const cfg = TYPE_CONFIG[n.type] ?? TYPE_CONFIG.System;
             return (
@@ -96,12 +122,12 @@ export default function NotificationsPanel() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
                 className={[
-                  "flex items-start gap-3 px-5 py-3.5 cursor-pointer transition-colors",
+                  "flex items-start gap-3 px-5 py-3.5 cursor-pointer transition-colors group",
                   n.isRead
                     ? "hover:bg-slate-50 dark:hover:bg-slate-800/50"
                     : "bg-red-50/40 dark:bg-red-950/10 hover:bg-red-50 dark:hover:bg-red-950/20",
                 ].join(" ")}
-                onClick={() => markRead(n._id)}
+                onClick={() => handleNotificationClick(n)}
                 role="listitem"
               >
                 {/* Icon */}
@@ -112,18 +138,39 @@ export default function NotificationsPanel() {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <p className={`text-sm font-semibold ${n.isRead ? "text-slate-700 dark:text-slate-300" : "text-slate-900 dark:text-white"}`}>
-                      {n.title}
-                    </p>
+                    <div className="flex items-center gap-2 flex-wrap min-w-0">
+                      <p className={`text-sm font-semibold truncate ${n.isRead ? "text-slate-700 dark:text-slate-300" : "text-slate-900 dark:text-white"}`}>
+                        {n.title}
+                      </p>
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                        {cfg.badge}
+                      </span>
+                    </div>
                     <span className="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0">{timeAgo(n.createdAt)}</span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">{n.message}</p>
+                  {n.link && (
+                    <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-red-600 dark:text-red-400 group-hover:underline">
+                      <span>View details</span>
+                      <FiArrowRight size={10} />
+                    </div>
+                  )}
                 </div>
 
-                {/* Unread dot */}
-                {!n.isRead && (
-                  <span className="mt-1.5 w-2 h-2 rounded-full bg-red-500 flex-shrink-0" aria-label={t("notifications_unread")} />
-                )}
+                {/* Actions: Unread dot & Delete */}
+                <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+                  {!n.isRead && (
+                    <span className="w-2 h-2 rounded-full bg-red-500" aria-label={t("notifications_unread")} />
+                  )}
+                  <button
+                    onClick={(e) => handleDelete(e, n._id)}
+                    className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 dark:hover:text-red-400 p-1 transition-opacity"
+                    title="Delete notification"
+                    aria-label="Delete notification"
+                  >
+                    <FiTrash2 size={13} />
+                  </button>
+                </div>
               </motion.li>
             );
           })}

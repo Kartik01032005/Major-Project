@@ -286,11 +286,17 @@ Merged list of nearby hospitals and blood banks (combining real OpenStreetMap da
  
 ---
 
+---
+
 # Notification APIs
 
 ## Get Notifications
 
 GET /api/notifications
+
+Query Parameters:
+- page (number, optional, default: 1)
+- limit (number, optional, default: 20)
 
 Authorization Required
 
@@ -305,6 +311,149 @@ PUT /api/notifications/read/:id
 Authorization Required
 
 Bearer Token
+
+---
+
+## Mark All Notifications as Read
+
+PUT /api/notifications/read-all
+
+Authorization Required
+
+Bearer Token
+
+---
+
+## Delete Notification
+
+DELETE /api/notifications/:id
+
+Authorization Required
+
+Bearer Token
+
+---
+
+# Donor Certificate APIs
+
+## Submit Donor Certificate
+
+POST /api/certificates
+
+Content-Type: `multipart/form-data`
+
+Body Fields:
+- `certificateFile` (File, required, max 5MB, PDF/JPEG/PNG)
+- `issuingHospital` (string, required)
+- `hospitalId` (string, optional - MongoDB ObjectId if registered hospital selected)
+- `donationDate` (date string, required)
+- `certificateNumber` (string, optional)
+- `notes` (string, optional)
+
+Authorization Required: `USER`
+
+---
+
+## Get My Certificate
+
+GET /api/certificates/my-certificate
+
+Returns current user's submitted certificate, review history, and eligibility summary.
+
+Authorization Required: `USER`
+
+---
+
+## Download/Stream Private Certificate File
+
+GET /api/certificates/my-certificate/file
+GET /api/certificates/:id/file
+
+Streams the private certificate file securely without exposing file system paths. Only authorized submitters, assigned hospitals, or reviewing blood banks can access the file.
+
+Authorization Required: `USER` (own file), `HOSPITAL` (assigned), `BLOOD_BANK` (assigned/unassigned queue)
+
+---
+
+## Check Donor Eligibility
+
+GET /api/certificates/eligibility
+
+Returns eligibility status (`isEligible`, `reason`, `certificateStatus`) required to accept emergency blood donation requests.
+
+Authorization Required: `USER`
+
+---
+
+## Hospital Verification Queue
+
+GET /api/certificates/hospital-queue
+
+Returns pending submissions assigned to the authenticated hospital.
+
+Authorization Required: `HOSPITAL`
+
+---
+
+## Blood Bank Verification Queue
+
+GET /api/certificates/blood-bank-queue
+
+Returns pending submissions for unregistered/unassigned hospitals routed to blood bank verification.
+
+Authorization Required: `BLOOD_BANK`
+
+---
+
+## Log Contact Attempt
+
+POST /api/certificates/:id/contact-attempt
+
+Body:
+```json
+{
+  "notes": "Spoke with hospital desk, verified demo donation record",
+  "method": "PHONE"
+}
+```
+
+Authorization Required: `HOSPITAL`, `BLOOD_BANK`
+
+---
+
+## Review Certificate
+
+PUT /api/certificates/:id/review
+
+Body:
+```json
+{
+  "action": "APPROVED", // "APPROVED" | "REJECTED" | "CLARIFICATION_REQUESTED"
+  "reason": "Verified record matches demo hospital records",
+  "notes": "Verified successfully"
+}
+```
+
+Authorization Required: `HOSPITAL`, `BLOOD_BANK`
+
+---
+
+# Audit Log APIs
+
+## Get Audit Logs
+
+GET /api/audit-logs
+
+Query Parameters:
+- action (string, optional)
+- entityType (string, optional)
+- entityId (string, optional)
+- page (number, optional, default: 1)
+- limit (number, optional, default: 20)
+
+Returns immutable, sanitized audit records filtered to the authenticated caller's authorization boundary (users see their own actions; institutions see operations relating to assigned entities). Sensitive credentials, passwords, and file contents are never stored or returned.
+
+Authorization Required: `USER`, `HOSPITAL`, `BLOOD_BANK`
 
 ---
 

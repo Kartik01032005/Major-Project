@@ -12,6 +12,17 @@ const CertificateFileSchema = new Schema(
   { _id: false }
 );
 
+const ContactAttemptSchema = new Schema(
+  {
+    contactDate: { type: Date, default: Date.now },
+    contactMethod: { type: String, required: true, trim: true },
+    notes: { type: String, required: true, trim: true },
+    outcome: { type: String, trim: true },
+    staffName: { type: String, trim: true },
+  },
+  { _id: false }
+);
+
 const CertificateAuditLogSchema = new Schema(
   {
     previousStatus: { type: String, required: true },
@@ -19,12 +30,17 @@ const CertificateAuditLogSchema = new Schema(
     reviewedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     reviewerName: { type: String, trim: true },
     reviewerHospital: { type: String, trim: true },
+    reviewerBloodBank: { type: String, trim: true },
+    reviewerInstitution: { type: String, trim: true },
+    reviewerRole: { type: String, trim: true },
     action: {
       type: String,
-      enum: ["APPROVE", "REJECT", "REQUEST_CLARIFICATION"],
+      enum: ["APPROVE", "REJECT", "REQUEST_CLARIFICATION", "CONTACT_ATTEMPT", "SUBMIT", "ASSIGN"],
       required: true,
     },
     reason: { type: String, trim: true },
+    contactNotes: { type: String, trim: true },
+    evidence: { type: String, trim: true },
     timestamp: { type: Date, default: Date.now },
   },
   { _id: false }
@@ -47,6 +63,42 @@ const DonorCertificateSchema = new Schema<IDonorCertificate>(
     issuingHospitalId: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      index: true,
+    },
+    isUnregisteredHospital: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    hospitalDistrict: {
+      type: String,
+      trim: true,
+    },
+    hospitalState: {
+      type: String,
+      trim: true,
+    },
+    assignedBloodBankId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      index: true,
+    },
+    assignedBloodBank: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    assignedAt: {
+      type: Date,
+    },
+    assignmentNotes: {
+      type: String,
+      trim: true,
+    },
+    verificationMethod: {
+      type: String,
+      enum: ["HOSPITAL_DIRECT", "BLOOD_BANK_EXTERNAL"],
+      default: "HOSPITAL_DIRECT",
       index: true,
     },
     issueDate: {
@@ -84,6 +136,10 @@ const DonorCertificateSchema = new Schema<IDonorCertificate>(
       type: CertificateFileSchema,
       required: true,
     },
+    contactAttempts: {
+      type: [ContactAttemptSchema],
+      default: [],
+    },
     history: {
       type: [CertificateAuditLogSchema],
       default: [],
@@ -109,6 +165,10 @@ const DonorCertificateSchema = new Schema<IDonorCertificate>(
 DonorCertificateSchema.index({ userId: 1, createdAt: -1 });
 DonorCertificateSchema.index({ issuingHospitalId: 1, status: 1 });
 DonorCertificateSchema.index({ issuingHospital: 1, status: 1 });
+DonorCertificateSchema.index({ assignedBloodBankId: 1, status: 1 });
+DonorCertificateSchema.index({ assignedBloodBank: 1, status: 1 });
+DonorCertificateSchema.index({ isUnregisteredHospital: 1, status: 1 });
+DonorCertificateSchema.index({ verificationMethod: 1, status: 1 });
 
 export const DonorCertificate = model<IDonorCertificate>(
   "DonorCertificate",

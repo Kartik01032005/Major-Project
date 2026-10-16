@@ -5,6 +5,7 @@ export interface INotification extends Document {
   title: string;
   message: string;
   type: "Emergency" | "Approval" | "Rejection" | "Inventory" | "System";
+  link?: string;
   isRead: boolean;
   createdAt: Date;
   updatedAt: Date;

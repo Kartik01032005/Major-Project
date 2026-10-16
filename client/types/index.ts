@@ -311,6 +311,7 @@ export interface Notification {
   type: NotificationType;
   title: string;
   message: string;
+  link?: string;
   isRead: boolean;
   createdAt: string;
   updatedAt: string;
@@ -458,8 +459,13 @@ export interface CertificateAuditLog {
   reviewedBy: string;
   reviewerName?: string;
   reviewerHospital?: string;
-  action: "APPROVE" | "REJECT" | "REQUEST_CLARIFICATION";
+  reviewerBloodBank?: string;
+  reviewerInstitution?: string;
+  reviewerRole?: string;
+  action: "APPROVE" | "REJECT" | "REQUEST_CLARIFICATION" | "CONTACT_ATTEMPT";
   reason?: string;
+  contactNotes?: string;
+  evidence?: string;
   timestamp: string;
 }
 
@@ -469,6 +475,14 @@ export interface DonorCertificate {
   status: CertificateStatus;
   issuingHospital?: string;
   issuingHospitalId?: string;
+  isUnregisteredHospital?: boolean;
+  hospitalDistrict?: string;
+  hospitalState?: string;
+  assignedBloodBank?: string;
+  assignedBloodBankId?: string;
+  assignedAt?: string;
+  assignmentNotes?: string;
+  verificationMethod?: "HOSPITAL_DIRECT" | "BLOOD_BANK_EXTERNAL";
   issueDate?: string;
   expiryDate?: string;
   rejectionReason?: string;
@@ -476,6 +490,7 @@ export interface DonorCertificate {
   submittedAt?: string;
   reviewedAt?: string;
   file?: CertificateFileInfo;
+  contactAttempts?: ContactAttempt[];
   history?: CertificateAuditLog[];
 }
 
@@ -489,6 +504,9 @@ export interface HospitalQueueSubmission {
   };
   issuingHospital: string;
   issuingHospitalId?: string;
+  isUnregisteredHospital?: boolean;
+  verificationMethod?: "HOSPITAL_DIRECT" | "BLOOD_BANK_EXTERNAL";
+  assignmentNotes?: string;
   issueDate: string;
   expiryDate?: string;
   status: CertificateStatus;
@@ -518,5 +536,85 @@ export interface HospitalQueueResponse {
     totalPages: number;
   };
 }
+
+export interface HospitalContactInfo {
+  hospitalName: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  district?: string;
+  state?: string;
+  verificationPhone?: string;
+  medicalRecordsDesk?: string;
+  operatingHours?: string;
+  notes?: string;
+  isUnregisteredHospital?: boolean;
+}
+
+export interface ContactAttempt {
+  contactDate: string;
+  contactMethod: string;
+  notes: string;
+  outcome?: string;
+  staffName?: string;
+}
+
+export interface BloodBankQueueSubmission {
+  id: string;
+  referenceId: string;
+  donor: {
+    id?: string;
+    name: string;
+    bloodGroup: string;
+  };
+  issuingHospital: string;
+  issuingHospitalId?: string;
+  isUnregisteredHospital?: boolean;
+  verificationMethod?: "HOSPITAL_DIRECT" | "BLOOD_BANK_EXTERNAL";
+  assignmentNotes?: string;
+  hospitalDistrict?: string;
+  hospitalState?: string;
+  issuingHospitalContact?: HospitalContactInfo;
+  assignedBloodBank?: string;
+  assignedBloodBankId?: string;
+  assignedAt?: string;
+  issueDate: string;
+  expiryDate?: string;
+  status: CertificateStatus;
+  submittedAt: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+  feedbackMessage?: string;
+  file?: CertificateFileInfo;
+  contactAttempts?: ContactAttempt[];
+  history?: CertificateAuditLog[];
+}
+
+export interface BloodBankQueueStats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  needsClarification: number;
+}
+
+export interface BloodBankQueueResponse {
+  stats: BloodBankQueueStats;
+  submissions: BloodBankQueueSubmission[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export interface DonorCertificateEligibility {
+  isEligible: boolean;
+  status: CertificateStatus;
+  reason: string;
+}
+
+
 
 

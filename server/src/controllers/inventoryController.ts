@@ -29,6 +29,7 @@ async function checkInventoryThresholdsAndNotify(bloodBankId: string) {
         title: "⚠️ Critical Stock Alert",
         message: `Inventory is critically low for: ${summaryText}. Consider updating stock or requesting donors.`,
         type: "Inventory",
+        link: "/dashboard/admin/inventory",
       });
 
       emitToUser(bloodBankId, "inventory_alert", {

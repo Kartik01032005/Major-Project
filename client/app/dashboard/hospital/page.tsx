@@ -49,7 +49,7 @@ export default function HospitalDashboardPage() {
                   {user?.organizationName || user?.name || "Hospital Partner Portal"}
                 </h1>
                 <p className="text-red-100 text-sm max-w-xl">
-                  Official BloodLink hospital portal for managing institutional credentials, emergency requests, and healthcare network participation.
+                  Official BloodLink hospital portal for managing institutional credentials, certificate verifications, and healthcare network participation.
                 </p>
               </div>
 
@@ -71,15 +71,6 @@ export default function HospitalDashboardPage() {
                   icon={<FiSettings size={14} />}
                 >
                   Settings
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  href="/dashboard/emergency"
-                  className="bg-white text-red-600 hover:bg-red-50 border-0 font-semibold"
-                  icon={<FiAlertCircle size={14} />}
-                >
-                  Create Emergency Alert
                 </Button>
               </div>
             </div>
@@ -149,16 +140,16 @@ export default function HospitalDashboardPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <Link
-                  href="/dashboard/emergency"
+                  href="/dashboard/requests"
                   className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-red-300 dark:hover:border-red-800 bg-white dark:bg-slate-900 hover:bg-red-50/40 dark:hover:bg-red-950/20 transition-all flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-400 flex items-center justify-center">
-                      <FiAlertCircle size={16} />
+                    <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400 flex items-center justify-center">
+                      <FiActivity size={16} />
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-900 dark:text-white">Emergency Request</p>
-                      <p className="text-xs text-slate-500">Broadcast immediate blood need</p>
+                      <p className="font-semibold text-slate-900 dark:text-white">Blood Requests</p>
+                      <p className="text-xs text-slate-500">View and track hospital broadcasts</p>
                     </div>
                   </div>
                   <FiExternalLink className="text-slate-400 group-hover:text-red-600" size={14} />

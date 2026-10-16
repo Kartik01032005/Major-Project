@@ -3,6 +3,7 @@ import request from "supertest";
 import app from "../app.js";
 import User from "../models/User.js";
 import EmergencyRequest from "../models/EmergencyRequest.js";
+import DonorCertificate from "../models/DonorCertificate.js";
 import {
   getDefaultExpiryHours,
   calculateExpiresAt,
@@ -78,6 +79,21 @@ describe("Task #3 — Emergency Blood Request Expiry Test Suite", () => {
     donorToken = loginDon.body.data.token;
     donorId = loginDon.body.data.user._id;
 
+    await DonorCertificate.create({
+      userId: donorId,
+      issuingHospital: "General Hospital",
+      issueDate: new Date("2026-01-01"),
+      status: "APPROVED",
+      file: {
+        filename: "test.pdf",
+        originalName: "cert.pdf",
+        mimeType: "application/pdf",
+        size: 1024,
+        path: "test.pdf",
+      },
+      submittedAt: new Date(),
+    });
+
     // Register & login admin
     await request(app).post("/api/auth/register").send(adminData);
     const loginAdm = await request(app).post("/api/auth/login").send({
@@ -91,6 +107,7 @@ describe("Task #3 — Emergency Blood Request Expiry Test Suite", () => {
 
   afterAll(async () => {
     await EmergencyRequest.deleteMany({});
+    await DonorCertificate.deleteMany({});
     await User.deleteMany({
       email: { $in: [requesterData.email, donorData.email, adminData.email] }
     });

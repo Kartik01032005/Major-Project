@@ -344,17 +344,17 @@ export default function HospitalVerificationQueue() {
 
       {/* ── Demo Notice & Section Header ── */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
-        <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h2 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white">
                 Certificate Verification Queue
               </h2>
-              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 border border-red-200 dark:border-red-900/50 uppercase tracking-wider">
-                Demo Verification Workflow
+              <span className="text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-red-950/70 text-red-400 border border-red-800/60 uppercase tracking-wider">
+                DEMO VERIFICATION WORKFLOW
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
               Review and verify medical certificates issued by this hospital for simulated donor credentialing.
             </p>
           </div>
@@ -363,7 +363,7 @@ export default function HospitalVerificationQueue() {
             type="button"
             onClick={fetchQueue}
             disabled={loading}
-            className="self-start md:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors"
+            className="self-start md:self-auto inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors"
           >
             <FiRefreshCw
               size={13}
@@ -374,7 +374,7 @@ export default function HospitalVerificationQueue() {
         </div>
 
         {/* ── Search & Filter Bar ── */}
-        <div className="p-4 sm:p-5 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-4 sm:p-5 pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Search Form */}
           <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
             <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
@@ -383,7 +383,7 @@ export default function HospitalVerificationQueue() {
               placeholder="Search by donor name, certificate ID, or hospital..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs pl-9 pr-8 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+              className="w-full text-xs pl-9 pr-8 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/60 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
             />
             {searchQuery && (
               <button
@@ -416,7 +416,7 @@ export default function HospitalVerificationQueue() {
                   setStatusFilter(f.id);
                   setPage(1);
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
                   statusFilter === f.id
                     ? "bg-red-600 text-white shadow-xs"
                     : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-800"
@@ -429,21 +429,21 @@ export default function HospitalVerificationQueue() {
         </div>
 
         {/* ── Submissions Table ── */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto border-t border-slate-100 dark:border-slate-800/80">
           {loading ? (
-            <div className="py-16 text-center text-slate-400 space-y-2">
+            <div className="py-20 text-center text-slate-400 space-y-2">
               <FiLoader size={26} className="animate-spin text-red-600 mx-auto" />
               <p className="text-xs">Loading hospital review queue...</p>
             </div>
           ) : displayedSubmissions.length === 0 ? (
-            <div className="py-14 text-center px-4">
-              <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-3">
-                <FiShield size={22} />
+            <div className="py-20 sm:py-24 text-center px-4">
+              <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 text-slate-400 flex items-center justify-center mx-auto mb-4">
+                <FiShield size={24} />
               </div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                 No Submissions Found
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1.5">
                 {statusFilter === "ALL" && !searchQuery
                   ? "There are currently no donor certificate submissions assigned to this hospital."
                   : "No submissions match your search or filter criteria."}
@@ -463,9 +463,9 @@ export default function HospitalVerificationQueue() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {displayedSubmissions.map((sub) => (
+                {displayedSubmissions.map((sub, idx) => (
                   <tr
-                    key={sub.id}
+                    key={sub.id || (sub as any)._id || sub.referenceId || idx}
                     className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
                   >
                     <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white">

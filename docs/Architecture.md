@@ -278,19 +278,80 @@ Google Maps navigation enabled
 
 ---
 
-# Notification Architecture
+---
 
-Socket.IO handles
+# Donor Certificate Verification Flow
 
+```
+User (Donor)
+     │
+     ▼
+Upload Certificate (PDF / Image, Hospital Name / Selection, Date)
+     │
+     ▼
+Backend Validation (File type, Size limit 5MB, Auth check)
+     │
+     ▼
+Stored in Private Uploads Directory (Encrypted/UUID filename, non-public)
+     │
+     ├── If Registered Hospital Selected ──► Hospital Verification Queue
+     │                                           (Assigned to that Hospital account)
+     │
+     └── If Unregistered / Manual Entry  ──► Blood Bank Verification Queue
+                                                 (Universal Participation fallback queue)
+                                                     │
+                                                     ▼
+                                      Simulated Institutional Review
+                                      (Approve / Reject / Clarification)
+                                                     │
+                                                     ├── Update Status in MongoDB
+                                                     ├── Enqueue In-App Notification to User
+                                                     └── Record Immutable Sanitized Audit Log
+```
+
+---
+
+# Donor Request Restrictions Flow
+
+```
+Donor clicks "Accept" on Emergency Request
+     │
+     ▼
+Backend Eligibility Verification (`donorEligibilityService`)
+     │
+     ├── Check 1: User's Certificate Status in MongoDB
+     │            Status != "APPROVED" ──► Reject (403 Forbidden: "Approved certificate required")
+     │
+     ├── Check 2: Request Status
+     │            Status != "Pending" ──► Reject (400 Bad Request)
+     │
+     ├── Check 3: Self-Acceptance
+     │            Request requester == User ──► Reject (400 Bad Request)
+     │
+     └── All Checks Passed ──► Request Accepted
+                                ├── Status changed to "In Progress"
+                                ├── Notification sent to Requester
+                                └── Audit Log recorded
+```
+
+---
+
+# Notification & Audit Logging Architecture
+
+Socket.IO & Polling handle:
 - Live Emergency Alerts
-- Blood Bank Approval
-- Inventory Updates
+- In-App Certificate Status Notifications (with direct navigation links)
+- Blood Bank & Hospital Verification Queue updates
 
-Future
+Notification Queue:
+- Asynchronous batching and deduplication
+- Automatic retry on database transient errors
+- Secure ownership: Users can only view and delete their own notifications
 
-Firebase Cloud Messaging
-
-for push notifications.
+Audit Log Service:
+- Immutable append-only collection (`AuditLogs`)
+- Automatically sanitizes sensitive keys (passwords, tokens, file buffers)
+- Strict authorization boundary: Users view own actions; institutions view assigned requests and submissions
 
 ---
 

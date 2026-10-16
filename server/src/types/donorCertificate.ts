@@ -19,14 +19,27 @@ export interface ICertificateFile {
   path: string;
 }
 
+export interface IContactAttempt {
+  contactDate: Date;
+  contactMethod: string;
+  notes: string;
+  outcome?: string;
+  staffName?: string;
+}
+
 export interface ICertificateAuditLog {
   previousStatus: CertificateStatus;
   newStatus: CertificateStatus;
   reviewedBy: Types.ObjectId;
   reviewerName?: string;
   reviewerHospital?: string;
-  action: "APPROVE" | "REJECT" | "REQUEST_CLARIFICATION";
+  reviewerBloodBank?: string;
+  reviewerInstitution?: string;
+  reviewerRole?: "HOSPITAL" | "BLOOD_BANK" | "USER" | "ADMIN";
+  action: "APPROVE" | "REJECT" | "REQUEST_CLARIFICATION" | "CONTACT_ATTEMPT" | "SUBMIT" | "ASSIGN";
   reason?: string;
+  contactNotes?: string;
+  evidence?: string;
   timestamp: Date;
 }
 
@@ -35,12 +48,21 @@ export interface IDonorCertificate extends Document {
   userId: Types.ObjectId;
   issuingHospital: string;
   issuingHospitalId?: Types.ObjectId;
+  isUnregisteredHospital?: boolean;
+  hospitalDistrict?: string;
+  hospitalState?: string;
+  assignedBloodBankId?: Types.ObjectId;
+  assignedBloodBank?: string;
+  assignedAt?: Date;
+  assignmentNotes?: string;
+  verificationMethod?: "HOSPITAL_DIRECT" | "BLOOD_BANK_EXTERNAL";
   issueDate: Date;
   expiryDate?: Date;
   status: CertificateStatus;
   rejectionReason?: string;
   feedbackMessage?: string;
   file: ICertificateFile;
+  contactAttempts?: IContactAttempt[];
   history?: ICertificateAuditLog[];
   submittedAt: Date;
   reviewedAt?: Date;

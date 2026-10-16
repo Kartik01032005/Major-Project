@@ -67,6 +67,7 @@ interface DashboardContextType {
   unreadCount: number;
   markAllRead: () => Promise<void>;
   markRead: (id: string) => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
   refreshNotifications: () => Promise<void>;
 }
 
@@ -452,6 +453,16 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [refreshNotifications]);
 
+  const deleteNotification = useCallback(async (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n._id !== id));
+    try {
+      await dashboardService.deleteNotification(id);
+    } catch (err: unknown) {
+      console.error("Failed to delete notification:", err);
+      refreshNotifications();
+    }
+  }, [refreshNotifications]);
+
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
@@ -489,6 +500,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         unreadCount,
         markAllRead,
         markRead,
+        deleteNotification,
         refreshNotifications,
       }}
     >

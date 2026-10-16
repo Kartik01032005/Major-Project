@@ -8,6 +8,8 @@ import { broadcast, emitToUser } from "../socket/socket.js";
 import { enqueueNotification } from "../services/notificationQueue.js";
 import { isBloodGroupCompatible, getCompatibleDonorGroups } from "../utils/bloodGroupUtils.js";
 import { IEmergencyTrackingStats } from "../types/emergencyRequest.js";
+import { checkDonorCertificateEligibility } from "../services/donorEligibilityService.js";
+import { logAuditEvent } from "../services/auditService.js";
 
 // Expiry helper functions
 export const getDefaultExpiryMinutes = (): number => {
@@ -178,6 +180,16 @@ export const createRequest = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
+    // Hospital accounts are not permitted to create donor emergency requests
+    const userRole = (req.user.role || "").toUpperCase();
+    if (userRole === "HOSPITAL") {
+      res.status(403).json({
+        success: false,
+        message: "Hospital accounts are not permitted to create donor emergency requests.",
+      });
+      return;
+    }
+
     const {
       bloodGroup,
       unitsRequired,
@@ -239,7 +251,8 @@ export const createRequest = async (req: Request, res: Response): Promise<void> 
         receiverId: donor._id.toString(),
         title: "🚨 Emergency Blood Alert",
         message: notifMessage,
-        type: "Emergency"
+        type: "Emergency",
+        link: "/dashboard/requests"
       });
     }
 
@@ -250,9 +263,27 @@ export const createRequest = async (req: Request, res: Response): Promise<void> 
         receiverId: admin._id.toString(),
         title: "📥 New Emergency Request Received",
         message: `${req.user.name} requested ${bloodGroup} blood at ${hosp}.`,
-        type: "Emergency"
+        type: "Emergency",
+        link: "/dashboard/admin/requests"
       });
     }
+
+    void logAuditEvent({
+      action: "REQUEST_CREATED",
+      entityType: "DONOR_REQUEST",
+      entityId: newRequest._id,
+      performedBy: req.user._id,
+      performerName: req.user.name,
+      performerRole: req.user.role,
+      newStatus: "Pending",
+      metadata: {
+        bloodGroup,
+        hospital: hosp,
+        unitsRequired: Number(unitsRequired),
+        district,
+        state,
+      },
+    });
 
     // Populate creator's details for dashboard updates
     const populatedRequest = await newRequest.populate("requestBy", "name email phone location");
@@ -359,7 +390,19 @@ export const approveRequest = async (req: Request, res: Response): Promise<void>
       receiverId: request.requestBy.toString(),
       title: "✅ Emergency Request Approved",
       message: `Your emergency request for ${request.bloodGroup} at ${request.hospital} has been approved.`,
-      type: "Approval"
+      type: "Approval",
+      link: "/dashboard/requests"
+    });
+
+    void logAuditEvent({
+      action: "REQUEST_APPROVED",
+      entityType: "DONOR_REQUEST",
+      entityId: request._id,
+      performedBy: req.user._id,
+      performerName: req.user.name,
+      performerRole: req.user.role,
+      previousStatus: "Pending",
+      newStatus: "Approved",
     });
 
     // Broadcast request update to all clients
@@ -410,7 +453,19 @@ export const rejectRequest = async (req: Request, res: Response): Promise<void> 
       receiverId: request.requestBy.toString(),
       title: "❌ Emergency Request Rejected",
       message: `Your emergency request for ${request.bloodGroup} at ${request.hospital} has been rejected.`,
-      type: "Rejection"
+      type: "Rejection",
+      link: "/dashboard/requests"
+    });
+
+    void logAuditEvent({
+      action: "REQUEST_REJECTED",
+      entityType: "DONOR_REQUEST",
+      entityId: request._id,
+      performedBy: req.user._id,
+      performerName: req.user.name,
+      performerRole: req.user.role,
+      previousStatus: "Pending",
+      newStatus: "Rejected",
     });
 
     const populatedRequest = await request.populate("requestBy", "name email phone location");
@@ -485,6 +540,22 @@ export const acceptRequest = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
+    // Task 6: Enforce Donor Certificate Verification for Request Acceptance
+    const eligibility = await checkDonorCertificateEligibility(req.user._id);
+    if (!eligibility.isEligible) {
+      res.status(403).json({
+        success: false,
+        message: eligibility.reason,
+        code: "CERTIFICATE_VERIFICATION_REQUIRED",
+        certificateStatus: eligibility.status,
+      });
+      return;
+    }
+
+    // Concurrency-safe atomic claim
+
+
+
     const updated = await EmergencyRequest.findOneAndUpdate(
       {
         _id: request._id,
@@ -504,7 +575,30 @@ export const acceptRequest = async (req: Request, res: Response): Promise<void> 
       receiverId: request.requestBy.toString(),
       title: "A donor can help",
       message: `${req.user.name} indicated they can donate ${request.bloodGroup} blood at ${request.hospital}.`,
-      type: "Emergency"
+      type: "Emergency",
+      link: "/dashboard/requests"
+    });
+
+    // Notify donor confirming acceptance
+    enqueueNotification({
+      receiverId: req.user._id.toString(),
+      title: "Request Acceptance Confirmed",
+      message: `You indicated you can donate ${request.bloodGroup} blood at ${request.hospital}.`,
+      type: "Emergency",
+      link: "/dashboard/requests"
+    });
+
+    void logAuditEvent({
+      action: "REQUEST_ACCEPTED",
+      entityType: "DONOR_REQUEST",
+      entityId: updated._id,
+      performedBy: req.user._id,
+      performerName: req.user.name,
+      performerRole: "USER",
+      metadata: {
+        hospital: request.hospital,
+        bloodGroup: request.bloodGroup,
+      },
     });
 
     const populatedRequest = await updated.populate("requestBy", "name email phone location");
@@ -583,7 +677,17 @@ export const reportDonation = async (req: Request, res: Response): Promise<void>
       receiverId: request.requestBy.toString(),
       title: "🩸 Donation Reported",
       message: `${req.user.name} reported that the blood donation for ${request.hospital} was completed. Please confirm the donation.`,
-      type: "Emergency"
+      type: "Emergency",
+      link: "/dashboard/requests"
+    });
+
+    void logAuditEvent({
+      action: "DONATION_REPORTED",
+      entityType: "DONOR_REQUEST",
+      entityId: request._id,
+      performedBy: req.user._id,
+      performerName: req.user.name,
+      performerRole: "USER",
     });
 
     const populatedRequest = await request.populate("requestBy", "name email phone location");
@@ -654,9 +758,20 @@ export const confirmDonation = async (req: Request, res: Response): Promise<void
         receiverId: donorId.toString(),
         title: "✅ Donation Confirmed",
         message: `Your donation at ${request.hospital} was confirmed by the requester. Request is now fulfilled!`,
-        type: "Emergency"
+        type: "Emergency",
+        link: "/dashboard/requests"
       });
     }
+
+    void logAuditEvent({
+      action: "DONATION_CONFIRMED",
+      entityType: "DONOR_REQUEST",
+      entityId: request._id,
+      performedBy: req.user._id,
+      performerName: req.user.name,
+      performerRole: req.user.role,
+      newStatus: "Completed",
+    });
 
     const populatedRequest = await request.populate("requestBy", "name email phone location");
     broadcast("request_updated", populatedRequest);
@@ -741,7 +856,18 @@ export const withdrawAcceptance = async (req: Request, res: Response): Promise<v
       receiverId: request.requestBy.toString(),
       title: "⚠️ Donor Unable to Donate",
       message: `${req.user.name} is unable to complete the donation (${reason.trim()}). Another donor may be needed.`,
-      type: "Emergency"
+      type: "Emergency",
+      link: "/dashboard/requests"
+    });
+
+    void logAuditEvent({
+      action: "ACCEPTANCE_WITHDRAWN",
+      entityType: "DONOR_REQUEST",
+      entityId: request._id,
+      performedBy: req.user._id,
+      performerName: req.user.name,
+      performerRole: "USER",
+      reason: reason.trim(),
     });
 
     const populatedRequest = await request.populate("requestBy", "name email phone location");
@@ -800,6 +926,29 @@ export const cancelRequest = async (req: Request, res: Response): Promise<void> 
 
     request.status = "Cancelled";
     await request.save();
+
+    void logAuditEvent({
+      action: "REQUEST_CANCELLED",
+      entityType: "DONOR_REQUEST",
+      entityId: request._id,
+      performedBy: req.user._id,
+      performerName: req.user.name,
+      performerRole: req.user.role,
+      previousStatus: "Pending",
+      newStatus: "Cancelled",
+    });
+
+    if (request.acceptedBy && request.acceptedBy.length > 0) {
+      for (const donorId of request.acceptedBy) {
+        enqueueNotification({
+          receiverId: donorId.toString(),
+          title: "Request Cancelled",
+          message: `The blood donation request for ${request.hospital} was cancelled by the requester.`,
+          type: "System",
+          link: "/dashboard/requests"
+        });
+      }
+    }
 
     const populatedRequest = await request.populate("requestBy", "name email phone location");
     broadcast("request_updated", populatedRequest);
@@ -987,6 +1136,8 @@ export const getDonorResponseStatus = async (req: Request, res: Response): Promi
       lifecycleStatus = "Donor Response Received";
     }
 
+    const certificateEligibility = await checkDonorCertificateEligibility(req.user._id);
+
     res.status(200).json({
       success: true,
       data: {
@@ -994,7 +1145,8 @@ export const getDonorResponseStatus = async (req: Request, res: Response): Promi
         expiresAt: request.expiresAt,
         myResponse,
         lifecycleStatus,
-        requestStatus: request.status
+        requestStatus: request.status,
+        certificateEligibility,
       }
     });
   } catch (error: any) {

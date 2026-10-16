@@ -694,115 +694,118 @@ BloodLink maintains a modern Next.js web application and Android APK testing bun
 - [x] Prevent cross-institution access to verification requests.
 - [x] Add search, filtering, pagination, and appropriate loading and error states.
 - [x] Notify users when their verification status changes.
+- [x] Position Certificate Verification Queue directly below Hospital Profile in the Hospital dashboard sidebar.
+- [x] Route Certificate Verification Queue to existing queue UI within hospital dashboard layout (/dashboard/hospital & /dashboard/hospital/verification).
+- [x] Align queue visual cards, demo verification badge, search, status filters, and empty state with design reference.
+- [x] Remove Emergency Request creation links, banner action buttons, and shortcuts from Hospital interface.
+- [x] Enforce backend role check rejecting emergency request creation by HOSPITAL accounts with 403 Forbidden while preserving User emergency workflows.
 
 ## 4. Blood Bank Verification Workflow
-- [ ] Extend the existing blood-bank dashboard without disrupting inventory management.
-- [ ] Add a separate External Certificate Verification queue.
-- [ ] Display external verification requests assigned to the participating blood bank.
-- [ ] Provide secure access to the submitted certificate and necessary verification details.
-- [ ] Display the issuing hospital's name and official contact information.
-- [ ] Allow authorized staff to record contact attempts and verification notes.
-- [ ] Support Confirmed, Pending, Request More Information, and Unable to Verify outcomes.
-- [ ] Record the reviewer, timestamp, evidence, and final decision.
-- [ ] Permit blood-bank certificate review only under an approved verification arrangement.
-- [ ] Keep certificate authenticity separate from medical donor eligibility.
-- [ ] Preserve existing blood-bank inventory and request-management features.
+- [x] Extend the existing blood-bank dashboard without disrupting inventory management.
+- [x] Add a separate External Certificate Verification queue.
+- [x] Display external verification requests assigned to the participating blood bank.
+- [x] Provide secure access to the submitted certificate and necessary verification details.
+- [x] Display the issuing hospital's name and official contact information.
+- [x] Allow authorized staff to record contact attempts and verification notes.
+- [x] Support Confirmed, Pending, Request More Information, and Unable to Verify outcomes.
+- [x] Record the reviewer, timestamp, evidence, and final decision.
+- [x] Permit blood-bank certificate review only under an approved verification arrangement.
+- [x] Keep certificate authenticity separate from medical donor eligibility.
+- [x] Preserve existing blood-bank inventory and request-management features.
 
-## 5. Non-Participating Hospital Verification Workflow
-- [ ] Determine whether the issuing hospital is an approved, participating BloodLink institution.
-- [ ] Route verification requests directly to the issuing hospital when it participates.
-- [ ] If the hospital does not participate, identify an eligible nearby blood bank that has agreed to handle external verification requests.
-- [ ] Use the user's or issuing hospital's relevant location to find suitable participating blood banks, according to the configured routing policy.
-- [ ] Assign the request to an eligible blood bank and notify its authorized staff.
-- [ ] Do not route sensitive certificates to arbitrary nearby facilities.
-- [ ] Require blood-bank staff to contact the issuing hospital through an official contact channel.
-- [ ] Require reliable confirmation from an authorized hospital representative or another approved verification method.
-- [ ] Record the contact attempt, date, outcome, reviewer, and supporting evidence.
-- [ ] Keep the request PENDING when the hospital has not responded or confirmation is insufficient.
-- [ ] Never treat a phone call, unanswered call, sent message, or uploaded document alone as proof of authenticity.
-- [ ] Allow the blood bank to record a confirmed, rejected, or unable-to-verify outcome according to the approved policy.
-- [ ] Prevent automatic approval when an issuing hospital is not registered on BloodLink.
-- [ ] Support reassignment to another eligible participating blood bank when appropriate.
-- [ ] Avoid duplicate assignments and conflicting verification decisions.
-- [ ] Notify the user when the request is assigned, updated, or resolved.
+## 5. Universal Hospital Participation in Demo Verification
+- [x] Allow donor to select a registered demo hospital or enter any issuing hospital name manually without requiring an existing BloodLink account.
+- [x] Do not require institutional onboarding or administrator approval for issuing hospitals.
+- [x] Store entered hospital name and certificate metadata with the submission; retain internal hospital identifier when a registered demo hospital is selected.
+- [x] If hospital is entered manually, store it as an unregistered issuing hospital record without creating a privileged Hospital user account.
+- [x] Route certificates from registered issuing hospitals to direct hospital review (`HOSPITAL_DIRECT`) when assigned.
+- [x] Route certificates with unregistered hospitals to eligible local demo Blood Banks using district/state proximity assignment (`BLOOD_BANK_EXTERNAL`) rather than requiring external contact.
+- [x] If no eligible demo reviewer is available, keep submission `PENDING` with an explanatory note.
+- [x] Label the verification workflow clearly as Demo Certificate Verification (simulated workflow only, no real-world verification or external institution contact claimed).
+- [x] Allow authorized assigned reviewers to securely view certificate metadata and document files.
+- [x] Support approve, reject (with reason), and request clarification (with reason) actions in the simulated verification workflow.
+- [x] Record reviewer identity, timestamp, decision/status change, and notes/reasons in the audit log.
+- [x] Enforce backend authorization: donors access only their own submissions; reviewers access only submissions assigned to them; prevent hospital account creation from submissions.
+- [x] Keep uploaded certificate files private and access-controlled.
+- [x] Maintain medical limitation disclaimers: demo verification does not guarantee infection-free status or medical donor eligibility.
 
 ## 6. Donor Request Restrictions
-- [ ] Restrict donation-request acceptance for users who have not completed the required verification.
-- [ ] Enforce restrictions through backend authorization, not only frontend controls.
-- [ ] Display a clear verification-required warning when acceptance is restricted.
-- [ ] Link users directly to the donor verification section.
-- [ ] Recheck verification status when processing each acceptance request.
-- [ ] Handle pending, rejected, expired, and revoked verification states correctly.
-- [ ] Allow permitted donor-response actions only when the required verification conditions are met.
-- [ ] Ensure certificate verification does not replace blood-bank medical screening.
-- [ ] Avoid claiming that a verified certificate proves a donor is free from HIV or any other infection.
-- [ ] Keep final donor eligibility and required screening under the responsibility of qualified staff at an authorized blood centre.
+- [x] Restrict donation-request acceptance for users who have not completed the required verification.
+- [x] Enforce restrictions through backend authorization, not only frontend controls.
+- [x] Display a clear verification-required warning when acceptance is restricted.
+- [x] Link users directly to the donor verification section.
+- [x] Recheck verification status when processing each acceptance request.
+- [x] Handle pending, rejected, expired, and revoked verification states correctly.
+- [x] Allow permitted donor-response actions only when the required verification conditions are met.
+- [x] Ensure certificate verification does not replace blood-bank medical screening.
+- [x] Avoid claiming that a verified certificate proves a donor is free from HIV or any other infection.
+- [x] Keep final donor eligibility and required screening under the responsibility of qualified staff at an authorized blood centre.
 
 ## 7. Notifications and Audit Logging
-- [ ] Notify users when certificates are submitted and reviewed.
-- [ ] Notify participating hospitals when verification requests are assigned to them.
-- [ ] Notify assigned blood banks when external verification requests arrive.
-- [ ] Notify authorized staff of relevant status changes and reassigned requests.
-- [ ] Integrate with the existing notification infrastructure.
-- [ ] Keep requests accessible in the dashboard if real-time notification delivery fails.
-- [ ] Record verification decisions and important status changes in an audit trail.
-- [ ] Record external contact attempts and their outcomes.
-- [ ] Prevent unauthorized access to or modification of verification history.
-- [ ] Avoid exposing certificate contents or sensitive medical information in notifications and logs.
+- [x] Notify users when certificates are submitted and reviewed.
+- [x] Notify participating hospitals when verification requests are assigned to them.
+- [x] Notify assigned blood banks when external verification requests arrive.
+- [x] Notify authorized staff of relevant status changes and reassigned requests.
+- [x] Integrate with the existing notification infrastructure.
+- [x] Keep requests accessible in the dashboard if real-time notification delivery fails.
+- [x] Record verification decisions and important status changes in an audit trail.
+- [x] Record external contact attempts and their outcomes.
+- [x] Prevent unauthorized access to or modification of verification history.
+- [x] Avoid exposing certificate contents or sensitive medical information in notifications and logs.
 
 ## 8. Database and API Integration
-- [ ] Extend existing database schemas and API routes without duplicating functionality.
-- [ ] Add validation for roles, institutions, documents, and verification statuses.
-- [ ] Implement secure institution-to-request associations.
-- [ ] Store verification assignment, reviewer, timestamps, decision, and evidence metadata.
-- [ ] Add appropriate database indexes and pagination.
-- [ ] Prevent duplicate active assignments and conflicting decisions.
-- [ ] Keep controllers maintainable and business logic reusable.
-- [ ] Update frontend API integrations and affected API documentation.
-- [ ] Preserve existing data and provide backward-compatible changes where possible.
-- [ ] Make external verification assignment and status updates safe against concurrent requests.
+- [x] Extend existing database schemas and API routes without duplicating functionality.
+- [x] Add validation for roles, institutions, documents, and verification statuses.
+- [x] Implement secure institution-to-request associations.
+- [x] Store verification assignment, reviewer, timestamps, decision, and evidence metadata.
+- [x] Add appropriate database indexes and pagination.
+- [x] Prevent duplicate active assignments and conflicting decisions.
+- [x] Keep controllers maintainable and business logic reusable.
+- [x] Update frontend API integrations and affected API documentation.
+- [x] Preserve existing data and provide backward-compatible changes where possible.
+- [x] Make external verification assignment and status updates safe against concurrent requests.
 
 ## 9. Security and Privacy
-- [ ] Verify authenticated users and permissions on every protected endpoint.
-- [ ] Prevent users from assigning themselves privileged roles or approval statuses.
-- [ ] Restrict access to private certificate files.
-- [ ] Validate uploads using file content, MIME type, and size checks.
-- [ ] Protect against unauthorized document access and cross-account data exposure.
-- [ ] Restrict hospital and blood-bank access to assigned, authorized verification requests.
-- [ ] Share only the information necessary to verify a certificate.
-- [ ] Keep passwords, tokens, and secrets out of logs and exported data.
-- [ ] Apply appropriate data-retention and deletion policies.
-- [ ] Document required environment variables without exposing secrets.
-- [ ] Maintain an auditable record of institutional approvals and verification actions.
+- [x] Verify authenticated users and permissions on every protected endpoint.
+- [x] Prevent users from assigning themselves privileged roles or approval statuses.
+- [x] Restrict access to private certificate files.
+- [x] Validate uploads using file content, MIME type, and size checks.
+- [x] Protect against unauthorized document access and cross-account data exposure.
+- [x] Restrict hospital and blood-bank access to assigned, authorized verification requests.
+- [x] Share only the information necessary to verify a certificate.
+- [x] Keep passwords, tokens, and secrets out of logs and exported data.
+- [x] Apply appropriate data-retention and deletion policies.
+- [x] Document required environment variables without exposing secrets.
+- [x] Maintain an auditable record of institutional approvals and verification actions.
 
 ## 10. Testing and Verification
-- [ ] Test existing login and registration functionality.
-- [ ] Test hospital and blood-bank registration and administrator approval.
-- [ ] Test role-based permissions and protected routes.
-- [ ] Test certificate upload validation and secure document access.
-- [ ] Test approval, rejection, clarification, expiry, and revocation workflows.
-- [ ] Test direct routing to participating hospitals.
-- [ ] Test fallback routing when the issuing hospital does not participate.
-- [ ] Test selection of eligible nearby participating blood banks.
-- [ ] Test external hospital contact attempts and confirmation recording.
-- [ ] Test pending status when confirmation is unavailable or insufficient.
-- [ ] Test reassignment and duplicate-request prevention.
-- [ ] Test backend restrictions on unverified donor request acceptance.
-- [ ] Test notifications, audit logging, and authorization boundaries.
-- [ ] Test compatibility with existing database records and blood-bank functionality.
-- [ ] Run applicable linting, type checks, automated tests, and production builds.
-- [ ] Fix regressions introduced by the implementation.
-- [ ] Document external services or institutional integrations that remain unverified.
+- [x] Test existing login and registration functionality.
+- [x] Test hospital and blood-bank registration and direct activation.
+- [x] Test role-based permissions and protected routes.
+- [x] Test certificate upload validation and secure document access.
+- [x] Test approval, rejection, clarification, expiry, and revocation workflows.
+- [x] Test direct routing to participating hospitals.
+- [x] Test fallback routing when the issuing hospital does not participate.
+- [x] Test selection of eligible nearby participating blood banks.
+- [x] Test external hospital contact attempts and confirmation recording.
+- [x] Test pending status when confirmation is unavailable or insufficient.
+- [x] Test reassignment and duplicate-request prevention.
+- [x] Test backend restrictions on unverified donor request acceptance.
+- [x] Test notifications, audit logging, and authorization boundaries.
+- [x] Test compatibility with existing database records and blood-bank functionality.
+- [x] Run applicable linting, type checks, automated tests, and production builds.
+- [x] Fix regressions introduced by the implementation.
+- [x] Document external services or institutional integrations that remain unverified.
 
 ## 11. Documentation and Completion
-- [ ] Update architecture, database, API, and setup documentation.
-- [ ] Document role permissions and the complete verification workflow.
-- [ ] Document hospital and blood-bank onboarding and approval requirements.
-- [ ] Document the fallback process for non-participating hospitals.
-- [ ] Document the rules for assigning external verification requests.
-- [ ] Document required configuration and manual setup steps.
-- [ ] Review the final implementation for security and maintainability.
-- [ ] Mark tasks complete only after implementation and required checks pass.
+- [x] Update architecture, database, API, and setup documentation.
+- [x] Document role permissions and the complete verification workflow.
+- [x] Document hospital and blood-bank onboarding and direct activation rules.
+- [x] Document the fallback process for non-participating hospitals.
+- [x] Document the rules for assigning external verification requests.
+- [x] Document required configuration and manual setup steps.
+- [x] Review the final implementation for security and maintainability.
+- [x] Mark tasks complete only after implementation and required checks pass.
 
 ## Implementation Rules
 - Preserve the existing BloodLink UI, architecture, and working functionality.

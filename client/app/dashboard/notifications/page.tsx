@@ -6,7 +6,7 @@ import ProtectedRoute from "@/components/dashboard/ProtectedRoute";
 
 export default function NotificationsPage() {
   return (
-    <ProtectedRoute requiredRole="user">
+    <ProtectedRoute requiredRole={["user", "USER", "HOSPITAL", "BLOOD_BANK", "admin"]}>
       <div className="max-w-4xl mx-auto space-y-6">
         <h1 className="sr-only">Notifications</h1>
         <NotificationsPanel />

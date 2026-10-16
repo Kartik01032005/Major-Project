@@ -3,6 +3,7 @@ import request from "supertest";
 import app from "../app.js";
 import User from "../models/User.js";
 import EmergencyRequest from "../models/EmergencyRequest.js";
+import DonorCertificate from "../models/DonorCertificate.js";
 import Notification from "../models/Notification.js";
 import RequestDismissal from "../models/RequestDismissal.js";
 
@@ -388,6 +389,26 @@ describe("PUT /api/emergency/:id/accept", () => {
       role: "USER",
     });
     universalDonorToken = universalLogin.body.data.token;
+    const universalUser = await User.findOne({ email: "donor.universal@bloodlink.dev" });
+
+    for (const d of [donorUser._id, universalUser?._id]) {
+      if (d) {
+        await DonorCertificate.create({
+          userId: d,
+          issuingHospital: "Apollo BGS Hospital Mysore",
+          issueDate: new Date("2026-01-01"),
+          status: "APPROVED",
+          file: {
+            filename: "test.pdf",
+            originalName: "cert.pdf",
+            mimeType: "application/pdf",
+            size: 1024,
+            path: "test.pdf",
+          },
+          submittedAt: new Date(),
+        });
+      }
+    }
   });
 
   beforeEach(async () => {

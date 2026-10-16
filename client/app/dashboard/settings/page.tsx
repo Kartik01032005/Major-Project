@@ -213,7 +213,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <ProtectedRoute requiredRole="user">
+    <ProtectedRoute requiredRole={["user", "USER", "HOSPITAL", "BLOOD_BANK", "admin"]}>
       <div className="max-w-3xl mx-auto space-y-6 pb-12">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">

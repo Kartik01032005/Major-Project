@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiBell, FiMenu, FiCheck } from "react-icons/fi";
 import { useAuth, useDashboard, useTranslation } from "@/context";
@@ -12,6 +12,7 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
   const { notifications, unreadCount, markAllRead, markRead } = useDashboard();
   const { t } = useTranslation();
   const pathname = usePathname();
+  const router = useRouter();
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -138,7 +139,13 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
                             ? "bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60"
                             : "bg-red-50/50 dark:bg-red-950/20 hover:bg-red-50 dark:hover:bg-red-950/30",
                         ].join(" ")}
-                        onClick={() => { markRead(n._id); }}
+                        onClick={() => {
+                          markRead(n._id);
+                          if (n.link) {
+                            setNotifOpen(false);
+                            router.push(n.link);
+                          }
+                        }}
                       >
                         <div className="flex items-start gap-2">
                           {!n.isRead && (

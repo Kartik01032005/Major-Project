@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { FiAlertCircle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck, FiNavigation, FiHeart, FiX, FiTrash2, FiUser } from "react-icons/fi";
+import { FiAlertCircle, FiAlertTriangle, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiXCircle, FiLoader, FiCheck, FiNavigation, FiHeart, FiX, FiTrash2, FiUser } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useDashboard, useTranslation } from "@/context";
-import { RequestStatus, EmergencyRequest, DonorBasic } from "@/types";
+import { RequestStatus, EmergencyRequest, DonorBasic, DonorCertificateEligibility } from "@/types";
 import { dashboardService } from "@/services/dashboardService";
 import Link from "next/link";
 import DonorAcceptanceModal from "./DonorAcceptanceModal";
@@ -57,11 +57,12 @@ const BLOOD_GROUP_COLORS: Record<string, string> = {
 };
 
 interface ActiveRequestsCardProps {
-  onNewRequest: () => void;
+  onNewRequest?: () => void;
 }
 
 export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardProps) {
   const { user } = useAuth();
+  const isHospital = (user?.role || "").toUpperCase() === "HOSPITAL";
   const { requests, refreshRequests, loadingRequests, cancelRequest, acceptRequest, reportDonation, confirmDonation, withdrawAcceptance } = useDashboard();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"my" | "donate">("my");
@@ -73,6 +74,10 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
   const [navLoadingId, setNavLoadingId] = useState<string | null>(null);
   const [navErrorId, setNavErrorId] = useState<{ id: string; message: string } | null>(null);
   const [expandedTrackingId, setExpandedTrackingId] = useState<string | null>(null);
+
+  // Donor Certificate Verification Eligibility State (Task 6)
+  const [eligibility, setEligibility] = useState<DonorCertificateEligibility | null>(null);
+  const [loadingEligibility, setLoadingEligibility] = useState(false);
 
   // Clear Requests View State (Donor/User View Dismissal)
   const [requestDismissalState, setRequestDismissalState] = useState<{
@@ -294,6 +299,37 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
     };
   }, [currentUserId, t]);
 
+  const fetchEligibility = useCallback(async () => {
+    if (!currentUserId) return;
+    try {
+      setLoadingEligibility(true);
+      const res = await dashboardService.getCertificateEligibility();
+      setEligibility(res);
+    } catch {
+      setEligibility({
+        isEligible: false,
+        status: "NOT_SUBMITTED",
+        reason: "A verified medical certificate is required to accept blood donation requests.",
+      });
+    } finally {
+      setLoadingEligibility(false);
+    }
+  }, [currentUserId]);
+
+  useEffect(() => {
+    fetchEligibility();
+
+    const handleCertUpdated = () => {
+      fetchEligibility();
+      refreshRequests();
+    };
+
+    window.addEventListener("certificate_updated", handleCertUpdated);
+    return () => {
+      window.removeEventListener("certificate_updated", handleCertUpdated);
+    };
+  }, [fetchEligibility, refreshRequests]);
+
   const getStatusLabel = (status: RequestStatus) => {
     switch (status) {
       case "Pending": return t("requests_status_pending");
@@ -345,7 +381,16 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
     } else if (typeof r.requestBy === "string") {
       reqUserId = r.requestBy;
     }
-    return String(reqUserId) === String(currentUserId);
+    const isOwner = String(reqUserId) === String(currentUserId);
+    if (isOwner) return true;
+    if (isHospital) {
+      const hospitalName = (user?.organizationName || user?.name || "").toLowerCase().trim();
+      const reqHospital = (r.hospital || "").toLowerCase().trim();
+      if (hospitalName && reqHospital && (reqHospital.includes(hospitalName) || hospitalName.includes(reqHospital))) {
+        return true;
+      }
+    }
+    return false;
   });
 
   // Requests from other users available to donate (Pending or Approved)
@@ -385,12 +430,14 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                 <FiLoader size={14} className="ml-2 text-slate-400 animate-spin" />
               )}
             </div>
-            <button
-              onClick={onNewRequest}
-              className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline"
-            >
-              {t("requests_new")}
-            </button>
+            {onNewRequest && !isHospital && (
+              <button
+                onClick={onNewRequest}
+                className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline"
+              >
+                {t("requests_new")}
+              </button>
+            )}
           </div>
 
           {/* Tabs & Clear Requests Button */}
@@ -406,7 +453,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                     : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700",
                 ].join(" ")}
               >
-                <span>{t("requests_tab_my_requests")}</span>
+                <span>{isHospital ? "Hospital Requests" : t("requests_tab_my_requests")}</span>
                 {myRequests.length > 0 && (
                   <span
                     className={[
@@ -429,7 +476,7 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                     : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700",
                 ].join(" ")}
               >
-                <span>{t("requests_tab_donate_requests")}</span>
+                <span>{isHospital ? "Community Broadcasts" : t("requests_tab_donate_requests")}</span>
                 {donateRequests.length > 0 && (
                   <span
                     className={[
@@ -480,6 +527,38 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
           </div>
         ) : (
           <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+            {activeTab === "donate" && !isHospital && eligibility && !eligibility.isEligible && (
+              <li
+                data-testid="verification-required-warning"
+                className="px-5 py-4 bg-amber-50/80 dark:bg-amber-950/30 border-b border-amber-200/80 dark:border-amber-900/40 text-xs"
+              >
+                <div className="flex items-start gap-3">
+                  <FiAlertTriangle className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" size={16} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-amber-900 dark:text-amber-200">
+                      Certificate Verification Required to Accept Requests
+                    </p>
+                    <p className="text-amber-800 dark:text-amber-300 mt-1">
+                      {eligibility.reason}
+                    </p>
+                    <div className="mt-2.5">
+                      <Link
+                        href="/dashboard/profile"
+                        className="inline-flex items-center gap-1 font-semibold text-amber-900 dark:text-amber-200 underline hover:no-underline"
+                      >
+                        <span>
+                          {eligibility.status === "NOT_SUBMITTED"
+                            ? "Submit Certificate →"
+                            : eligibility.status === "PENDING"
+                            ? "View Verification Status →"
+                            : "Update Certificate →"}
+                        </span>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            )}
             {cancelError && (
               <li className="px-5 py-3 text-xs text-red-600 dark:text-red-400" role="alert">
                 {cancelError}
@@ -781,8 +860,18 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
                             <button
                               type="button"
                               onClick={() => setSelectedRequestForAcceptance(req)}
-                              disabled={acceptingId === req._id}
-                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-red-600 text-white hover:bg-red-700 disabled:opacity-60 transition-colors shadow-sm"
+                              disabled={!eligibility?.isEligible || acceptingId === req._id}
+                              title={
+                                !eligibility?.isEligible
+                                  ? eligibility?.reason || "Certificate verification required to accept requests"
+                                  : undefined
+                              }
+                              className={[
+                                "inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors shadow-sm",
+                                !eligibility?.isEligible
+                                  ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60 shadow-none"
+                                  : "bg-red-600 text-white hover:bg-red-700 disabled:opacity-60",
+                              ].join(" ")}
                             >
                               {acceptingId === req._id && <FiLoader size={12} className="animate-spin" />}
                               {acceptingId === req._id ? t("requests_accepting") : t("requests_accept_btn")}

@@ -304,4 +304,29 @@ describe("BloodLink — Donor Certificate Submission Test Suite (Task 2)", () =>
       });
     });
   });
+
+  describe("6. Universal Hospital Participation & Unregistered Hospital Display", () => {
+    it("renders unregistered hospital badge and assigned blood bank verification details", async () => {
+      const unregisteredHospitalCert = {
+        ...pendingCertificate,
+        issuingHospital: "Holy Cross Community Clinic",
+        isUnregisteredHospital: true,
+        verificationMethod: "BLOOD_BANK_EXTERNAL" as const,
+        assignedBloodBank: "Metro Central Blood Bank",
+        assignmentNotes: "Assigned to nearby demo blood bank for demo verification.",
+      };
+      (dashboardService.getMyCertificate as jest.Mock).mockResolvedValue(unregisteredHospitalCert);
+
+      render(<DonorCertificateCard />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Holy Cross Community Clinic")).toBeInTheDocument();
+        expect(
+          screen.getByText(/Unregistered Issuing Hospital — Universal Demo Verification Assigned/i)
+        ).toBeInTheDocument();
+        expect(screen.getByText(/Reviewer: Metro Central Blood Bank/i)).toBeInTheDocument();
+      });
+    });
+  });
 });
+

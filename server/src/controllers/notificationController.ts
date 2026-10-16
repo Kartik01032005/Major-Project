@@ -11,13 +11,26 @@ export const getNotifications = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const notifications = await Notification.find({ receiverId: req.user._id })
-      .sort({ createdAt: -1 });
+    const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 50, 1), 100);
+    const skip = Math.max(parseInt(req.query.skip as string) || 0, 0);
+
+    const [notifications, unreadCount, total] = await Promise.all([
+      Notification.find({ receiverId: req.user._id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Notification.countDocuments({ receiverId: req.user._id, isRead: false }),
+      Notification.countDocuments({ receiverId: req.user._id }),
+    ]);
 
     res.status(200).json({
       success: true,
       message: "Notifications retrieved successfully",
-      data: notifications
+      data: notifications,
+      unreadCount,
+      total,
+      limit,
+      skip,
     });
   } catch (error: any) {
     console.error("❌ Get notifications error:", error);
@@ -60,7 +73,7 @@ export const markRead = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       success: true,
       message: "Notification marked as read",
-      data: notification
+      data: notification,
     });
   } catch (error: any) {
     console.error("❌ Mark notification read error:", error);
@@ -85,7 +98,7 @@ export const markAllRead = async (req: Request, res: Response): Promise<void> =>
 
     res.status(200).json({
       success: true,
-      message: "All notifications marked as read"
+      message: "All notifications marked as read",
     });
   } catch (error: any) {
     console.error("❌ Mark all notifications read error:", error);
@@ -93,3 +106,42 @@ export const markAllRead = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+// @desc    Delete single notification
+// @route   DELETE /api/notifications/:id
+// @access  Private
+export const deleteNotification = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: "Not authorized" });
+      return;
+    }
+
+    const notification = await Notification.findById(req.params.id);
+    if (!notification) {
+      res.status(404).json({ success: false, message: "Notification not found" });
+      return;
+    }
+
+    const recId = notification.receiverId as any;
+    const receiverIdStr = (typeof recId === "object" && recId !== null)
+      ? (recId._id || recId.id || recId).toString()
+      : String(recId);
+
+    const userIdStr = (req.user._id || (req.user as any).id).toString();
+
+    if (receiverIdStr !== userIdStr) {
+      res.status(403).json({ success: false, message: "Not authorized to delete this notification" });
+      return;
+    }
+
+    await Notification.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      message: "Notification deleted successfully",
+    });
+  } catch (error: any) {
+    console.error("❌ Delete notification error:", error);
+    res.status(500).json({ success: false, message: "Server error during notification deletion" });
+  }
+};

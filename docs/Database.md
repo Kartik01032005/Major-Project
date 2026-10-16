@@ -15,122 +15,90 @@ ODM: Mongoose
 3. EmergencyRequests
 4. Notifications
 5. Hospitals
+6. DonorCertificates
+7. AuditLogs
 
 ---
 
-# Users Collection
+# DonorCertificates Collection
 
 ```json
 {
   "_id": "ObjectId",
-
-  "name": "John Doe",
-
-  "email": "john@example.com",
-
-  "password": "Encrypted Password",
-
-  "phone": "9876543210",
-
-  "bloodGroup": "O+",
-
-  "role": "user",
-
-  "isAvailableDonor": true,
-
-  "location": {
-    "state": "Karnataka",
-    "district": "Mysore",
-    "latitude": 12.305,
-    "longitude": 76.655
-  },
-
-  "createdAt": "",
-  "updatedAt": ""
+  "userId": "ObjectId (ref: User)",
+  "issuingHospital": "City General Hospital",
+  "hospitalId": "ObjectId (ref: Hospital, optional)",
+  "certificateNumber": "CERT-2026-001",
+  "donationDate": "2026-09-15T00:00:00.000Z",
+  "certificateFileUrl": "uploads/certificates/abc-uuid.pdf",
+  "originalFileName": "donor_certificate.pdf",
+  "fileMimeType": "application/pdf",
+  "fileSize": 145020,
+  "status": "PENDING", // "PENDING" | "APPROVED" | "REJECTED" | "CLARIFICATION_REQUESTED"
+  "notes": "Annual voluntary donation",
+  "reviewedBy": "ObjectId (ref: User, optional)",
+  "reviewedAt": "2026-10-16T12:00:00.000Z",
+  "rejectionReason": null,
+  "clarificationNotes": null,
+  "assignedToRole": "HOSPITAL", // "HOSPITAL" | "BLOOD_BANK"
+  "history": [
+    {
+      "action": "SUBMITTED",
+      "status": "PENDING",
+      "performedBy": "ObjectId",
+      "timestamp": "2026-10-15T10:00:00.000Z",
+      "notes": "Certificate submitted by donor"
+    }
+  ],
+  "contactAttempts": [
+    {
+      "attemptedBy": "ObjectId",
+      "attemptedAt": "2026-10-16T11:00:00.000Z",
+      "notes": "Contacted hospital records desk",
+      "method": "PHONE"
+    }
+  ],
+  "createdAt": "2026-10-15T10:00:00.000Z",
+  "updatedAt": "2026-10-16T12:00:00.000Z"
 }
 ```
 
-Validation
-
-- Email must be unique.
-- Password must be hashed.
-- Phone number must be unique.
-- Blood group is required.
+Validation & Rules:
+- `userId` must be unique (one active certificate per user).
+- `status` defaults to `PENDING`.
+- File access is strictly restricted to the user who uploaded it and assigned hospital/blood bank accounts.
+- Direct downloads are not accessible via public static URLs; files are streamed via authenticated endpoints.
 
 ---
 
-# BloodInventory Collection
+# AuditLogs Collection
 
 ```json
 {
   "_id": "ObjectId",
-
-  "bloodBankId": "ObjectId",
-
-  "bloodBankName": "",
-
-  "inventory": {
-    "A+": 10,
-    "A-": 5,
-    "B+": 20,
-    "B-": 4,
-    "AB+": 2,
-    "AB-": 1,
-    "O+": 30,
-    "O-": 8
+  "action": "CERTIFICATE_APPROVED",
+  "entityType": "DonorCertificate",
+  "entityId": "ObjectId",
+  "performedBy": "ObjectId (ref: User)",
+  "role": "HOSPITAL",
+  "ownerId": "ObjectId (ref: User, optional)",
+  "assignedInstitutionId": "ObjectId (optional)",
+  "details": {
+    "action": "APPROVED",
+    "reason": "Verified record"
   },
-
-  "lastUpdated": "",
-
-  "createdAt": "",
-  "updatedAt": ""
+  "ipAddress": "127.0.0.1",
+  "userAgent": "Mozilla/5.0 ...",
+  "timestamp": "2026-10-16T12:00:00.000Z",
+  "createdAt": "2026-10-16T12:00:00.000Z",
+  "updatedAt": "2026-10-16T12:00:00.000Z"
 }
 ```
 
----
-
-# EmergencyRequests Collection
-
-```json
-{
-  "_id": "ObjectId",
-
-  "requestBy": "ObjectId",
-
-  "bloodGroup": "O-",
-
-  "unitsRequired": 2,
-
-  "hospital": "Apollo Hospital",
-
-  "state": "Karnataka",
-
-  "district": "Mysore",
-
-  "address": "Near Main Road",
-
-  "contactNumber": "9876543210",
-
-  "location": {
-    "latitude": 12.305,
-    "longitude": 76.655
-  },
-
-  "status": "Pending",
-
-  "approvedBy": null,
-
-  "createdAt": "",
-  "updatedAt": ""
-}
-```
-
-Status
-
-- Pending
-- Approved
-- Rejected
-- Completed
+Audit Rules:
+- Audit records are immutable (append-only).
+- Passwords, authorization tokens, secrets, and raw file buffers are sanitized before persistence.
+- Users query only audit records where they are the performer or resource owner.
 
 ---
 
@@ -139,107 +107,76 @@ Status
 ```json
 {
   "_id": "ObjectId",
-
   "receiverId": "ObjectId",
-
-  "title": "Blood Required",
-
-  "message": "O+ blood required at Apollo Hospital.",
-
-  "type": "Emergency",
-
+  "title": "Certificate Approved",
+  "message": "Your donor certificate has been verified.",
+  "type": "Approval",
+  "link": "/dashboard/certificate",
   "isRead": false,
-
   "createdAt": ""
 }
 ```
 
-Notification Types
-
+Notification Types:
 - Emergency
 - Approval
 - Rejection
+- Clarification
 - Inventory
 - System
-
----
-
-# Hospitals Collection
-
-```json
-{
-  "_id": "ObjectId",
-
-  "hospitalName": "Apollo Hospital",
-
-  "phone": "9876543210",
-
-  "address": "Mysore",
-
-  "location": {
-    "latitude": 12.305,
-    "longitude": 76.655
-  },
-
-  "createdAt": "",
-  "updatedAt": ""
-}
-```
 
 ---
 
 # Collection Relationships
 
 Users
-
 ↓
+DonorCertificates (1 : 1 active)
+↓
+Hospital / BloodBank (Review & Verification)
 
+Users
+↓
 EmergencyRequests
-
 ↓
-
 Notifications
 
-BloodInventory
-
-↓
-
-Hospital
-
 EmergencyRequests
-
 ↓
+Donor Eligibility (Certificate status must be APPROVED)
 
-Hospital
-
-BloodInventory
-
-↓
-
-Blood Bank
+AuditLogs
+(Captures user & institution lifecycle events: CERTIFICATE_SUBMITTED, CERTIFICATE_APPROVED, REQUEST_ACCEPTED, etc.)
 
 ---
 
 # Indexes
 
 Users
-
-- email
-- phone
+- email (unique)
+- phone (unique)
 - bloodGroup
 
-EmergencyRequests
+DonorCertificates
+- userId (unique)
+- status
+- hospitalId
+- assignedToRole
 
+AuditLogs
+- performedBy + timestamp
+- ownerId + timestamp
+- entityType + entityId
+
+EmergencyRequests
 - bloodGroup
 - district
 - status
 
 Notifications
-
-- receiverId
+- receiverId + createdAt
 
 Hospitals
-
 - location
 
 ---

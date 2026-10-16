@@ -297,6 +297,19 @@ export default function DonorCertificateCard() {
       }
       formData.append("certificate", selectedFile);
 
+      if (selectedHospitalMode === "preset") {
+        const matched = hospitals.find((h) => h.name === hospitalName);
+        if (matched?._id) {
+          formData.append("issuingHospitalId", matched._id);
+        }
+        if (matched?.district) {
+          formData.append("hospitalDistrict", matched.district);
+        }
+        if (matched?.state) {
+          formData.append("hospitalState", matched.state);
+        }
+      }
+
       const updated = await dashboardService.submitCertificate(
         formData,
         (percent) => {
@@ -309,6 +322,9 @@ export default function DonorCertificateCard() {
       setSelectedFile(null);
       setUploadProgress(null);
       toast.success("Medical certificate submitted successfully for simulated verification.");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("certificate_updated", { detail: updated }));
+      }
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
@@ -349,6 +365,7 @@ export default function DonorCertificateCard() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      id="donor-certificate"
       role="region"
       aria-label="Donor Certificate Verification"
       className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
@@ -740,6 +757,21 @@ export default function DonorCertificateCard() {
                       <span>{cert?.expiryDate ? formatDateSafe(cert.expiryDate) : "Does not expire"}</span>
                     </p>
                   </div>
+
+                  {/* Verification Routing & Facility Badge */}
+                  {cert?.isUnregisteredHospital && (
+                    <div className="col-span-full p-2.5 rounded-xl border border-blue-200/60 dark:border-blue-900/40 bg-blue-50/60 dark:bg-blue-950/20 text-xs text-blue-800 dark:text-blue-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <span className="font-medium flex items-center gap-1.5">
+                        <FiShield className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                        Unregistered Issuing Hospital — Universal Demo Verification Assigned
+                      </span>
+                      {cert.assignedBloodBank && (
+                        <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-100/70 dark:bg-blue-900/40 px-2 py-0.5 rounded-md">
+                          Reviewer: {cert.assignedBloodBank}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Uploaded File Reference & Secure Download */}

@@ -6,6 +6,7 @@ import ProtectedRoute from "@/components/dashboard/ProtectedRoute";
 import AdminStatsCards from "@/components/dashboard/admin/AdminStatsCards";
 import BloodInventoryTable from "@/components/dashboard/admin/BloodInventoryTable";
 import EmergencyRequestsTable from "@/components/dashboard/admin/EmergencyRequestsTable";
+import BloodBankVerificationQueue from "@/components/dashboard/admin/BloodBankVerificationQueue";
 import HospitalManagement from "@/components/dashboard/admin/HospitalManagement";
 
 export default function AdminDashboardPage() {
@@ -17,6 +18,9 @@ export default function AdminDashboardPage() {
           <BloodInventoryTable />
           <EmergencyRequestsTable />
         </div>
+
+        {/* External Certificate Verification Queue (Task 4) */}
+        <BloodBankVerificationQueue />
 
         {/* Stats Cards */}
         <AdminStatsCards />
