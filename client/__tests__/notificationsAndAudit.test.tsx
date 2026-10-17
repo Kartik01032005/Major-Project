@@ -54,7 +54,7 @@ describe("BloodLink — Notifications Panel Frontend Test Suite (Task 7)", () =>
       type: "Approval",
       title: "Medical Certificate Verified",
       message: "Your medical certificate has been accepted and verified.",
-      link: "/dashboard#donor-certificate",
+      link: "/dashboard/certificate",
       isRead: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -118,7 +118,7 @@ describe("BloodLink — Notifications Panel Frontend Test Suite (Task 7)", () =>
 
     await waitFor(() => {
       expect(mockMarkRead).not.toHaveBeenCalled();
-      expect(mockPush).toHaveBeenCalledWith("/dashboard#donor-certificate");
+      expect(mockPush).toHaveBeenCalledWith("/dashboard/certificate");
     });
   });
 

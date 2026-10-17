@@ -146,6 +146,13 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
                           markRead(n._id);
                           if (n.link) {
                             setNotifOpen(false);
+                            if (
+                              n.link.includes("certificate") ||
+                              (n.title && n.title.toLowerCase().includes("certificate"))
+                            ) {
+                              router.push("/dashboard/certificate");
+                              return;
+                            }
                             router.push(n.link);
                           }
                         }}

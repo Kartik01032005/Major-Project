@@ -140,7 +140,7 @@ describe("BloodLink — Notifications and Audit Logging Test Suite (Task 7)", ()
       );
       expect(donorSubNotif).toBeDefined();
       expect(donorSubNotif?.type).toBe("System");
-      expect(donorSubNotif?.link).toBe("/dashboard#donor-certificate");
+      expect(donorSubNotif?.link).toBe("/dashboard/certificate");
       expect(donorSubNotif?.isRead).toBe(false);
 
       // 2. Verify Assigned Hospital received review assignment notification
@@ -229,7 +229,7 @@ describe("BloodLink — Notifications and Audit Logging Test Suite (Task 7)", ()
       });
       expect(donorNotifs.length).toBe(1);
       expect(donorNotifs[0].title).toBe("Medical Certificate Verified");
-      expect(donorNotifs[0].link).toBe("/dashboard#donor-certificate");
+      expect(donorNotifs[0].link).toBe("/dashboard/certificate");
 
       // Verify audit log entry
       const audit = await AuditLog.findOne({

@@ -47,11 +47,18 @@ export default function NotificationsPanel() {
     return `${Math.floor(hrs / 24)}${t("common_ago_days")}`;
   }
 
-  const handleNotificationClick = async (n: { _id: string; isRead: boolean; link?: string }) => {
+  const handleNotificationClick = async (n: { _id: string; isRead: boolean; link?: string; title?: string }) => {
     if (!n.isRead) {
       await markRead(n._id);
     }
     if (n.link) {
+      if (
+        n.link.includes("certificate") ||
+        (n.title && n.title.toLowerCase().includes("certificate"))
+      ) {
+        router.push("/dashboard/certificate");
+        return;
+      }
       router.push(n.link);
     }
   };

@@ -527,7 +527,7 @@ export const submitCertificate = async (req: Request, res: Response): Promise<vo
       title: "Medical Certificate Submitted",
       message: `Your medical certificate from ${certificate.issuingHospital} has been submitted for demo verification.`,
       type: "System",
-      link: "/dashboard#donor-certificate",
+      link: "/dashboard/certificate",
     });
 
     // Notify assigned institution
@@ -1087,7 +1087,7 @@ export const reviewCertificate = async (req: Request, res: Response): Promise<vo
         title: notifTitle,
         message: notifMessage,
         type: notifType,
-        link: "/dashboard#donor-certificate",
+        link: "/dashboard/certificate",
       });
     } catch (notifErr) {
       console.error("Failed to deliver review notification to donor:", notifErr);
