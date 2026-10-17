@@ -23,7 +23,8 @@ import {
   FiInfo,
 } from "react-icons/fi";
 import { FaHospital, FaDroplet } from "react-icons/fa6";
-import { useToast } from "@/context";
+import { useToast, useAuth } from "@/context";
+import { useBodyScrollLock } from "@/hooks";
 import { dashboardService } from "@/services";
 import {
   HospitalQueueSubmission,
@@ -123,7 +124,19 @@ export default function HospitalVerificationQueue() {
   const [modalError, setModalError] = useState<string | null>(null);
   const [downloadingDocId, setDownloadingDocId] = useState<string | null>(null);
 
+  let user: any = null;
+  try {
+    const auth = useAuth();
+    user = auth?.user;
+  } catch {
+    // Isolated test environment fallback
+  }
+
+  const roleUpper = (user?.role || "").toUpperCase();
+  const isAuthorized = !user || roleUpper === "HOSPITAL";
+
   const fetchQueue = async () => {
+    if (!isAuthorized) return;
     setLoading(true);
     try {
       const res = await dashboardService.getHospitalCertificateQueue({
@@ -139,6 +152,9 @@ export default function HospitalVerificationQueue() {
         setTotalPages(res.pagination?.totalPages || 1);
       }
     } catch (err: any) {
+      if (err?.response?.status === 403 || err?.response?.status === 401) {
+        return;
+      }
       console.error("Failed to load hospital verification queue:", err);
       toast.error("Failed to load verification queue.");
     } finally {
@@ -147,8 +163,10 @@ export default function HospitalVerificationQueue() {
   };
 
   useEffect(() => {
-    fetchQueue();
-  }, [statusFilter, page]);
+    if (isAuthorized) {
+      fetchQueue();
+    }
+  }, [statusFilter, page, isAuthorized]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,6 +187,19 @@ export default function HospitalVerificationQueue() {
     setReviewReason("");
     setModalError(null);
   };
+
+  useBodyScrollLock(Boolean(selectedSubmission));
+
+  useEffect(() => {
+    if (!selectedSubmission) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleCloseReview();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedSubmission]);
 
   const handleDownloadDoc = async (id: string, originalName?: string) => {
     setDownloadingDocId(id);
@@ -252,6 +283,10 @@ export default function HospitalVerificationQueue() {
       setSubmittingReview(false);
     }
   };
+
+  if (!isAuthorized) {
+    return null;
+  }
 
   return (
     <div
@@ -550,20 +585,22 @@ export default function HospitalVerificationQueue() {
       <AnimatePresence>
         {selectedSubmission && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto"
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/75 backdrop-blur-sm overflow-hidden"
             role="dialog"
             aria-modal="true"
             aria-labelledby="review-modal-title"
+            onClick={handleCloseReview}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.2 }}
-              className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden my-8"
+              className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(760px,calc(100dvh-32px))] my-auto"
+              onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
                     <FiShield size={20} />
@@ -596,7 +633,7 @@ export default function HospitalVerificationQueue() {
               </div>
 
               {/* Modal Body */}
-              <div className="p-5 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
                 {modalError && (
                   <div className="p-3 text-xs bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 rounded-xl border border-red-200 dark:border-red-900/50 flex items-center gap-2">
                     <FiAlertTriangle className="shrink-0 text-red-600" />
@@ -841,7 +878,7 @@ export default function HospitalVerificationQueue() {
               </div>
 
               {/* Modal Footer */}
-              <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-slate-800/20">
+              <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-slate-800/20 shrink-0">
                 <button
                   type="button"
                   onClick={handleCloseReview}

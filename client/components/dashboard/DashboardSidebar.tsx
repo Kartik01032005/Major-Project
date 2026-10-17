@@ -50,9 +50,9 @@ export default function DashboardSidebar({
     { label: t("nav_home") || "Home",        href: "/",                           icon: <FiHome size={18} /> },
     { label: t("sidebar_overview"),          href: "/dashboard",                  icon: <FiGrid size={18} /> },
     { label: t("sidebar_my_profile"),        href: "/dashboard/profile",          icon: <FiUser size={18} /> },
+    { label: "Medical Certificate",          href: "/dashboard/certificate",      icon: <FiShield size={18} /> },
     { label: t("sidebar_emergency_request"), href: "/dashboard/emergency",        icon: <FiAlertCircle size={18} /> },
     { label: t("sidebar_my_requests"),       href: "/dashboard/requests",         icon: <FiList size={18} /> },
-    { label: t("sidebar_notifications"),     href: "/dashboard/notifications",    icon: <FiBell size={18} /> },
     { label: t("sidebar_nearby_banks"),      href: "/dashboard/nearby",           icon: <FiMap size={18} /> },
     { label: t("sidebar_settings"),          href: "/dashboard/settings",         icon: <FiSettings size={18} /> },
   ];
@@ -71,7 +71,7 @@ export default function DashboardSidebar({
     { label: t("nav_home") || "Home",               href: "/",                           icon: <FiHome size={18} /> },
     { label: "Hospital Profile",                    href: "/dashboard/profile",          icon: <FiUser size={18} /> },
     { label: "Certificate Verification Queue",      href: "/dashboard/hospital",         icon: <FiShield size={18} /> },
-    { label: t("sidebar_my_requests"),             href: "/dashboard/requests",         icon: <FiList size={18} /> },
+    { label: t("sidebar_emergency_requests") || "Emergency Requests", href: "/dashboard/requests", icon: <FiAlertCircle size={18} /> },
     { label: t("sidebar_nearby_banks"),            href: "/dashboard/nearby",           icon: <FiMap size={18} /> },
     { label: t("sidebar_settings"),                 href: "/dashboard/settings",         icon: <FiSettings size={18} /> },
   ];

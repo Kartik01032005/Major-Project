@@ -14,6 +14,7 @@ import {
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useTranslation } from "@/context";
+import { useBodyScrollLock } from "@/hooks";
 
 interface DonationGuidelinesModalProps {
   isOpen: boolean;
@@ -38,37 +39,30 @@ export default function DonationGuidelinesModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Lock body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
+  // Lock body & dashboard scroll when modal is open
+  useBodyScrollLock(isOpen);
 
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-sm overflow-y-auto"
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/75 backdrop-blur-sm overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="guidelines-modal-title"
+        onClick={onClose}
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 12 }}
           transition={{ duration: 0.25 }}
-          className="relative w-full max-w-3xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-8"
+          className="relative w-full max-w-3xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(760px,calc(100dvh-32px))] my-auto"
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
             <div className="flex items-center gap-3">
               <span className="w-10 h-10 rounded-2xl bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center text-lg flex-shrink-0">
                 <FaDroplet size={18} />
@@ -96,7 +90,7 @@ export default function DonationGuidelinesModal({
           </div>
 
           {/* Tab Navigation — 4-column grid on mobile so all 4 tabs fit cleanly without cutoff, flex row on sm+ */}
-          <div className="grid grid-cols-4 gap-1 px-2 pt-2 sm:flex sm:items-center sm:gap-1 sm:px-6 sm:pt-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="grid grid-cols-4 gap-1 px-2 pt-2 sm:flex sm:items-center sm:gap-1 sm:px-6 sm:pt-3 border-b border-slate-100 dark:border-slate-800 shrink-0">
             <button
               onClick={() => setActiveTab("core")}
               className={`px-1.5 py-2 sm:px-4 sm:py-2.5 text-[10px] sm:text-xs font-semibold rounded-t-xl transition-all border-b-2 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 text-center ${
@@ -147,7 +141,7 @@ export default function DonationGuidelinesModal({
           </div>
 
           {/* Modal Body */}
-          <div className="p-6 max-h-[65vh] overflow-y-auto space-y-6 text-sm">
+          <div className="p-6 overflow-y-auto space-y-6 text-sm flex-1">
             {/* Tab 1: Core Criteria */}
             {activeTab === "core" && (
               <div className="space-y-4">
@@ -409,7 +403,7 @@ export default function DonationGuidelinesModal({
           </div>
 
           {/* Footer Notice & Close Button */}
-          <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
             <div className="flex items-start gap-2 text-slate-500 dark:text-slate-400 text-[11px] leading-tight">
               <FiAlertTriangle className="text-amber-500 flex-shrink-0 mt-0.5" size={13} />
               <span>

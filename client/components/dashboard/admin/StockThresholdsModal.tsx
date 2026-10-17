@@ -1,9 +1,9 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSliders, FiCheck, FiX, FiInfo } from "react-icons/fi";
 import { useDashboard } from "@/context";
+import { useBodyScrollLock } from "@/hooks";
 import { AvailabilityThresholds } from "@/types";
 
 interface StockThresholdsModalProps {
@@ -29,6 +29,17 @@ export default function StockThresholdsModal({ isOpen, onClose }: StockThreshold
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState<AvailabilityThresholds>(thresholds ?? DEFAULT_THRESHOLDS);
+
+  useBodyScrollLock(isOpen);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -63,15 +74,21 @@ export default function StockThresholdsModal({ isOpen, onClose }: StockThreshold
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/75 backdrop-blur-sm overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        onClick={onClose}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]"
+          className="w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(700px,calc(100dvh-32px))] my-auto"
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
             <div className="flex items-center gap-3">
               <span className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600">
                 <FiSliders size={20} />
@@ -94,7 +111,7 @@ export default function StockThresholdsModal({ isOpen, onClose }: StockThreshold
           </div>
 
           {/* Body */}
-          <div className="p-6 overflow-y-auto space-y-4">
+          <div className="p-6 overflow-y-auto space-y-4 flex-1">
             <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 flex items-start gap-2.5 text-xs text-blue-700 dark:text-blue-400">
               <FiInfo size={16} className="mt-0.5 shrink-0" />
               <span>
@@ -128,7 +145,7 @@ export default function StockThresholdsModal({ isOpen, onClose }: StockThreshold
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+          <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3 shrink-0">
             <button
               type="button"
               onClick={onClose}

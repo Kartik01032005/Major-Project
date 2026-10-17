@@ -662,8 +662,8 @@ export default function HospitalProfileCard() {
                 <FiAlertCircle size={16} />
               </div>
               <div>
-                <p className="font-semibold text-slate-900 dark:text-white">Blood Requests</p>
-                <p className="text-xs text-slate-500">View hospital broadcasts</p>
+                <p className="font-semibold text-slate-900 dark:text-white">Emergency Requests</p>
+                <p className="text-xs text-slate-500">View emergency requests</p>
               </div>
             </div>
             <FiExternalLink className="text-slate-400 group-hover:text-red-600" size={14} />

@@ -15,7 +15,7 @@ export default function MyRequestsPage() {
   return (
     <ProtectedRoute requiredRole={["user", "USER", "HOSPITAL"]}>
       <div className="max-w-4xl mx-auto space-y-6">
-        <h1 className="sr-only">My Requests</h1>
+        <h1 className="sr-only">{isHospital ? "Emergency Requests" : "My Requests"}</h1>
         <ActiveRequestsCard
           onNewRequest={isHospital ? undefined : () => router.push("/dashboard/emergency")}
         />

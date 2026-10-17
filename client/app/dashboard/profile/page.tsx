@@ -21,7 +21,7 @@ export default function ProfilePage() {
         ) : (
           <>
             <ProfileCard />
-            <DonorCertificateCard />
+            {normRole === "USER" && <DonorCertificateCard />}
           </>
         )}
       </div>

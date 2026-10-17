@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiClock, FiFileText, FiX, FiLayers, FiRefreshCw, FiAlertTriangle } from "react-icons/fi";
 import { useDashboard } from "@/context";
+import { useBodyScrollLock } from "@/hooks";
 import { InventoryUploadLogItem } from "@/types";
 
 interface UploadHistoryModalProps {
@@ -15,19 +16,36 @@ export default function UploadHistoryModal({ isOpen, onClose }: UploadHistoryMod
   const { uploadHistory } = useDashboard();
   const [selectedLog, setSelectedLog] = useState<InventoryUploadLogItem | null>(null);
 
+  useBodyScrollLock(isOpen);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/75 backdrop-blur-sm overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        onClick={onClose}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="w-full max-w-3xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]"
+          className="w-full max-w-3xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(720px,calc(100dvh-32px))] my-auto"
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
             <div className="flex items-center gap-3">
               <span className="p-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600">
                 <FiClock size={20} />
@@ -50,7 +68,7 @@ export default function UploadHistoryModal({ isOpen, onClose }: UploadHistoryMod
           </div>
 
           {/* Body */}
-          <div className="p-6 overflow-y-auto space-y-4">
+          <div className="p-6 overflow-y-auto space-y-4 flex-1">
             {/* Log Details / Breakdown Card — Rendered at TOP for instant visibility without scrolling */}
             {selectedLog && (
               <motion.div

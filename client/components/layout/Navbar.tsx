@@ -20,6 +20,7 @@ import {
   FiSettings,
   FiPackage,
   FiCrosshair,
+  FiShield,
 } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { BiSolidDroplet } from "react-icons/bi";
@@ -166,11 +167,20 @@ export default function Navbar() {
     },
   ];
 
-  const dashboardNavLinks = user?.role === "admin" ? [
+  const roleUpper = (user?.role || "").toUpperCase();
+  const isBloodBank = roleUpper === "BLOOD_BANK" || user?.role === "admin";
+  const isHospital = roleUpper === "HOSPITAL";
+
+  const dashboardNavLinks = isBloodBank ? [
     {
       label: t("sidebar_overview") || "Overview",
       href: "/dashboard/admin",
       icon: <FiGrid size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: "Blood Bank Profile",
+      href: "/dashboard/profile",
+      icon: <FiUser size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
     },
     {
       label: t("sidebar_blood_inventory") || "Blood Inventory",
@@ -192,6 +202,32 @@ export default function Navbar() {
       href: "/dashboard/settings",
       icon: <FiSettings size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
     },
+  ] : isHospital ? [
+    {
+      label: "Hospital Profile",
+      href: "/dashboard/profile",
+      icon: <FiUser size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: "Certificate Verification Queue",
+      href: "/dashboard/hospital",
+      icon: <FiShield size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_emergency_requests") || "Emergency Requests",
+      href: "/dashboard/requests",
+      icon: <FiAlertCircle size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_nearby_banks") || "Nearby Banks",
+      href: "/dashboard/nearby",
+      icon: <FiMap size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
+      label: t("sidebar_settings") || "Settings",
+      href: "/dashboard/settings",
+      icon: <FiSettings size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
   ] : [
     {
       label: t("sidebar_overview") || "Overview",
@@ -204,6 +240,11 @@ export default function Navbar() {
       icon: <FiUser size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
     },
     {
+      label: "Medical Certificate",
+      href: "/dashboard/certificate",
+      icon: <FiShield size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
+    },
+    {
       label: t("sidebar_emergency_request") || "Emergency Request",
       href: "/dashboard/emergency",
       icon: <FiAlertCircle size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
@@ -212,11 +253,6 @@ export default function Navbar() {
       label: t("sidebar_my_requests") || "My Requests",
       href: "/dashboard/requests",
       icon: <FiList size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
-    },
-    {
-      label: t("sidebar_notifications") || "Notifications",
-      href: "/dashboard/notifications",
-      icon: <FiBell size={18} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />,
     },
     {
       label: t("sidebar_nearby_banks") || "Nearby Banks",

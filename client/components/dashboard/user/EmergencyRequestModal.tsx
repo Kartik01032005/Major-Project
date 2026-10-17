@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiAlertCircle, FiMapPin, FiPhone, FiCheck } from "react-icons/fi";
 import { FaDroplet } from "react-icons/fa6";
 import { useAuth, useDashboard, useTranslation, useToast } from "@/context";
+import { useBodyScrollLock } from "@/hooks";
 import { BloodGroup, UserGpsLocation, SelectedHospital } from "@/types";
 import Select from "@/components/ui/Select";
 import { ALL_STATES, getDistrictsByState } from "@/utils/locations";
@@ -39,6 +40,8 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
   // Selected hospital location metadata
   const [selectedHospital, setSelectedHospital] = useState<SelectedHospital | null>(null);
   const [isAddressUserModified, setIsAddressUserModified] = useState(false);
+
+  useBodyScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
@@ -165,11 +168,11 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
               "fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
               "w-[calc(100vw-2rem)] max-w-lg",
               "bg-white dark:bg-slate-900 rounded-2xl shadow-2xl",
-              "border border-slate-200 dark:border-slate-800 overflow-hidden",
+              "border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(720px,calc(100dvh-32px))]",
             ].join(" ")}
           >
             {/* Header */}
-            <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-red-50/50 dark:bg-red-950/20">
+            <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-red-50/50 dark:bg-red-950/20 shrink-0">
               <div className="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-950/40 flex items-center justify-center text-red-600">
                 <FiAlertCircle size={20} />
               </div>
@@ -223,7 +226,7 @@ export default function EmergencyRequestModal({ open, onClose }: EmergencyReques
                   onSubmit={handleSubmit}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto"
+                  className="px-6 py-5 space-y-4 overflow-y-auto flex-1"
                   noValidate
                 >
                   {/* Blood Group */}

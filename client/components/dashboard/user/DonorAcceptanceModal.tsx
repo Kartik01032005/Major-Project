@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiAlertTriangle, FiX, FiCheck, FiLoader } from "react-icons/fi";
 import { useTranslation } from "@/context";
+import { useBodyScrollLock } from "@/hooks";
 import { EmergencyRequest } from "@/types";
 
 interface DonorAcceptanceModalProps {
@@ -25,6 +26,20 @@ export default function DonorAcceptanceModal({
 }: DonorAcceptanceModalProps) {
   const { t } = useTranslation();
 
+  const isModalOpen = open && Boolean(request);
+  useBodyScrollLock(isModalOpen);
+
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !loading) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen, loading, onClose]);
+
   return (
     <AnimatePresence>
       {open && request && (
@@ -41,7 +56,10 @@ export default function DonorAcceptanceModal({
           />
 
           {/* Modal Container */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto pointer-events-auto">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden pointer-events-auto"
+            onClick={loading ? undefined : onClose}
+          >
             <motion.div
               key="modal-content"
               role="dialog"
@@ -51,7 +69,7 @@ export default function DonorAcceptanceModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 16 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden"
+              className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(600px,calc(100dvh-32px))] my-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}

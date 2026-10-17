@@ -21,6 +21,7 @@ jest.mock("../context", () => ({
         sidebar_overview: "Overview",
         sidebar_my_profile: "My Profile",
         sidebar_emergency_request: "Emergency Request",
+        sidebar_emergency_requests: "Emergency Requests",
         sidebar_my_requests: "My Requests",
         sidebar_notifications: "Notifications",
         sidebar_nearby_banks: "Nearby Banks",
@@ -171,7 +172,7 @@ describe("BloodLink — Hospital Section All Links Functional", () => {
     expect(labels[2]).toBe("Certificate Verification Queue");
     expect(links[2]).toHaveAttribute("href", "/dashboard/hospital");
 
-    expect(labels[3]).toBe("My Requests");
+    expect(labels[3]).toBe("Emergency Requests");
     expect(links[3]).toHaveAttribute("href", "/dashboard/requests");
 
     expect(labels[4]).toBe("Nearby Banks");
@@ -206,7 +207,7 @@ describe("BloodLink — Hospital Section All Links Functional", () => {
     render(<MyRequestsPage />);
 
     // Header and active requests load
-    expect(await screen.findByText("Active Blood Requests")).toBeInTheDocument();
+    expect((await screen.findAllByText("Emergency Requests")).length).toBeGreaterThanOrEqual(1);
     // The hospital request for Apollo BGS is listed
     expect(await screen.findByText("Apollo BGS Hospital Mysore")).toBeInTheDocument();
     // Emergency Request creation button MUST NOT be present

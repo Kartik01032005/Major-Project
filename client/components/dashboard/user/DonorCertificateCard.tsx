@@ -255,10 +255,10 @@ export default function DonorCertificateCard() {
     const defaultHospital = hospitals.length > 0 ? hospitals[0].name : "Apollo BGS Hospital Mysore";
     const hospitalName =
       selectedHospitalMode === "preset"
-        ? (hospitalSelectValue || defaultHospital).trim()
+        ? (hospitalSelectValue === "__manual__" ? "" : (hospitalSelectValue || defaultHospital)).trim()
         : manualHospitalName.trim();
 
-    if (!hospitalName) {
+    if (!hospitalName || hospitalName === "__manual__") {
       setFormError("Please select or specify the issuing hospital.");
       return;
     }
@@ -297,17 +297,18 @@ export default function DonorCertificateCard() {
       }
       formData.append("certificate", selectedFile);
 
-      if (selectedHospitalMode === "preset") {
-        const matched = hospitals.find((h) => h.name === hospitalName);
-        if (matched?._id) {
-          formData.append("issuingHospitalId", matched._id);
-        }
-        if (matched?.district) {
-          formData.append("hospitalDistrict", matched.district);
-        }
-        if (matched?.state) {
-          formData.append("hospitalState", matched.state);
-        }
+      // Match hospital against registered facilities (preset or manually typed)
+      const matched = hospitals.find(
+        (h) => h.name.trim().toLowerCase() === hospitalName.trim().toLowerCase()
+      );
+      if (matched?._id) {
+        formData.append("issuingHospitalId", matched._id);
+      }
+      if (matched?.district) {
+        formData.append("hospitalDistrict", matched.district);
+      }
+      if (matched?.state) {
+        formData.append("hospitalState", matched.state);
       }
 
       const updated = await dashboardService.submitCertificate(
@@ -359,6 +360,12 @@ export default function DonorCertificateCard() {
 
   const currentStatus: CertificateStatus = cert?.status || "NOT_SUBMITTED";
   const config = STATUS_CONFIG[currentStatus] || STATUS_CONFIG.NOT_SUBMITTED;
+
+  // Medical donor certificate submission is strictly for individual donors, not institutional accounts
+  const userRole = (user?.role || "").toUpperCase();
+  if (user && (userRole === "BLOOD_BANK" || userRole === "ADMIN" || userRole === "HOSPITAL")) {
+    return null;
+  }
 
   return (
     <motion.div
@@ -497,32 +504,80 @@ export default function DonorCertificateCard() {
               </div>
 
               {selectedHospitalMode === "preset" ? (
-                <div className="relative">
-                  <select
-                    value={hospitalSelectValue}
-                    onChange={(e) => setHospitalSelectValue(e.target.value)}
-                    className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                  >
-                    {hospitals.map((h) => (
-                      <option key={h._id || h.name} value={h.name}>
-                        {h.name} — {h.district}, {h.state}
+                <div className="space-y-1.5">
+                  <div className="relative">
+                    <select
+                      value={hospitalSelectValue}
+                      onChange={(e) => {
+                        if (e.target.value === "__manual__") {
+                          setSelectedHospitalMode("manual");
+                          setManualHospitalName("");
+                        } else {
+                          setHospitalSelectValue(e.target.value);
+                        }
+                      }}
+                      className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                    >
+                      {hospitals.map((h) => (
+                        <option key={h._id || h.name} value={h.name}>
+                          {h.name} — {h.district}, {h.state}
+                        </option>
+                      ))}
+                      {hospitals.length === 0 && (
+                        <option value="Apollo BGS Hospital Mysore">
+                          Apollo BGS Hospital Mysore
+                        </option>
+                      )}
+                      <option value="__manual__" className="font-semibold text-red-600">
+                        ➕ Other hospital (type manually)...
                       </option>
-                    ))}
-                    {hospitals.length === 0 && (
-                      <option value="Apollo BGS Hospital Mysore">
-                        Apollo BGS Hospital Mysore
-                      </option>
-                    )}
-                  </select>
+                    </select>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-0.5">
+                    <span>Can&apos;t find your hospital in the list?</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedHospitalMode("manual");
+                        setManualHospitalName("");
+                      }}
+                      className="text-red-600 dark:text-red-400 font-semibold hover:underline inline-flex items-center gap-1"
+                    >
+                      Type name manually →
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <input
-                  type="text"
-                  placeholder="e.g., City General Hospital"
-                  value={manualHospitalName}
-                  onChange={(e) => setManualHospitalName(e.target.value)}
-                  className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                />
+                <div className="space-y-1.5">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      list="hospitals-datalist"
+                      placeholder="e.g., Manju Hospital, City General Hospital"
+                      value={manualHospitalName}
+                      onChange={(e) => setManualHospitalName(e.target.value)}
+                      className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                      autoFocus
+                    />
+                    <datalist id="hospitals-datalist">
+                      {hospitals.map((h) => (
+                        <option key={h._id || h.name} value={h.name}>
+                          {h.name} ({h.district}, {h.state})
+                        </option>
+                      ))}
+                    </datalist>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 px-0.5">
+                    <span>Type any custom hospital name or select suggestion</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedHospitalMode("preset")}
+                      className="text-red-600 dark:text-red-400 font-semibold hover:underline inline-flex items-center gap-1"
+                    >
+                      ← Back to dropdown list
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
 

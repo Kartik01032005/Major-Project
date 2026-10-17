@@ -29,7 +29,8 @@ import {
   FiPlus,
 } from "react-icons/fi";
 import { FaHospital, FaDroplet } from "react-icons/fa6";
-import { useToast } from "@/context";
+import { useToast, useAuth } from "@/context";
+import { useBodyScrollLock } from "@/hooks";
 import { dashboardService } from "@/services";
 import {
   BloodBankQueueSubmission,
@@ -136,7 +137,32 @@ export default function BloodBankVerificationQueue() {
   const [contactOutcome, setContactOutcome] = useState("Hospital Contacted");
   const [contactLoading, setContactLoading] = useState(false);
 
+  useBodyScrollLock(Boolean(selectedSubmission));
+
+  useEffect(() => {
+    if (!selectedSubmission) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedSubmission(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedSubmission]);
+
+  let user: any = null;
+  try {
+    const auth = useAuth();
+    user = auth?.user;
+  } catch {
+    // Fallback for tests or unmounted context
+  }
+
+  const roleUpper = (user?.role || "").toUpperCase();
+  const isAuthorized = !user || roleUpper === "BLOOD_BANK" || user.role === "admin";
+
   const fetchQueue = async () => {
+    if (!isAuthorized) return;
     try {
       setLoading(true);
       const res = await dashboardService.getBloodBankCertificateQueue({
@@ -154,6 +180,10 @@ export default function BloodBankVerificationQueue() {
         }
       }
     } catch (err: any) {
+      if (err?.response?.status === 403 || err?.response?.status === 401) {
+        // Gracefully ignore 403/401 when role is not blood bank
+        return;
+      }
       console.error("Failed to fetch Blood Bank certificate queue:", err);
       toast.error(
         err?.response?.data?.message ||
@@ -165,8 +195,10 @@ export default function BloodBankVerificationQueue() {
   };
 
   useEffect(() => {
-    fetchQueue();
-  }, [page, statusFilter]);
+    if (isAuthorized) {
+      fetchQueue();
+    }
+  }, [page, statusFilter, isAuthorized]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -280,6 +312,10 @@ export default function BloodBankVerificationQueue() {
       setActionLoading(false);
     }
   };
+
+  if (!isAuthorized) {
+    return null;
+  }
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden p-6 space-y-6">
@@ -540,15 +576,21 @@ export default function BloodBankVerificationQueue() {
       {/* Review & Verification Modal */}
       <AnimatePresence>
         {selectedSubmission && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/75 backdrop-blur-sm overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            onClick={() => setSelectedSubmission(null)}
+          >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden my-8"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(780px,calc(100dvh-32px))] my-auto"
+              onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <span>Certificate Review:</span>
@@ -569,7 +611,7 @@ export default function BloodBankVerificationQueue() {
               </div>
 
               {/* Modal Body */}
-              <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto text-xs">
+              <div className="p-6 space-y-6 overflow-y-auto flex-1 text-xs">
                 {/* Demo Notice */}
                 <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2.5 text-amber-800 dark:text-amber-300">
                   <FiInfo className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-600" />
@@ -992,7 +1034,7 @@ export default function BloodBankVerificationQueue() {
               </div>
 
               {/* Modal Footer */}
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex justify-end shrink-0">
                 <button
                   type="button"
                   onClick={() => setSelectedSubmission(null)}

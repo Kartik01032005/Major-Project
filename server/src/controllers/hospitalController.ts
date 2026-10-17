@@ -2,16 +2,44 @@ import { Request, Response } from "express";
 import { validationResult } from "express-validator";
 import Hospital from "../models/Hospital.js";
 
+import User from "../models/User.js";
+
 // @desc    Get all hospitals
 // @route   GET /api/hospitals
 // @access  Private
 export const getHospitals = async (req: Request, res: Response): Promise<void> => {
   try {
     const hospitals = await Hospital.find({}).sort({ createdAt: -1 });
+
+    // Also include registered users with role HOSPITAL
+    const hospitalUsers = await User.find({ role: "HOSPITAL" }).select(
+      "name organizationName address location phone"
+    );
+
+    const combined = [...hospitals];
+    for (const u of hospitalUsers) {
+      const hospName = u.organizationName || u.name;
+      const alreadyExists = combined.some(
+        (h) => h.name.toLowerCase() === hospName.toLowerCase()
+      );
+      if (!alreadyExists) {
+        combined.push({
+          _id: u._id,
+          name: hospName,
+          address: u.address || "",
+          state: u.location?.state || "Karnataka",
+          district: u.location?.district || "Dakshina Kannada (Mangalore)",
+          phone: u.phone || "",
+          latitude: u.location?.latitude || 0,
+          longitude: u.location?.longitude || 0,
+        } as any);
+      }
+    }
+
     res.status(200).json({
       success: true,
       message: "Hospitals retrieved successfully",
-      data: hospitals,
+      data: combined,
     });
   } catch (error: any) {
     console.error("❌ Get hospitals error:", error);

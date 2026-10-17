@@ -293,7 +293,7 @@ describe("BloodLink — Hospital Profile Section Test Suite", () => {
       render(<HospitalProfileCard />);
 
       expect(screen.getByRole("link", { name: /Hospital Portal/i })).toHaveAttribute("href", "/dashboard/hospital");
-      expect(screen.getByRole("link", { name: /Blood Requests/i })).toHaveAttribute("href", "/dashboard/requests");
+      expect(screen.getByRole("link", { name: /Emergency Requests/i })).toHaveAttribute("href", "/dashboard/requests");
       expect(screen.getByRole("link", { name: /Nearby Blood Banks/i })).toHaveAttribute("href", "/dashboard/nearby");
     });
   });

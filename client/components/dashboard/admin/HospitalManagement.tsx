@@ -1,9 +1,9 @@
 "use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiCrosshair, FiPlus, FiEdit3, FiTrash2, FiPhone, FiMapPin, FiCheck, FiX, FiAlertTriangle } from "react-icons/fi";
 import { useDashboard, useTranslation } from "@/context";
+import { useBodyScrollLock } from "@/hooks";
 import { Hospital } from "@/types";
 import Select from "@/components/ui/Select";
 import { ALL_STATES, getDistrictsByState } from "@/utils/locations";
@@ -34,6 +34,17 @@ function HospitalModal({
   const { t } = useTranslation();
   const [form, setForm] = useState<HospitalFormData>(initial ?? EMPTY_FORM);
   const [errors, setErrors] = useState<Partial<HospitalFormData>>({});
+
+  useBodyScrollLock(open);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
 
   const set = (field: keyof HospitalFormData, value: string) => {
     setForm((p) => ({ ...p, [field]: value }));
@@ -89,9 +100,9 @@ function HospitalModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800"
+            className="fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-2rem)] max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(650px,calc(100dvh-32px))] overflow-hidden"
           >
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
               <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-blue-600">
                 <FiCrosshair size={16} />
               </div>
@@ -101,7 +112,7 @@ function HospitalModal({
               </button>
             </div>
 
-            <div className="px-5 py-4 space-y-3">
+            <div className="px-5 py-4 space-y-3 overflow-y-auto flex-1">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{t("hospital_name")} *</label>
                 <input type="text" value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Apollo Blood Bank" className={inputCls("name")} />
@@ -141,7 +152,7 @@ function HospitalModal({
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-slate-100 dark:border-slate-800 shrink-0">
               <button onClick={onClose} className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                 {t("hospital_cancel")}
               </button>
@@ -162,6 +173,17 @@ export default function HospitalManagement() {
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState<Hospital | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  useBodyScrollLock(Boolean(deleteTarget));
+
+  useEffect(() => {
+    if (!deleteTarget) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDeleteTarget(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [deleteTarget]);
 
   const handleAdd = (data: HospitalFormData) => {
     addHospital(data);

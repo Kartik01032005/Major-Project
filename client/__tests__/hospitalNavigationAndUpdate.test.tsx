@@ -17,6 +17,7 @@ jest.mock("../context", () => ({
         sidebar_overview: "Overview",
         sidebar_my_profile: "My Profile",
         sidebar_emergency_request: "Emergency Request",
+        sidebar_emergency_requests: "Emergency Requests",
         sidebar_my_requests: "My Requests",
         sidebar_notifications: "Notifications",
         sidebar_nearby_banks: "Nearby Blood Banks",
@@ -102,7 +103,7 @@ describe("BloodLink — Hospital Navigation & Certificate Verification Queue Upd
       expect(navLinks[2]).toHaveAttribute("href", "/dashboard/hospital");
 
       // 4. Other existing items
-      expect(labels[3]).toBe("My Requests");
+      expect(labels[3]).toBe("Emergency Requests");
       expect(navLinks[3]).toHaveAttribute("href", "/dashboard/requests");
 
       expect(labels[4]).toBe("Nearby Blood Banks");
@@ -112,7 +113,7 @@ describe("BloodLink — Hospital Navigation & Certificate Verification Queue Upd
       expect(navLinks[5]).toHaveAttribute("href", "/dashboard/settings");
 
       // Ensure Emergency Request creation link is completely absent from Hospital sidebar
-      expect(screen.queryByText(/Emergency Request/i)).not.toBeInTheDocument();
+      expect(labels).not.toContain("Emergency Request");
       const emergencyLinks = navLinks.filter(
         (l) => l.getAttribute("href") === "/dashboard/emergency"
       );
@@ -145,8 +146,8 @@ describe("BloodLink — Hospital Navigation & Certificate Verification Queue Upd
       // Emergency creation CTA button should be absent
       expect(screen.queryByText("Create Emergency Alert")).not.toBeInTheDocument();
 
-      // Quick operations should have Blood Requests and Nearby Blood Banks, but not Emergency Request creation
-      expect(screen.getByText("Blood Requests")).toBeInTheDocument();
+      // Quick operations should have Emergency Requests and Nearby Blood Banks, but not Emergency Request creation
+      expect(screen.getByText("Emergency Requests")).toBeInTheDocument();
       expect(screen.getByText("Nearby Blood Banks")).toBeInTheDocument();
 
       const links = screen.getAllByRole("link");

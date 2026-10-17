@@ -16,11 +16,14 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
+  const isHospital = (user?.role || "").toUpperCase() === "HOSPITAL" || user?.role === "organization";
+
   const pageTitles: Record<string, string> = {
     "/dashboard":                   t("topbar_overview"),
     "/dashboard/profile":           t("topbar_my_profile"),
+    "/dashboard/certificate":       "Medical Certificate",
     "/dashboard/emergency":         t("topbar_emergency_request"),
-    "/dashboard/requests":          t("topbar_my_requests"),
+    "/dashboard/requests":          isHospital ? (t("topbar_emergency_requests") || "Emergency Requests") : t("topbar_my_requests"),
     "/dashboard/notifications":     t("topbar_notifications"),
     "/dashboard/nearby":            t("topbar_nearby_banks"),
     "/dashboard/admin":             t("topbar_admin_overview"),

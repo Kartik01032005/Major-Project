@@ -2,6 +2,7 @@
 export { useGoogleMaps } from "./useGoogleMaps";
 export { useGeolocation } from "./useGeolocation";
 export { useHospitalNavigation } from "./useHospitalNavigation";
+export { useBodyScrollLock } from "./useBodyScrollLock";
 
 export {};
 

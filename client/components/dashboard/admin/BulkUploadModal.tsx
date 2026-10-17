@@ -8,6 +8,7 @@ import {
   FiX, FiRefreshCw, FiCheck, FiLayers, FiAlertTriangle
 } from "react-icons/fi";
 import { useDashboard } from "@/context";
+import { useBodyScrollLock } from "@/hooks";
 import { UploadSummary } from "@/types";
 
 interface BulkUploadModalProps {
@@ -45,18 +46,11 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
     setMounted(true);
   }, []);
 
-  // Lock background scrolling and add Escape key listener when modal is open
+  // Lock background scrolling when modal is open
+  useBodyScrollLock(isOpen);
+
   useEffect(() => {
     if (!isOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    const dashboardContent = document.getElementById("dashboard-content");
-    const origDashboardOverflow = dashboardContent?.style.overflow;
-
-    document.body.style.overflow = "hidden";
-    if (dashboardContent) {
-      dashboardContent.style.overflow = "hidden";
-    }
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -64,14 +58,7 @@ export default function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProp
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      if (dashboardContent && origDashboardOverflow !== undefined) {
-        dashboardContent.style.overflow = origDashboardOverflow;
-      }
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleClose]);
 
   if (!isOpen || !mounted) return null;

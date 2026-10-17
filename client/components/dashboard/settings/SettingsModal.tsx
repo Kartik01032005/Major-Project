@@ -1,8 +1,8 @@
 "use client";
-
 import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX } from "react-icons/fi";
+import { useBodyScrollLock } from "@/hooks";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -30,6 +30,8 @@ export default function SettingsModal({
   children,
   maxWidth = "md",
 }: SettingsModalProps) {
+  useBodyScrollLock(isOpen);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -45,7 +47,11 @@ export default function SettingsModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+        >
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -58,8 +64,6 @@ export default function SettingsModal({
 
           {/* Modal Container */}
           <motion.div
-            role="dialog"
-            aria-modal="true"
             aria-label={title}
             initial={{ opacity: 0, scale: 0.96, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -67,12 +71,12 @@ export default function SettingsModal({
             transition={{ duration: 0.2 }}
             onClick={(e) => e.stopPropagation()}
             className={[
-              "relative w-full z-10 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-8",
+              "relative w-full z-10 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(700px,calc(100dvh-32px))] my-auto",
               MAX_WIDTHS[maxWidth],
             ].join(" ")}
           >
             {/* Header */}
-            <div className="flex items-start justify-between p-5 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-start justify-between p-5 border-b border-slate-100 dark:border-slate-800 shrink-0">
               <div className="flex items-center gap-3 pr-4">
                 {icon && (
                   <span className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center flex-shrink-0">
@@ -101,7 +105,7 @@ export default function SettingsModal({
             </div>
 
             {/* Body */}
-            <div className="p-5 max-h-[75vh] overflow-y-auto">
+            <div className="p-5 overflow-y-auto flex-1">
               {children}
             </div>
           </motion.div>
