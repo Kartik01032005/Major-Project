@@ -585,39 +585,39 @@ export default function HospitalVerificationQueue() {
       <AnimatePresence>
         {selectedSubmission && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/75 backdrop-blur-sm overflow-hidden"
+            className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm p-3 sm:p-4 md:p-6 flex min-h-full items-center justify-center"
             role="dialog"
             aria-modal="true"
             aria-labelledby="review-modal-title"
             onClick={handleCloseReview}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(760px,calc(100dvh-32px))] my-auto"
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ duration: 0.18 }}
+              className="w-full max-w-3xl bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col my-auto max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-3rem)]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
-                    <FiShield size={20} />
+              <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                    <FiShield size={16} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3
                         id="review-modal-title"
-                        className="text-base font-bold text-slate-900 dark:text-white"
+                        className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-tight"
                       >
                         Certificate Verification Review
                       </h3>
-                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                      <span className="font-mono text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                         {selectedSubmission.referenceId}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
                       Verify institutional medical issuance for simulated donor acceptance
                     </p>
                   </div>
@@ -626,65 +626,65 @@ export default function HospitalVerificationQueue() {
                 <button
                   type="button"
                   onClick={handleCloseReview}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <FiX size={18} />
                 </button>
               </div>
 
               {/* Modal Body */}
-              <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
+              <div className="p-3.5 sm:p-5 space-y-2.5 overflow-y-auto min-h-0 flex-1">
                 {modalError && (
-                  <div className="p-3 text-xs bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 rounded-xl border border-red-200 dark:border-red-900/50 flex items-center gap-2">
-                    <FiAlertTriangle className="shrink-0 text-red-600" />
+                  <div className="p-2.5 text-xs bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 rounded-xl border border-red-200 dark:border-red-900/50 flex items-center gap-2">
+                    <FiAlertTriangle className="shrink-0 text-red-600" size={14} />
                     <span>{modalError}</span>
                   </div>
                 )}
 
-                {/* Details Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                {/* Details Grid: 4 columns on sm+ for maximum vertical compactness */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  <div className="p-2 sm:p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
                       Donor Identity
                     </span>
-                    <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <span>{selectedSubmission.donor?.name}</span>
+                    <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-1 truncate">
+                      <span className="truncate">{selectedSubmission.donor?.name}</span>
                       {selectedSubmission.donor?.bloodGroup && (
-                        <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400">
+                        <span className="px-1 py-0.2 rounded text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400 shrink-0">
                           {selectedSubmission.donor.bloodGroup}
                         </span>
                       )}
                     </p>
                   </div>
 
-                  <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  <div className="p-2 sm:p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
                       Current Verification Status
                     </span>
                     <div>{getStatusBadge(selectedSubmission.status)}</div>
                   </div>
 
-                  <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  <div className="p-2 sm:p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
                       Issuing Hospital Stated
                     </span>
-                    <p className="font-medium text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <FaHospital className="text-red-500 shrink-0" size={13} />
+                    <p className="font-medium text-slate-900 dark:text-white flex items-center gap-1 text-[11px] truncate">
+                      <FaHospital className="text-red-500 shrink-0" size={11} />
                       <span className="truncate">{selectedSubmission.issuingHospital}</span>
                     </p>
                   </div>
 
-                  <div className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  <div className="p-2 sm:p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">
                       Validity Dates
                     </span>
-                    <p className="font-medium text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <FiCalendar className="text-emerald-500 shrink-0" size={13} />
-                      <span>
+                    <p className="font-medium text-slate-900 dark:text-white flex items-center gap-1 text-[11px] truncate">
+                      <FiCalendar className="text-emerald-500 shrink-0" size={11} />
+                      <span className="truncate">
                         {formatDateSafe(selectedSubmission.issueDate)}
                         {selectedSubmission.expiryDate
-                          ? ` to ${formatDateSafe(selectedSubmission.expiryDate)}`
-                          : " (No expiry)"}
+                          ? ` – ${formatDateSafe(selectedSubmission.expiryDate)}`
+                          : ""}
                       </span>
                     </p>
                   </div>
@@ -692,10 +692,10 @@ export default function HospitalVerificationQueue() {
 
                 {/* Uploaded Document Reference & Secure Download */}
                 {selectedSubmission.file && (
-                  <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
-                        <FiPaperclip size={18} />
+                  <div className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                        <FiPaperclip size={14} />
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">
@@ -721,12 +721,12 @@ export default function HospitalVerificationQueue() {
                     >
                       {downloadingDocId === selectedSubmission.id ? (
                         <>
-                          <FiLoader className="animate-spin text-red-600" size={13} />
+                          <FiLoader className="animate-spin text-red-600" size={12} />
                           <span>Downloading...</span>
                         </>
                       ) : (
                         <>
-                          <FiDownload size={13} className="text-red-600" />
+                          <FiDownload size={12} className="text-red-600" />
                           <span>View Document</span>
                         </>
                       )}
@@ -736,43 +736,43 @@ export default function HospitalVerificationQueue() {
 
                 {/* Previous Review Feedback or Rejection Note */}
                 {selectedSubmission.feedbackMessage && (
-                  <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-xs text-orange-800 dark:text-orange-300">
-                    <span className="font-bold block mb-0.5">Clarification Message Sent:</span>
-                    <p>{selectedSubmission.feedbackMessage}</p>
+                  <div className="p-2.5 rounded-xl bg-orange-500/10 border border-orange-500/20 text-xs text-orange-800 dark:text-orange-300">
+                    <span className="font-bold block mb-0.5 text-[11px]">Clarification Message Sent:</span>
+                    <p className="text-xs">{selectedSubmission.feedbackMessage}</p>
                   </div>
                 )}
 
                 {selectedSubmission.rejectionReason && (
-                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-800 dark:text-red-300">
-                    <span className="font-bold block mb-0.5">Rejection Reason:</span>
-                    <p>{selectedSubmission.rejectionReason}</p>
+                  <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-800 dark:text-red-300">
+                    <span className="font-bold block mb-0.5 text-[11px]">Rejection Reason:</span>
+                    <p className="text-xs">{selectedSubmission.rejectionReason}</p>
                   </div>
                 )}
 
-                {/* Audit History Timeline */}
+                {/* Decision History: Compact list */}
                 {selectedSubmission.history && selectedSubmission.history.length > 0 && (
-                  <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                      Decision History
+                  <div className="space-y-1.5 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Decision History ({selectedSubmission.history.length})
                     </h4>
-                    <div className="space-y-2 text-xs">
+                    <div className="space-y-1 text-xs max-h-24 overflow-y-auto pr-1">
                       {selectedSubmission.history.map((log, idx) => (
                         <div
                           key={idx}
-                          className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 flex items-start justify-between gap-2"
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2"
                         >
-                          <div>
-                            <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="font-semibold text-slate-800 dark:text-slate-200 text-xs">
                               {log.action}
                             </span>
-                            <span className="text-slate-400 mx-1.5">•</span>
-                            <span className="text-slate-500">
+                            <span className="text-slate-400">•</span>
+                            <span className="text-slate-500 text-[11px] truncate">
                               by {log.reviewerHospital || log.reviewerName || "Hospital Staff"}
                             </span>
                             {log.reason && (
-                              <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
-                                Note: &ldquo;{log.reason}&rdquo;
-                              </p>
+                              <span className="text-[10px] text-slate-400 italic truncate max-w-[200px]">
+                                — &ldquo;{log.reason}&rdquo;
+                              </span>
                             )}
                           </div>
                           <span className="text-[10px] text-slate-400 shrink-0">
@@ -785,8 +785,8 @@ export default function HospitalVerificationQueue() {
                 )}
 
                 {/* ── Review Action Controls ── */}
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     Submit Verification Action
                   </h4>
 
@@ -798,13 +798,13 @@ export default function HospitalVerificationQueue() {
                         setReviewReason("");
                         setModalError(null);
                       }}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                         reviewAction === "APPROVE"
                           ? "bg-emerald-600 text-white shadow-xs"
                           : "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100"
                       }`}
                     >
-                      <FiCheck size={14} /> Approve Certificate
+                      <FiCheck size={13} /> Approve Certificate
                     </button>
 
                     <button
@@ -814,13 +814,13 @@ export default function HospitalVerificationQueue() {
                         setReviewReason("");
                         setModalError(null);
                       }}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                         reviewAction === "REQUEST_CLARIFICATION"
                           ? "bg-orange-600 text-white shadow-xs"
                           : "bg-orange-50 text-orange-800 dark:bg-orange-950/40 dark:text-orange-300 hover:bg-orange-100"
                       }`}
                     >
-                      <FiAlertTriangle size={14} /> Request Clarification
+                      <FiAlertTriangle size={13} /> Request Clarification
                     </button>
 
                     <button
@@ -830,20 +830,20 @@ export default function HospitalVerificationQueue() {
                         setReviewReason("");
                         setModalError(null);
                       }}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                         reviewAction === "REJECT"
                           ? "bg-red-600 text-white shadow-xs"
                           : "bg-red-50 text-red-800 dark:bg-red-950/40 dark:text-red-300 hover:bg-red-100"
                       }`}
                     >
-                      <FiXCircle size={14} /> Reject Certificate
+                      <FiXCircle size={13} /> Reject Certificate
                     </button>
                   </div>
 
                   {/* Clarification or Rejection Reason Input */}
                   {(reviewAction === "REJECT" ||
                     reviewAction === "REQUEST_CLARIFICATION") && (
-                    <div className="space-y-1.5 pt-1">
+                    <div className="space-y-1 pt-1">
                       <label htmlFor="reviewReasonInput" className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                         {reviewAction === "REJECT"
                           ? "Specific Institutional Rejection Reason"
@@ -852,7 +852,7 @@ export default function HospitalVerificationQueue() {
                       </label>
                       <textarea
                         id="reviewReasonInput"
-                        rows={3}
+                        rows={2}
                         value={reviewReason}
                         onChange={(e) => setReviewReason(e.target.value)}
                         placeholder={
@@ -860,14 +860,14 @@ export default function HospitalVerificationQueue() {
                             ? "e.g., Certificate serial number does not match institutional issuance records."
                             : "e.g., Physician signature is blurry. Please provide a clear scan."
                         }
-                        className="w-full text-xs p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                        className="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
                       />
                     </div>
                   )}
 
                   {/* Demonstration Notice in Modal */}
-                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-2">
-                    <FiInfo className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                  <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <FiInfo className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     <span>
                       Demo Verification Workflow: Approving a certificate simulates institutional
                       acceptance for demonstration purposes. It does not certify medical fitness or
@@ -878,12 +878,12 @@ export default function HospitalVerificationQueue() {
               </div>
 
               {/* Modal Footer */}
-              <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-slate-800/20 shrink-0">
+              <div className="px-4 py-2.5 sm:px-5 sm:py-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2 bg-slate-50/80 dark:bg-slate-800/40 backdrop-blur-xs shrink-0">
                 <button
                   type="button"
                   onClick={handleCloseReview}
                   disabled={submittingReview}
-                  className="px-4 py-2 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                  className="px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                 >
                   Close
                 </button>
@@ -893,16 +893,16 @@ export default function HospitalVerificationQueue() {
                     type="button"
                     onClick={handleSubmitReviewDecision}
                     disabled={submittingReview}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors shadow-xs disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors shadow-xs disabled:opacity-60"
                   >
                     {submittingReview ? (
                       <>
-                        <FiLoader className="animate-spin" size={13} />
+                        <FiLoader className="animate-spin" size={12} />
                         <span>Submitting...</span>
                       </>
                     ) : (
                       <>
-                        <FiCheck size={14} />
+                        <FiCheck size={13} />
                         <span>Confirm Decision</span>
                       </>
                     )}

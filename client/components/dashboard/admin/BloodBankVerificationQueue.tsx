@@ -577,7 +577,7 @@ export default function BloodBankVerificationQueue() {
       <AnimatePresence>
         {selectedSubmission && (
           <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/75 backdrop-blur-sm overflow-hidden"
+            className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-sm p-3 sm:p-4 md:p-6 flex min-h-full items-center justify-center"
             role="dialog"
             aria-modal="true"
             onClick={() => setSelectedSubmission(null)}
@@ -586,11 +586,11 @@ export default function BloodBankVerificationQueue() {
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[calc(100dvh-32px)] sm:max-h-[min(780px,calc(100dvh-32px))] my-auto"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-3rem)] my-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
-              <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+              <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-900/50">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <span>Certificate Review:</span>
@@ -611,7 +611,7 @@ export default function BloodBankVerificationQueue() {
               </div>
 
               {/* Modal Body */}
-              <div className="p-6 space-y-6 overflow-y-auto flex-1 text-xs">
+              <div className="p-4 sm:p-6 space-y-5 overflow-y-auto min-h-0 flex-1 text-xs">
                 {/* Demo Notice */}
                 <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2.5 text-amber-800 dark:text-amber-300">
                   <FiInfo className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-600" />
@@ -1000,7 +1000,7 @@ export default function BloodBankVerificationQueue() {
                     <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                       Audit Trail & Status History
                     </h4>
-                    <div className="space-y-2">
+                    <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                       {selectedSubmission.history.map((log, idx) => (
                         <div
                           key={idx}
