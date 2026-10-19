@@ -63,7 +63,7 @@ interface ActiveRequestsCardProps {
 
 export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardProps) {
   const { user } = useAuth();
-  const isHospital = (user?.role || "").toUpperCase() === "HOSPITAL" || user?.role === "organization";
+  const isHospital = (user?.role || "").toUpperCase() === "HOSPITAL";
   const { requests, refreshRequests, loadingRequests, cancelRequest, acceptRequest, reportDonation, confirmDonation, withdrawAcceptance } = useDashboard();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"my" | "donate">("my");

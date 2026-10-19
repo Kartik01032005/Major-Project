@@ -16,7 +16,7 @@ export default function DashboardTopbar({ onMenuClick }: { onMenuClick: () => vo
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  const isHospital = (user?.role || "").toUpperCase() === "HOSPITAL" || user?.role === "organization";
+  const isHospital = (user?.role || "").toUpperCase() === "HOSPITAL";
 
   const pageTitles: Record<string, string> = {
     "/dashboard":                   t("topbar_overview"),
