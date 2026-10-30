@@ -75,7 +75,7 @@ const DashboardContext = createContext<DashboardContextType | undefined>(undefin
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, token, loading: authLoading } = useAuth();
 
   const [requests, setRequests] = useState<EmergencyRequest[]>([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
@@ -94,7 +94,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ── Fetch Helpers ──────────────────────────────────────────────────────────
 
   const refreshUploadHistory = useCallback(async () => {
-    if (!user || user.role !== "admin") {
+    const roleUpper = (user?.role || "").toUpperCase();
+    if (!user || (roleUpper !== "ADMIN" && roleUpper !== "BLOOD_BANK")) {
       setUploadHistory([]);
       return;
     }
@@ -112,7 +113,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [user]);
 
   const refreshThresholds = useCallback(async () => {
-    if (!user || user.role !== "admin") {
+    const roleUpper = (user?.role || "").toUpperCase();
+    if (!user || (roleUpper !== "ADMIN" && roleUpper !== "BLOOD_BANK")) {
       setThresholds(null);
       return;
     }
@@ -135,8 +137,13 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       const data = await dashboardService.getHospitals();
       setHospitals(data);
-    } catch (err) {
-      console.error("Failed to load hospitals:", err);
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { status?: number } };
+      if (errorObj?.response?.status === 401 || errorObj?.response?.status === 403) {
+        setHospitals([]);
+      } else {
+        console.error("Failed to load hospitals:", err);
+      }
     } finally {
       setLoadingHospitals(false);
     }
@@ -155,7 +162,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   const refreshInventory = useCallback(async () => {
-    if (!user || user.role !== "admin") {
+    const roleUpper = (user?.role || "").toUpperCase();
+    if (!user || (roleUpper !== "ADMIN" && roleUpper !== "BLOOD_BANK")) {
       setInventory([]);
       return;
     }
@@ -183,8 +191,13 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       const data = await dashboardService.getNotifications();
       setNotifications(data);
-    } catch (err) {
-      console.error("Failed to load notifications:", err);
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { status?: number } };
+      if (errorObj?.response?.status === 401 || errorObj?.response?.status === 403) {
+        setNotifications([]);
+      } else {
+        console.error("Failed to load notifications:", err);
+      }
     } finally {
       setLoadingNotifications(false);
     }
@@ -192,7 +205,10 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
 // ── Seed on Login & Real-time Socket Sync ────────────────────────────────────
   useEffect(() => {
-    if (!user) {
+    // Do not fire dashboard API calls while auth session is still being restored
+    if (authLoading) return;
+
+    if (!user || !token) {
       currentUserIdRef.current = null;
       socketService.disconnect();
       const timer = setTimeout(() => {
@@ -215,16 +231,24 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const userId = user._id;
 
     const initDashboardData = async () => {
-      await refreshHospitals();
-      await refreshRequests();
-      await refreshNotifications();
-      if (user?.role === "admin") {
-        await refreshInventory();
+      // Fire all dashboard data loads in parallel so one failure cannot
+      // cascade into blocking or invalidating the others.
+      const fetches: Promise<void>[] = [
+        refreshHospitals(),
+        refreshRequests(),
+        refreshNotifications(),
+      ];
+
+      const userRoleUpper = (user.role || "").toUpperCase();
+      if (userRoleUpper === "ADMIN" || userRoleUpper === "BLOOD_BANK") {
+        fetches.push(refreshInventory());
       } else {
         setInventory([]);
         setUploadHistory([]);
         setThresholds(null);
       }
+
+      await Promise.allSettled(fetches);
     };
 
     initDashboardData();
@@ -261,7 +285,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       socket.off("request_deleted", handleRequestDeleted);
       socket.off("notification", handleNotification);
     };
-  }, [user, refreshHospitals, refreshRequests, refreshInventory, refreshNotifications]);
+  }, [user, token, authLoading, refreshHospitals, refreshRequests, refreshInventory, refreshNotifications]);
 
   // ── Emergency Requests ─────────────────────────────────────────────────────
 

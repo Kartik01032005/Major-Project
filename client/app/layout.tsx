@@ -6,7 +6,6 @@ import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/ui/ThemeProvider";
 import { AuthProvider, LanguageProvider, ToastProvider } from "@/context";
 import Chatbot from "@/components/chatbot/Chatbot";
-import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -63,7 +62,6 @@ export const metadata: Metadata = {
       { url: "/apple-icon", sizes: "180x180", type: "image/png" },
     ],
   },
-  manifest: "/manifest.webmanifest",
   robots: {
     index: true,
     follow: true,
@@ -111,7 +109,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 </main>
                 <Footer />
                 <Chatbot />
-                <ServiceWorkerRegister />
               </ToastProvider>
             </AuthProvider>
           </LanguageProvider>

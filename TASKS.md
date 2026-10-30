@@ -536,7 +536,7 @@ Status:
   - [x] TypeScript validation and production build (`npm run build`) passing with 0 errors
 
 - [x] Automatic Device Location for Nearby Facilities:
-  - [x] Actual device browser/native GPS as sole source of truth across Web/PWA, mobile browsers, and Capacitor Android APK
+  - [x] Actual device browser/native GPS as sole source of truth across desktop browsers, mobile browsers, and Capacitor Android APK
   - [x] Complete removal of hardcoded city coordinates (Bengaluru, Mysuru, Bangalore fallback, default Indian coordinates)
   - [x] Eliminated legacy mock Bangalore/Mysore data from `/dashboard/nearby`, unifying both public (`/nearby`) and dashboard (`/dashboard/nearby`) on the live OpenStreetMap / Overpass engine
   - [x] Automatic permission check and location acquisition on page load
@@ -632,11 +632,13 @@ Status:
   - [x] Preserved mobile compact side-by-side header with instant CTA
   - [x] Restored spacious desktop layout on `sm:` and larger screens with original CTA and notes
 
-- [x] PWA & Mobile Stabilization:
-  - [x] Next.js App Router Web App Manifest (`client/app/manifest.ts`)
-  - [x] Resilient service worker (`client/public/sw.js`) with static caching and safe non-API routing
-  - [x] Dedicated offline fallback page (`client/app/offline/page.tsx`) with 104 helpline and reload actions
-  - [x] Dev server host binding (`0.0.0.0`) in `client/package.json` for LAN mobile device testing
+- [x] Standard Website Mode (Removal of All PWA / Installable-App Functionality):
+  - [x] Removed web app manifest (`client/app/manifest.ts`) and `/manifest.webmanifest` metadata references
+  - [x] Removed service worker (`client/public/sw.js`) and registration component (`client/components/pwa/ServiceWorkerRegister.tsx`)
+  - [x] Removed offline fallback route (`client/app/offline/page.tsx`)
+  - [x] Removed all PWA installation prompts, beforeinstallprompt listeners, and offline caching logic
+  - [x] Preserved fully responsive mobile and desktop browser layouts, design, SEO metadata, and standard browser favicons
+  - [x] Preserved independent real-time Socket.IO notifications, chatbot, authentication, and core application features
 
 - [x] Bulk Blood Inventory Upload Modal Positioning & Viewport Optimization:
   - [x] Viewport-level React Portal rendering to `document.body` eliminating parent transform/overflow constraints

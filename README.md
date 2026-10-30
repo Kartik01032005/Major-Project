@@ -305,7 +305,6 @@ Always keep the project production-ready.
 - AI-Based Blood Demand Prediction
 - SMS Notifications
 - Email Notifications
-- Progressive Web App (PWA)
 - Docker Support
 - Kubernetes Deployment
 - Multi-Language Support

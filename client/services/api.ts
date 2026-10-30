@@ -60,17 +60,30 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle 401 unauthorized and clear invalid credentials
+// Auth-validation endpoints where a 401 genuinely means the stored token
+// is invalid or expired and credentials should be cleared.
+const AUTH_VALIDATION_PATHS = ["/auth/me", "/auth/login", "/auth/delete-account"];
+
+// Response interceptor to handle 401 unauthorized
+// Only clear stored credentials when an auth-validation endpoint confirms
+// the token itself is invalid.  Regular API 401s (e.g. /hospitals, /notifications)
+// should NOT wipe the session — they may be transient or caused by a timing race.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== "undefined") {
-      localStorage.removeItem("bloodlink_auth_token");
-      localStorage.removeItem("bloodlink_auth_user");
+      const requestUrl = error.config?.url || "";
+      const isAuthValidation = AUTH_VALIDATION_PATHS.some(
+        (path) => requestUrl === path || requestUrl.endsWith(path)
+      );
+
+      if (isAuthValidation) {
+        localStorage.removeItem("bloodlink_auth_token");
+        localStorage.removeItem("bloodlink_auth_user");
+      }
     }
     return Promise.reject(error);
   }
 );
 
 export default api;
-

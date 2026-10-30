@@ -319,15 +319,29 @@ export default function ActiveRequestsCard({ onNewRequest }: ActiveRequestsCardP
         }
       })
       .catch((error: unknown) => {
-        console.error("Failed to load dismissed requests:", error);
-        if (isCurrentAccount) {
-          setRequestDismissalState((previous) => ({
-            userId: currentUserId,
-            my: previous?.userId === currentUserId ? previous.my : [],
-            donate: previous?.userId === currentUserId ? previous.donate : [],
-            loaded: true,
-            error: t("donor_nav_err_generic"),
-          }));
+        const errorObj = error as { response?: { status?: number } };
+        // Silently handle auth errors — the session may not be fully ready
+        if (errorObj?.response?.status === 401 || errorObj?.response?.status === 403) {
+          if (isCurrentAccount) {
+            setRequestDismissalState((previous) => ({
+              userId: currentUserId,
+              my: previous?.userId === currentUserId ? previous.my : [],
+              donate: previous?.userId === currentUserId ? previous.donate : [],
+              loaded: true,
+              error: null,
+            }));
+          }
+        } else {
+          console.error("Failed to load dismissed requests:", error);
+          if (isCurrentAccount) {
+            setRequestDismissalState((previous) => ({
+              userId: currentUserId,
+              my: previous?.userId === currentUserId ? previous.my : [],
+              donate: previous?.userId === currentUserId ? previous.donate : [],
+              loaded: true,
+              error: t("donor_nav_err_generic"),
+            }));
+          }
         }
       });
 
