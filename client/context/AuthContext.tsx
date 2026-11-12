@@ -32,9 +32,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_USERS_KEY = "bloodlink_users_db";
-const LOCAL_STORAGE_TOKEN_KEY = "bloodlink_auth_token";
-const LOCAL_STORAGE_USER_KEY = "bloodlink_auth_user";
+const SESSION_STORAGE_USERS_KEY = "bloodlink_users_db";
+const SESSION_STORAGE_TOKEN_KEY = "bloodlink_auth_token";
+const SESSION_STORAGE_USER_KEY = "bloodlink_auth_user";
 
 // Pre-populate some demo credentials for testing
 const DEFAULT_USERS = [
@@ -75,45 +75,61 @@ const DEFAULT_USERS = [
 ];
 
 import { authService } from "@/services";
+import { setAuthToken, clearAuthStorage } from "@/services/api";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Initialize DB if not present and verify existing session with backend
+  // Tab-isolated logout: Clears only this tab's authentication session
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem(LOCAL_STORAGE_TOKEN_KEY);
-    localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+    clearAuthStorage();
   };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedUsers = localStorage.getItem(LOCAL_STORAGE_USERS_KEY);
+      // Purge any legacy shared localStorage auth tokens to prevent cross-tab contamination
+      try {
+        localStorage.removeItem(SESSION_STORAGE_TOKEN_KEY);
+        localStorage.removeItem(SESSION_STORAGE_USER_KEY);
+      } catch {}
+
+      const storedUsers = sessionStorage.getItem(SESSION_STORAGE_USERS_KEY);
       if (!storedUsers) {
-        localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(DEFAULT_USERS));
+        try {
+          sessionStorage.setItem(SESSION_STORAGE_USERS_KEY, JSON.stringify(DEFAULT_USERS));
+        } catch {}
       }
 
       const verifySession = async () => {
-        const savedToken = localStorage.getItem(LOCAL_STORAGE_TOKEN_KEY);
-        const savedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
+        // Read strictly from sessionStorage so every browser tab maintains its own independent session
+        let savedToken: string | null = null;
+        let savedUser: string | null = null;
+        try {
+          savedToken = sessionStorage.getItem(SESSION_STORAGE_TOKEN_KEY);
+          savedUser = sessionStorage.getItem(SESSION_STORAGE_USER_KEY);
+        } catch {}
 
         if (savedToken) {
           try {
-            // Set token state early for interceptor to pick up
+            // Set token in state and in-memory Axios cache early for requests
             setToken(savedToken);
+            setAuthToken(savedToken);
             const res = await authService.getMe();
             if (res.success && res.data) {
               setUser(res.data);
-              localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(res.data));
+              try {
+                sessionStorage.setItem(SESSION_STORAGE_USER_KEY, JSON.stringify(res.data));
+              } catch {}
             } else {
               logout();
             }
           } catch (err: unknown) {
             const errorObj = err as { response?: { status?: number } };
-            // Expired, invalid, or forbidden session: log out immediately
+            // Expired, invalid, or forbidden session: log out this tab only
             if (
               errorObj.response?.status === 401 ||
               errorObj.response?.status === 403 ||
@@ -121,7 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ) {
               logout();
             } else if (!errorObj.response && savedUser) {
-              // Server is offline (network error), fallback to cached user details for seamless offline client test
+              // Server is offline (network error), fallback to cached user details for this tab
               try {
                 setUser(JSON.parse(savedUser));
               } catch {
@@ -152,8 +168,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         setUser(apiUser);
         setToken(apiToken);
-        localStorage.setItem(LOCAL_STORAGE_TOKEN_KEY, apiToken);
-        localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(apiUser));
+        setAuthToken(apiToken);
+
+        // Store exclusively in sessionStorage so different tabs can log in with different accounts
+        if (typeof window !== "undefined") {
+          try {
+            sessionStorage.setItem(SESSION_STORAGE_TOKEN_KEY, apiToken);
+            sessionStorage.setItem(SESSION_STORAGE_USER_KEY, JSON.stringify(apiUser));
+            // Ensure shared localStorage doesn't contain cross-tab auth state
+            localStorage.removeItem(SESSION_STORAGE_TOKEN_KEY);
+            localStorage.removeItem(SESSION_STORAGE_USER_KEY);
+          } catch {}
+        }
 
         return {
           success: true,
@@ -217,7 +243,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!prev) return null;
       const nextUser = { ...prev, ...updatedData };
       if (typeof window !== "undefined") {
-        localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(nextUser));
+        try {
+          sessionStorage.setItem(SESSION_STORAGE_USER_KEY, JSON.stringify(nextUser));
+        } catch {}
       }
       return nextUser;
     });
@@ -229,7 +257,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.success && res.data) {
         setUser(res.data);
         if (typeof window !== "undefined") {
-          localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(res.data));
+          try {
+            sessionStorage.setItem(SESSION_STORAGE_USER_KEY, JSON.stringify(res.data));
+          } catch {}
         }
       }
     } catch (e) {

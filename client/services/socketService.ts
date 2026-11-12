@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client";
+import { getAuthToken } from "./api";
 
 function getSocketUrl(): string {
   if (typeof window !== "undefined" && window.location.hostname) {
@@ -22,9 +23,14 @@ function getSocketUrl(): string {
 }
 
 let socket: Socket | null = null;
+let registeredUserId: string | null = null;
 
 export const socketService = {
   connect: (userId?: string): Socket => {
+    if (userId) {
+      registeredUserId = userId;
+    }
+
     if (!socket) {
       const socketUrl = getSocketUrl();
       socket = io(socketUrl, {
@@ -35,12 +41,16 @@ export const socketService = {
         reconnectionDelay: 3000,
         reconnectionDelayMax: 10000,
         timeout: 8000,
+        auth: {
+          token: getAuthToken(),
+          userId: registeredUserId,
+        },
       });
 
       socket.on("connect", () => {
         console.log("🔌 Socket.IO connected:", socket?.id);
-        if (userId) {
-          socket?.emit("register_user", userId);
+        if (registeredUserId) {
+          socket?.emit("register_user", registeredUserId);
         }
       });
 
@@ -52,13 +62,21 @@ export const socketService = {
         console.log("🔌 Socket.IO disconnected");
       });
 
-    } else if (userId && socket.connected) {
-      socket.emit("register_user", userId);
+    } else if (registeredUserId && socket.connected) {
+      socket.emit("register_user", registeredUserId);
     }
     return socket;
   },
 
+  registerUser: (userId: string) => {
+    registeredUserId = userId;
+    if (socket?.connected) {
+      socket.emit("register_user", userId);
+    }
+  },
+
   disconnect: () => {
+    registeredUserId = null;
     if (socket) {
       socket.disconnect();
       socket = null;

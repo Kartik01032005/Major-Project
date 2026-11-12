@@ -41,7 +41,7 @@ export const seedInitialData = async (): Promise<void> => {
       await adminUser.save();
     }
 
-    // 2. Ensure Regular Donor User exists
+    // 2. Ensure Regular Donor User A (Rahul Kumar) exists
     const donorUser = await User.findOne({
       $or: [
         { email: "rahul@gmail.com" },
@@ -63,6 +63,62 @@ export const seedInitialData = async (): Promise<void> => {
             district: "Mysore",
             latitude: 12.2958,
             longitude: 76.6394,
+          },
+        });
+      } catch (error: any) {
+        if (error?.code !== 11000) throw error;
+      }
+    }
+
+    // 2b. Ensure Regular Donor User B (Priya Sharma) exists for multi-tab testing
+    const donorUserB = await User.findOne({
+      $or: [
+        { email: "priya@gmail.com" },
+        { phone: "9876543212" },
+      ],
+    });
+    if (!donorUserB) {
+      try {
+        await User.create({
+          name: "Priya Sharma",
+          email: "priya@gmail.com",
+          password: "password123",
+          phone: "9876543212",
+          bloodGroup: "A+",
+          role: "user",
+          isAvailableDonor: true,
+          location: {
+            state: "Karnataka",
+            district: "Mysore",
+            latitude: 12.3000,
+            longitude: 76.6400,
+          },
+        });
+      } catch (error: any) {
+        if (error?.code !== 11000) throw error;
+      }
+    }
+
+    // 2c. Ensure Demo Hospital Account exists for multi-tab institutional testing
+    let demoHospital = await User.findOne({ email: "hospital@bloodlink.in" });
+    if (!demoHospital) {
+      try {
+        demoHospital = await User.create({
+          name: "Columbia Asia Hospital",
+          email: "hospital@bloodlink.in",
+          password: "password123",
+          phone: "0821-3989898",
+          role: "HOSPITAL",
+          organizationName: "Columbia Asia Hospital",
+          address: "Bangalore-Mysore Ring Road",
+          registrationNumber: "HOSP-KA-0821",
+          approvalStatus: "APPROVED",
+          isAvailableDonor: false,
+          location: {
+            state: "Karnataka",
+            district: "Mysore",
+            latitude: 12.335,
+            longitude: 76.655,
           },
         });
       } catch (error: any) {

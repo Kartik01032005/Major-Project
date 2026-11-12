@@ -29,6 +29,43 @@ export const api = axios.create({
   },
 });
 
+// In-memory token cache for the current tab's execution context
+let inMemoryToken: string | null = null;
+
+export const setAuthToken = (token: string | null) => {
+  inMemoryToken = token;
+};
+
+export const getAuthToken = (): string | null => {
+  if (inMemoryToken) return inMemoryToken;
+  if (typeof window !== "undefined") {
+    try {
+      // sessionStorage is isolated per browser tab, ensuring independent authentication
+      const sessionToken = sessionStorage.getItem("bloodlink_auth_token");
+      if (sessionToken) {
+        inMemoryToken = sessionToken;
+        return sessionToken;
+      }
+    } catch {
+      // Storage access blocked or restricted
+    }
+  }
+  return null;
+};
+
+export const clearAuthStorage = () => {
+  inMemoryToken = null;
+  if (typeof window !== "undefined") {
+    try {
+      sessionStorage.removeItem("bloodlink_auth_token");
+      sessionStorage.removeItem("bloodlink_auth_user");
+      // Purge any legacy shared localStorage auth keys to prevent cross-tab session contamination
+      localStorage.removeItem("bloodlink_auth_token");
+      localStorage.removeItem("bloodlink_auth_user");
+    } catch {}
+  }
+};
+
 // Interceptor to automatically add JWT Token to headers and handle dynamic hostnames
 api.interceptors.request.use(
   (config) => {
@@ -48,7 +85,7 @@ api.interceptors.request.use(
           }
         }
       }
-      const token = localStorage.getItem("bloodlink_auth_token");
+      const token = getAuthToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -66,7 +103,7 @@ const AUTH_VALIDATION_PATHS = ["/auth/me", "/auth/login", "/auth/delete-account"
 
 // Response interceptor to handle 401 unauthorized
 // Only clear stored credentials when an auth-validation endpoint confirms
-// the token itself is invalid.  Regular API 401s (e.g. /hospitals, /notifications)
+// the token itself is invalid. Regular API 401s (e.g. /hospitals, /notifications)
 // should NOT wipe the session — they may be transient or caused by a timing race.
 api.interceptors.response.use(
   (response) => response,
@@ -78,8 +115,7 @@ api.interceptors.response.use(
       );
 
       if (isAuthValidation) {
-        localStorage.removeItem("bloodlink_auth_token");
-        localStorage.removeItem("bloodlink_auth_user");
+        clearAuthStorage();
       }
     }
     return Promise.reject(error);

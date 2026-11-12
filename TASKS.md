@@ -809,6 +809,44 @@ BloodLink maintains a modern Next.js web application and Android APK testing bun
 - [x] Review the final implementation for security and maintainability.
 - [x] Mark tasks complete only after implementation and required checks pass.
 
+---
+
+## Sprint 12 – Multi-Tab Stability & Independent Login Sessions
+
+### 1. Diagnosis & Root-Cause Remediation
+- [x] Diagnose cross-tab session overwrites and random logouts: identified shared `localStorage` as root cause for token and user state collisions.
+- [x] Diagnose Axios interceptor behavior: verified that shared storage caused asynchronous requests from one tab to send another tab's freshly stored JWT token.
+- [x] Diagnose Socket.IO connection handling: identified 1:1 `userSockets` mapping in backend that caused closing one tab to disconnect all tabs for that user.
+
+### 2. Independent Per-Tab Authentication
+- [x] Implement per-tab session isolation using browser `sessionStorage` in `client/services/api.ts` and `client/context/AuthContext.tsx`.
+- [x] Provide fast per-tab memory cache with transparent fallback to `sessionStorage`.
+- [x] Isolate Axios request interceptors so each tab automatically injects its own scoped authentication token.
+- [x] Ensure logging out from one tab clears only that tab's session without terminating or invalidating other active browser tabs.
+- [x] Ensure refreshing any individual tab hydrates and restores only its own authenticated session.
+- [x] Clean legacy `localStorage` keys on logout to prevent cross-contamination.
+
+### 3. Real-Time & Socket.IO Multi-Tab Support
+- [x] Refactor server-side `userSockets` to `Map<string, Set<string>>` in `server/src/socket/socket.ts` to cleanly support multiple open tabs per user.
+- [x] Track active user registration and pass auth tokens during handshake in `client/services/socketService.ts`.
+- [x] Cleanly remove individual socket IDs on disconnect without wiping sibling sockets for the same user.
+- [x] Re-emit user registration automatically upon socket reconnection.
+
+### 4. Backend Process & Database Stability
+- [x] Add global `unhandledRejection` and `uncaughtException` protection in `server/src/server.ts` to prevent crashes during concurrent multi-tab bursts.
+- [x] Seed approved test accounts across all roles in `server/src/config/seed.ts` (Rahul/USER, Priya/USER, Hospital/HOSPITAL, Apollo/BLOOD_BANK).
+
+### 5. Multi-Tab Testing (Scenarios A through F)
+- [x] Test A: 3 tabs open, login as 3 different USER accounts, refresh each tab, verify independent sessions.
+- [x] Test B: Tab 1 (USER), Tab 2 (HOSPITAL), Tab 3 (BLOOD_BANK) navigate dashboards simultaneously without data leakage.
+- [x] Test C: Log out from Tab 1, verify Tabs 2 and 3 remain independently authenticated.
+- [x] Test D: Create emergency request in Tab 1, verify authorized account receives real-time update in Tab 2.
+- [x] Test E: 8 concurrent tabs perform simultaneous API requests without memory/header corruption.
+- [x] Test F: Close one tab, verify remaining tabs continue working; new tab starts unauthenticated.
+- [x] Verified full client test suite (26 suites, 200/200 tests passing).
+- [x] Verified full server test suite (16 suites, 252/252 tests passing).
+- [x] Verified production build (`npm run build`) generates all 33 Next.js routes and compiles TypeScript cleanly.
+
 ## Implementation Rules
 - Preserve the existing BloodLink UI, architecture, and working functionality.
 - Do not introduce fake medical records, fake hospital confirmations, or hardcoded production dashboard statistics.

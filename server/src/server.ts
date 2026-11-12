@@ -45,6 +45,15 @@ const startServer = async () => {
 };
 
 
+// Process-level safety: Prevent unhandled promise rejections or exceptions from terminating server during concurrent multi-tab testing
+process.on("unhandledRejection", (reason: any) => {
+  console.error("⚠️ Unhandled Promise Rejection:", reason?.stack || reason);
+});
+
+process.on("uncaughtException", (error: Error) => {
+  console.error("❌ Uncaught Exception:", error.stack || error);
+});
+
 // Server initialization
 startServer().catch((err) => {
   console.error("❌ Failed to launch Express server:", err);
